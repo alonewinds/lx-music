@@ -94,5 +94,7 @@ export default () => {
     isMouseEnter,
     isHoverHide,
     handleMouseMoveMain,
+    handleMouseEnter,
+    handleMouseLeave,
   }
 }

@@ -41,11 +41,10 @@ import usePauseHide from '@lyric/useApp/usePauseHide'
 const isShowResize = window.os != 'windows'
 useCommon()
 const { handleMouseDown, handleTouchDown } = useWindowSize()
-const { handleMouseMoveMain, isHoverHide, isMouseEnter } = useHoverHide()
+const { handleMouseMoveMain, isHoverHide, isMouseEnter, handleMouseEnter, handleMouseLeave } = useHoverHide()
 useLyric()
 useTheme()
 const isHide = usePauseHide()
-
 
 onMounted(() => {
   initLyricPlayer()
@@ -87,9 +86,10 @@ body {
   }
   &.hide {
     opacity: .05;
-    &:hover {
-      opacity: 1;
-    }
+    // 移除 :hover 规则，因为鼠标悬停隐藏功能就是要在鼠标悬停时让歌词透明
+    // &:hover {
+    //   opacity: 1;
+    // }
   }
 }
 

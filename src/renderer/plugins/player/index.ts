@@ -413,6 +413,12 @@ const fadeIn = () => {
   cancelFade()
   fadeState = 'fading-in'
 
+  // 立即触发play事件，让UI立即响应
+  // 与fadeOut保持一致，确保UI状态同步
+  if (typeof window !== 'undefined' && window.app_event) {
+    window.app_event.play()
+  }
+
   const startTime = performance.now()
   const startGain = gainNode.gain.value
   const targetGain = 1

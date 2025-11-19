@@ -452,6 +452,12 @@ const fadeOut = () => {
   cancelFade()
   fadeState = 'fading-out'
 
+  // 立即触发pause事件，让UI立即响应
+  // 音频会在1.5秒内淡出，但UI会立即切换到暂停状态
+  if (typeof window !== 'undefined' && window.app_event) {
+    window.app_event.pause()
+  }
+
   const startTime = performance.now()
   const startGain = gainNode.gain.value
   const targetGain = 0

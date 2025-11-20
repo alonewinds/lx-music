@@ -80,16 +80,6 @@ export default {
         // 收集所有歌单数据
         const listsData = []
 
-        // 默认列表
-        const defaultMusicList = await getListMusics(defaultList.id)
-        if (defaultMusicList.length > 0) {
-          listsData.push({
-            listId: defaultList.id,
-            listName: t(defaultList.name),
-            musicList: defaultMusicList,
-          })
-        }
-
         // 我的收藏
         const loveMusicList = await getListMusics(loveList.id)
         if (loveMusicList.length > 0) {

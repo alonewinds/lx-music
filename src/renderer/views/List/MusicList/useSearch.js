@@ -1,5 +1,25 @@
 import { ref, onBeforeUnmount } from '@common/utils/vueTools'
 
+// 深度清理对象,移除所有响应式属性
+const deepToRaw = (obj) => {
+  if (obj === null || typeof obj !== 'object') return obj
+
+  const { toRaw } = require('@common/utils/vueTools')
+  const raw = toRaw(obj)
+
+  if (Array.isArray(raw)) {
+    return raw.map(item => deepToRaw(item))
+  }
+
+  const result = {}
+  for (const key in raw) {
+    if (Object.prototype.hasOwnProperty.call(raw, key)) {
+      result[key] = deepToRaw(raw[key])
+    }
+  }
+  return result
+}
+
 export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownloadModal }) => {
   const isShowSearchBar = ref(false)
   const searchList = ref([])
@@ -33,8 +53,6 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
   }
 
   const handleSearchAction = ({ action, item }) => {
-    const { toRaw } = require('@common/utils/vueTools')
-
     switch (action) {
       case 'play':
         // 在全局搜索模式下,item 包含 listId
@@ -58,15 +76,14 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         }
         break
       case 'download':
-        // 使用 toRaw 清理对象,确保可以被序列化
-        handleShowDownloadModal(-1, true, toRaw(item))
+        // 使用 deepToRaw 深度清理对象,确保可以被序列化
+        handleShowDownloadModal(-1, true, deepToRaw(item))
         break
     }
   }
 
   const handleSearchMenuAction = ({ action, item }) => {
     const { clipboardWriteText } = require('@common/utils/electron')
-    const { toRaw } = require('@common/utils/vueTools')
     const { addTempPlayList } = require('@renderer/store/player/action')
     const { addDislikeInfo } = require('@renderer/core/dislikeList')
     const { playMusicInfo } = require('@renderer/store/player/state')
@@ -95,12 +112,12 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         }
         break
       case 'playLater':
-        // 稍后播放 - 使用 toRaw 清理对象
-        addTempPlayList([{ listId: item.listId || 'default', musicInfo: toRaw(item) }])
+        // 稍后播放 - 使用 deepToRaw 清理对象
+        addTempPlayList([{ listId: item.listId || 'default', musicInfo: deepToRaw(item) }])
         break
       case 'download':
-        // 下载 - 使用 toRaw 清理对象
-        handleShowDownloadModal(-1, true, toRaw(item))
+        // 下载 - 使用 deepToRaw 清理对象
+        handleShowDownloadModal(-1, true, deepToRaw(item))
         break
       case 'search':
         // 搜索

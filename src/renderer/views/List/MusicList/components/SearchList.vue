@@ -107,6 +107,7 @@ export default {
   emits: ['action'],
   setup() {
     const t = useI18n()
+    const router = useRouter()
     const isShowItemMenu = ref(false)
     const menuLocation = reactive({ x: 0, y: 0 })
     const rightClickIndex = ref(-1)
@@ -168,6 +169,7 @@ export default {
 
     return {
       assertApiSupport,
+      router,
       isShowItemMenu,
       menuLocation,
       rightClickIndex,
@@ -274,8 +276,7 @@ export default {
       
       if (this.isGlobal && item.listId) {
         // 全局搜索模式: 跳转到目标歌单
-        const router = useRouter()
-        router.replace({
+        this.router.replace({
           path: '/list',
           query: { 
             id: item.listId, 

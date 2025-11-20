@@ -55,7 +55,14 @@ export default {
   },
   methods: {
     handleClick(quality) {
-      void createDownloadTasks([this.musicInfo], quality, this.listId)
+      // 使用 toRaw 清理响应式对象
+      const { toRaw } = require('@common/utils/vueTools')
+      const rawMusicInfo = toRaw(this.musicInfo)
+      
+      // 深度清理嵌套对象
+      const cleanMusicInfo = JSON.parse(JSON.stringify(rawMusicInfo))
+      
+      void createDownloadTasks([cleanMusicInfo], quality, this.listId)
       this.handleClose()
     },
     handleClose() {

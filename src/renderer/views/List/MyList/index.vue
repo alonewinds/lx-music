@@ -13,6 +13,11 @@
             <use xlink:href="#icon-refresh" />
           </svg>
         </button>
+        <button :class="$style.listsAdd" aria-label="查找全部重复" @click="handleCrossListDuplicate">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="70%" viewBox="0 0 30.239 30.239" space="preserve">
+            <use xlink:href="#icon-search" />
+          </svg>
+        </button>
       </div>
     </div>
     <ul ref="dom_lists_list" class="scroll" :class="[$style.listsContent, { [$style.sortable]: isModDown }]">
@@ -73,6 +78,7 @@
     </ul>
     <base-menu v-model="isShowMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
     <DuplicateMusicModal v-model:visible="isShowDuplicateMusicModal" :list-info="duplicateListInfo" />
+    <CrossListDuplicateMusicModal v-model:visible="isShowCrossListDuplicateModal" />
     <ListSortModal v-model:visible="isShowListSortModal" :list-info="sortListInfo" />
     <ListUpdateModal v-model:visible="isShowListUpdateModal" />
   </div>
@@ -83,6 +89,7 @@ import { openUrl } from '@common/utils/electron'
 
 import musicSdk from '@renderer/utils/musicSdk'
 import DuplicateMusicModal from './components/DuplicateMusicModal.vue'
+import CrossListDuplicateMusicModal from './components/CrossListDuplicateMusicModal.vue'
 import ListSortModal from './components/ListSortModal.vue'
 import ListUpdateModal from './components/ListUpdateModal.vue'
 
@@ -108,11 +115,13 @@ import useDarg from './useDarg'
 import useEditList from './useEditList'
 import useListScroll from './useListScroll'
 import useDuplicate from './useDuplicate'
+import useCrossListDuplicate from './useCrossListDuplicate'
 
 export default {
   name: 'MyLists',
   components: {
     DuplicateMusicModal,
+    CrossListDuplicateMusicModal,
     ListSortModal,
     ListUpdateModal,
   },
@@ -134,6 +143,7 @@ export default {
     const { isShowListUpdateModal, handleUpdateSourceList } = useListUpdate()
     const { isShowListSortModal, sortListInfo, handleSortList } = useSort()
     const { isShowDuplicateMusicModal, duplicateListInfo, handleDuplicateList } = useDuplicate()
+    const { isShowCrossListDuplicateModal, handleCrossListDuplicate } = useCrossListDuplicate()
     const { handleRename, handleSaveListName, isShowNewList, isNewListLeave, handleCreateList } = useEditList({ dom_lists_list })
     useListScroll({ dom_lists_list })
 
@@ -232,6 +242,8 @@ export default {
       sortListInfo,
       isShowDuplicateMusicModal,
       duplicateListInfo,
+      isShowCrossListDuplicateModal,
+      handleCrossListDuplicate,
       handleSaveListName,
       isShowNewList,
       isNewListLeave,

@@ -9,7 +9,7 @@ import { createLocalMusicInfo } from '@renderer/utils/music'
 /**
  * 过滤列表中已播放的歌曲
  */
-export const filterMusicList = async({ playedList, listId, list, playerMusicInfo, dislikeInfo, isNext }: {
+export const filterMusicList = async ({ playedList, listId, list, playerMusicInfo, dislikeInfo, isNext }: {
   /**
    * 已播放列表
    */
@@ -128,7 +128,7 @@ export type SortFieldType = 'up' | 'down' | 'random'
  * @param localeId 排序语言
  * @returns
  */
-export const sortListMusicInfo = async(list: LX.Music.MusicInfo[], sortType: SortFieldType, fieldName: SortFieldName, localeId: string) => {
+export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: SortFieldType, fieldName: SortFieldName, localeId: string) => {
   // console.log(sortType, fieldName, localeId)
   // const locale = new Intl.Locale(localeId)
   switch (sortType) {
@@ -203,7 +203,7 @@ const variantRxp2 = /\s|'|\.|,|，|&|"|、|\(|\)|（|）|`|~|-|<|>|\||\/|\]|\[/g
  * @param isFilterVariant 是否过滤 Live Explicit 等歌曲名
  * @returns
  */
-export const filterDuplicateMusic = async(list: LX.Music.MusicInfo[], isFilterVariant: boolean = true) => {
+export const filterDuplicateMusic = async (list: LX.Music.MusicInfo[], isFilterVariant: boolean = true) => {
   type ListMapValue = Array<{ id: string, index: number, musicInfo: LX.Music.MusicInfo }>
   const listMap = new Map<string, ListMapValue>()
   const duplicateList = new Set<string>()
@@ -240,6 +240,93 @@ export const filterDuplicateMusic = async(list: LX.Music.MusicInfo[], isFilterVa
   const duplicateNames = Array.from(duplicateList)
   duplicateNames.sort((a, b) => a.localeCompare(b))
   return duplicateNames.map(name => listMap.get(name)!).flat()
+}
+
+/**
+ * 跨歌单重复歌曲位置信息
+ */
+export interface CrossListDuplicateLocation {
+  listId: string
+  listName: string
+  index: number
+}
+
+/**
+ * 跨歌单重复歌曲项
+ */
+export interface CrossListDuplicateItem {
+  musicInfo: LX.Music.MusicInfo
+  locations: CrossListDuplicateLocation[]
+}
+
+/**
+ * 检测跨歌单的重复歌曲
+ * @param listsData 所有歌单的数据
+ * @param isFilterVariant 是否过滤变体（Live、Explicit等）
+ * @returns 重复歌曲列表
+ */
+export const filterCrossListDuplicateMusic = async (
+  listsData: Array<{
+    listId: string
+    listName: string
+    musicList: LX.Music.MusicInfo[]
+  }>,
+  isFilterVariant: boolean = true
+): Promise<CrossListDuplicateItem[]> => {
+  // 使用 Map 存储：key = 歌曲名(标准化) + 歌手名, value = 该歌曲的所有出现位置
+  const musicMap = new Map<string, CrossListDuplicateItem>()
+  const duplicateKeys = new Set<string>()
+
+  // 遍历所有歌单
+  for (const { listId, listName, musicList } of listsData) {
+    musicList.forEach((musicInfo, index) => {
+      // 标准化歌曲名（参考 filterDuplicateMusic 的逻辑）
+      let musicNameKey: string
+      if (isFilterVariant) {
+        musicNameKey = musicInfo.name.toLowerCase().replace(variantRxp, '').replace(variantRxp2, '')
+        musicNameKey ||= musicInfo.name.toLowerCase().replace(/\s+/g, '')
+      } else {
+        musicNameKey = musicInfo.name.toLowerCase().trim()
+      }
+
+      // 添加歌手名到key中（与单歌单不同，这里需要考虑歌手）
+      const singerKey = musicInfo.singer?.toLowerCase().trim() || ''
+      const fullKey = `${musicNameKey}|||${singerKey}`
+
+      if (musicMap.has(fullKey)) {
+        // 已存在，添加新位置
+        const item = musicMap.get(fullKey)!
+        item.locations.push({ listId, listName, index })
+        duplicateKeys.add(fullKey)
+      } else {
+        // 首次出现
+        musicMap.set(fullKey, {
+          musicInfo,
+          locations: [{ listId, listName, index }]
+        })
+      }
+    })
+  }
+
+  // 只返回出现在多个位置的歌曲
+  const result: CrossListDuplicateItem[] = []
+  for (const key of duplicateKeys) {
+    const item = musicMap.get(key)!
+    // 按歌单名排序
+    item.locations.sort((a, b) => a.listName.localeCompare(b.listName))
+    result.push(item)
+  }
+
+  // 按歌曲名排序
+  result.sort((a, b) =>
+    a.musicInfo.name.localeCompare(b.musicInfo.name)
+  )
+
+  // 为每个item添加唯一id（用于虚拟列表的key）
+  return result.map((item, index) => ({
+    ...item,
+    id: `${item.musicInfo.id}_${index}`,
+  }))
 }
 
 export const searchListMusic = (list: LX.Music.MusicInfo[], text: string) => {
@@ -286,7 +373,7 @@ export const createSortedList = (list: LX.Music.MusicInfo[], position: number, i
  * 创建本地列表音乐信息
  * @param filePaths 文件路径
  */
-export const createLocalMusicInfos = async(filePaths: string[]): Promise<LX.Music.MusicInfoLocal[]> => {
+export const createLocalMusicInfos = async (filePaths: string[]): Promise<LX.Music.MusicInfoLocal[]> => {
   const list: LX.Music.MusicInfoLocal[] = []
   for await (const path of filePaths) {
     const musicInfo = await createLocalMusicInfo(path)
@@ -303,7 +390,7 @@ export const createLocalMusicInfos = async(filePaths: string[]): Promise<LX.Musi
  * @param lists 列表数据
  * @param isMerge 是否合并
  */
-export const exportPlayListToText = async(savePath: string, lists: Array<LX.List.MyDefaultListInfoFull | LX.List.MyLoveListInfoFull | LX.List.UserListInfoFull>, isMerge: boolean) => {
+export const exportPlayListToText = async (savePath: string, lists: Array<LX.List.MyDefaultListInfoFull | LX.List.MyLoveListInfoFull | LX.List.UserListInfoFull>, isMerge: boolean) => {
   const iconv = await import('iconv-lite')
 
   if (isMerge) {
@@ -324,7 +411,7 @@ export const exportPlayListToText = async(savePath: string, lists: Array<LX.List
  * @param isMerge 是否合并
  * @param header 表头名称
  */
-export const exportPlayListToCSV = async(savePath: string,
+export const exportPlayListToCSV = async (savePath: string,
   lists: Array<LX.List.MyDefaultListInfoFull | LX.List.MyLoveListInfoFull | LX.List.UserListInfoFull>,
   isMerge: boolean,
   header: string) => {

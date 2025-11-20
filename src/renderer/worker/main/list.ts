@@ -349,6 +349,30 @@ export const searchListMusic = (list: LX.Music.MusicInfo[], text: string) => {
 }
 
 /**
+ * 搜索所有歌单中的歌曲
+ * @param lists 所有歌单数据
+ * @param text 搜索文本
+ * @returns 搜索结果(包含歌单信息)
+ */
+export const searchAllListsMusic = (
+  lists: Array<{ id: string, name: string, musicList: LX.Music.MusicInfo[] }>,
+  text: string
+): Array<LX.Music.MusicInfo & { listId: string, listName: string }> => {
+  let result: Array<LX.Music.MusicInfo & { listId: string, listName: string }> = []
+
+  for (const list of lists) {
+    const matches = searchListMusic(list.musicList, text)
+    result.push(...matches.map(music => ({
+      ...music,
+      listId: list.id,
+      listName: list.name
+    })))
+  }
+
+  return result
+}
+
+/**
  * 创建排序后的列表
  * @param list 原始列表
  * @param position 新位置

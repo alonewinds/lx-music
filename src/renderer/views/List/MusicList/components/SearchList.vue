@@ -11,6 +11,14 @@
               @keyup.escape.prevent.exact="handleKeyEsc" @keydown.control.prevent="handle_key_mod_down" @keydown.meta.prevent="handle_key_mod_down"
               @keyup.control.prevent="handle_key_mod_up" @keyup.meta.prevent="handle_key_mod_up" @contextmenu="handleContextMenu"
             >
+            <button type="button" :title="isGlobal ? '搜索所有歌单' : '搜索当前歌单'" @click="toggleSearchScope">
+              <svg v-if="isGlobal" version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="70%" viewBox="0 0 24 24" space="preserve">
+                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+              <svg v-else version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="70%" viewBox="0 0 24 24" space="preserve">
+                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.22-7.52-4.28z"/>
+              </svg>
+            </button>
             <button type="button" @click="handleHide">
               <slot>
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="70%" viewBox="0 0 212.982 212.982" space="preserve">
@@ -27,6 +35,7 @@
                   <h3 :class="$style.text">{{ item.name }} - {{ item.singer }}</h3>
                   <h3 v-if="item.meta.albumName" :class="[$style.text, $style.albumName]">{{ item.meta.albumName }}</h3>
                 </div>
+                <div v-if="isGlobal && item.listName" :class="$style.listName">{{ item.listName }}</div>
                 <div :class="$style.source">{{ item.source }}</div>
               </li>
             </ul>
@@ -58,6 +67,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    loadAllLists: {
+      type: Function,
+      default: null,
+    },
   },
   emits: ['action'],
   data() {
@@ -73,6 +86,7 @@ export default {
       resultList: [],
       isModDown: false,
       isShow: false,
+      isGlobal: false,
     }
   },
   watch: {
@@ -213,7 +227,22 @@ export default {
     },
     async handleSearch() {
       if (!this.text.length) return this.resultList = []
-      this.resultList = await window.lx.worker.main.searchListMusic(toRaw(this.list), this.text)
+      
+      if (this.isGlobal && this.loadAllLists) {
+        try {
+          const lists = await this.loadAllLists()
+          this.resultList = await window.lx.worker.main.searchAllListsMusic(toRaw(lists), this.text)
+        } catch (err) {
+          console.error(err)
+          this.resultList = []
+        }
+      } else {
+        this.resultList = await window.lx.worker.main.searchListMusic(toRaw(this.list), this.text)
+      }
+    },
+    toggleSearchScope() {
+      this.isGlobal = !this.isGlobal
+      this.handleDelaySearch()
     },
   },
 }
@@ -349,6 +378,18 @@ export default {
   font-size: 12px;
   opacity: 0.6;
   .mixin-ellipsis-1();
+}
+.listName {
+  flex: none;
+  font-size: 11px;
+  padding: 2px 8px;
+  background-color: var(--color-primary-background-hover);
+  border-radius: 10px;
+  color: var(--color-font-label);
+  white-space: nowrap;
+  margin: 0 5px;
+  display: flex;
+  align-items: center;
 }
 .source {
   flex: none;

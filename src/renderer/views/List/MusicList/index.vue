@@ -96,7 +96,7 @@
     />
     <common-download-modal v-model:show="isShowDownload" :music-info="selectedDownloadMusicInfo" teleport="#view" :list-id="listId" />
     <common-download-multiple-modal v-model:show="isShowDownloadMultiple" :list="selectedList" teleport="#view" :list-id="listId" @confirm="removeAllSelect" />
-    <search-list :list="list" :visible="isShowSearchBar" @action="handleMusicSearchAction" />
+    <search-list :list="list" :load-all-lists="loadAllLists" :visible="isShowSearchBar" @action="handleMusicSearchAction" />
     <music-sort-modal v-model:show="isShowMusicSortModal" :music-info="selectedSortMusicInfo" :selected-num="selectedNum" @confirm="sortMusic" />
     <music-toggle-modal v-model:show="isShowMusicToggleModal" :music-info="selectedToggleMusicInfo" @toggle="toggleSource" />
     <base-menu v-model="isShowItemMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
@@ -121,6 +121,9 @@ import useSearch from './useSearch'
 import useListScroll from './useListScroll'
 import useMusicToggle from './useMusicToggle'
 import { appSetting } from '@renderer/store/setting'
+import { defaultList, loveList, userLists } from '@renderer/store/list/state'
+import { getListMusics } from '@renderer/store/list/action'
+import { LIST_IDS } from '@common/constants'
 export default {
   name: 'MusicList',
   components: {
@@ -254,6 +257,31 @@ export default {
       listRef,
     })
 
+    const loadAllLists = async () => {
+      const lists = []
+      
+      // 我的收藏
+      if (loveList.id !== LIST_IDS.TEMP) {
+        lists.push({
+          id: loveList.id,
+          name: window.i18n.t(loveList.name),
+          musicList: await getListMusics(loveList.id)
+        })
+      }
+      
+      // 用户歌单 (排除试听列表)
+      for (const list of userLists) {
+        if (list.id === LIST_IDS.TEMP) continue
+        lists.push({
+          id: list.id,
+          name: list.name,
+          musicList: await getListMusics(list.id)
+        })
+      }
+      
+      return lists
+    }
+
     const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll, dom_listContent })
 
 
@@ -360,6 +388,7 @@ export default {
       isShowMusicToggleModal,
       selectedToggleMusicInfo,
       toggleSource,
+      loadAllLists,
     }
   },
 }

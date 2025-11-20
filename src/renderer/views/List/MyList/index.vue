@@ -78,7 +78,7 @@
     </ul>
     <base-menu v-model="isShowMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
     <DuplicateMusicModal v-model:visible="isShowDuplicateMusicModal" :list-info="duplicateListInfo" />
-    <CrossListDuplicateMusicModal v-model:visible="isShowCrossListDuplicateModal" />
+    <CrossListDuplicateMusicModal v-model:visible="isShowCrossListDuplicateModal" @goto-list="handleGotoList" />
     <ListSortModal v-model:visible="isShowListSortModal" :list-info="sortListInfo" />
     <ListUpdateModal v-model:visible="isShowListUpdateModal" />
   </div>
@@ -206,6 +206,13 @@ export default {
       }).catch(_ => _)
     }
 
+    const handleGotoList = ({ listId, musicId }) => {
+      router.replace({
+        path: '/list',
+        query: { id: listId, musicId },
+      }).catch(_ => _)
+    }
+
     const handleMenuClick = (action) => {
       if (rightClickItemIndex.value < -2) return
       let index = rightClickItemIndex.value
@@ -254,6 +261,7 @@ export default {
       menus,
       menuLocation,
       handleListToggle,
+      handleGotoList,
       isModDown,
       hideMenu: handleMenuClick,
     }

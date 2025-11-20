@@ -133,6 +133,10 @@ export default {
       type: String,
       required: true,
     },
+    musicId: {
+      type: String,
+      default: null,
+    },
   },
   emits: ['show-menu'],
   setup(props, { emit }) {
@@ -146,9 +150,9 @@ export default {
       if (isAnimation) void restoreScroll(scrollIndex, isAnimation)
       // console.log('handleRestoreScroll', scrollIndex, isAnimation)
     }
-    const onLoadedList = () => {
+    const onLoadedList = (index) => {
       // console.log('restoreScroll', scrollIndex, isAnimation)
-      void restoreScroll(scrollIndex, isAnimation)
+      void restoreScroll(index ?? scrollIndex, isAnimation)
     }
 
     const {

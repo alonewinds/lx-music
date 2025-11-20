@@ -1,7 +1,7 @@
 <template>
   <div id="my-list" :class="$style.container" @click="handleContainerClick">
     <MyList ref="myList" :list-id="listId" @show-menu="$refs.musicList.handleMenuClick()" />
-    <MusicList ref="musicList" :list-id="listId" @show-menu="$refs.myList.handleMenuClick()" />
+    <MusicList ref="musicList" :list-id="listId" :music-id="musicId" @show-menu="$refs.myList.handleMenuClick()" />
   </div>
 </template>
 
@@ -36,6 +36,7 @@ export default {
     //   id = defaultList.id
     // }
     this.listId = id
+    this.musicId = to.query.musicId || null
     const scrollIndex = to.query.scrollIndex
     const isAnimation = from.query.id == to.query.id
     this.$refs.musicList?.handleRestoreScroll(scrollIndex, isAnimation)
@@ -51,10 +52,12 @@ export default {
   data() {
     return {
       listId: null,
+      musicId: null,
     }
   },
   created() {
     this.listId = this.$route.query.id
+    this.musicId = this.$route.query.musicId || null
   },
 }
 </script>

@@ -11,11 +11,11 @@ export default ({ props, listRef, list, handleRestoreScroll }) => {
     setListPosition(props.listId, listRef.value?.getScrollTop() || 0)
   }
 
-  const handleScrollList = (index, isAnimation, callback = () => {}) => {
+  const handleScrollList = (index, isAnimation, callback = () => { }) => {
     listRef.value.scrollToIndex(index, -150, isAnimation, callback)
   }
 
-  const restoreScroll = async(index, isAnimation) => {
+  const restoreScroll = async (index, isAnimation) => {
     // console.log(index, isAnimation)
     if (!list.value.length) return
     if (index == null) {
@@ -26,7 +26,7 @@ export default ({ props, listRef, list, handleRestoreScroll }) => {
       return
     }
 
-    handleScrollList(index, isAnimation)
+    handleScrollList(index, isAnimation ?? true)
   }
 
   onMounted(() => {

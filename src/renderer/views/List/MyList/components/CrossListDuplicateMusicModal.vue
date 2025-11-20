@@ -13,7 +13,13 @@
         <div :class="$style.textContent">
           <h3 :class="$style.text" :aria-label="`${item.musicInfo.name} - ${item.musicInfo.singer}`">{{ item.musicInfo.name }} - {{ item.musicInfo.singer }}</h3>
           <div :class="$style.locations">
-            <span v-for="loc in item.locations" :key="`${loc.listId}-${loc.index}`" :class="$style.locationTag">
+            <span 
+              v-for="loc in item.locations" 
+              :key="`${loc.listId}-${loc.index}`" 
+              :class="[$style.locationTag, $style.clickable]"
+              :title="`点击跳转到 ${loc.listName}`"
+              @click="handleGotoList(loc, item.musicInfo)"
+            >
               {{ loc.listName }}
             </span>
           </div>
@@ -44,7 +50,7 @@
 </template>
 
 <script>
-import { ref, computed, watch, markRawList } from '@common/utils/vueTools'
+import { ref, computed, watch, markRawList, nextTick } from '@common/utils/vueTools'
 import { playList } from '@renderer/core/player'
 import { removeListMusics, getListMusics } from '@renderer/store/list/action'
 import { defaultList, loveList, userLists } from '@renderer/store/list/state'
@@ -61,7 +67,7 @@ export default {
       default: false,
     },
   },
-  emits: ['update:visible'],
+  emits: ['update:visible', 'goto-list'],
   setup(props, { emit }) {
     const t = useI18n()
     const duplicateList = ref([])
@@ -122,6 +128,16 @@ export default {
       // 播放第一个位置的歌曲
       const firstLocation = item.locations[0]
       playList(firstLocation.listId, firstLocation.index)
+    }
+
+    const handleGotoList = (location, musicInfo) => {
+      // 关闭模态框
+      emit('update:visible', false)
+      
+      // 使用 setTimeout 确保模态框完全关闭后再触发跳转
+      setTimeout(() => {
+        emit('goto-list', { listId: location.listId, musicId: musicInfo.id })
+      }, 100)
     }
 
     const handleShowDeleteMenu = (item, index) => {
@@ -206,6 +222,7 @@ export default {
       menuLocation,
       deleteMenus,
       handlePlay,
+      handleGotoList,
       handleShowDeleteMenu,
       handleDeleteMenuClick,
     }
@@ -289,6 +306,16 @@ export default {
   border-radius: 10px;
   color: var(--color-font-label);
   white-space: nowrap;
+  
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: var(--color-primary-font-active);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .label {

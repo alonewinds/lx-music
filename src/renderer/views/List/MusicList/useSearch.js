@@ -24,6 +24,10 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
   const isShowSearchBar = ref(false)
   const searchList = ref([])
 
+  // 在这里初始化 router,这样在所有函数中都可以使用
+  const { useRouter } = require('@common/utils/vueRouter')
+  const router = useRouter()
+
   const handleShowSearchBar = () => {
     isShowSearchBar.value = true
   }
@@ -91,8 +95,9 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
     const { hasDislike } = require('@renderer/core/dislikeList')
     const { openUrl } = require('@common/utils/electron')
     const { getListMusics } = require('@renderer/store/list/action')
+    const { appSetting } = require('@renderer/store/setting')
     const musicSdk = require('@renderer/utils/musicSdk').default
-    const dialog = require('@renderer/plugins/Dialog').default
+    const { dialog } = require('@renderer/plugins/Dialog')
 
     switch (action) {
       case 'play':
@@ -120,16 +125,18 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         handleShowDownloadModal(-1, true, deepToRaw(item))
         break
       case 'search':
-        // 搜索
-        window.app_event.search(item.name)
+        // 搜索 - 跳转到搜索页面
+        router.push({
+          path: '/search',
+          query: {
+            text: `${item.name} ${item.singer}`,
+          },
+        })
         break
       case 'copyName':
         // 复制歌曲名
-        clipboardWriteText(`${item.name} - ${item.singer}`)
-        break
-      case 'toggleSource':
-        // 切换音源 - 这个功能需要在歌单上下文中,暂不支持
-        console.log('toggleSource not supported in search results')
+        const fileName = appSetting['download.fileName'].replace('歌名', item.name).replace('歌手', item.singer)
+        clipboardWriteText(fileName)
         break
       case 'sourceDetail':
         // 打开音源详情页

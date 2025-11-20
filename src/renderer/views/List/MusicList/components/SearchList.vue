@@ -118,7 +118,6 @@ export default {
       download: true,
       search: true,
       dislike: true,
-      toggleSource: true,
       sourceDetail: true,
     })
 
@@ -138,11 +137,6 @@ export default {
           name: t('list__play_later'),
           action: 'playLater',
           disabled: !itemMenuControl.playLater,
-        },
-        {
-          name: t('list__toggle_source'),
-          action: 'toggleSource',
-          disabled: !itemMenuControl.toggleSource,
         },
         {
           name: t('list__copy_name'),

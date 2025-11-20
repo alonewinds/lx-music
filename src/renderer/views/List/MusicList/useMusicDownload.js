@@ -5,11 +5,12 @@ export default ({ selectedList, list }) => {
   const isShowDownloadMultiple = ref(false)
   const musicInfo = ref(null)
 
-  const handleShowDownloadModal = (index, single) => {
+  const handleShowDownloadModal = (index, single, directMusicInfo) => {
     if (selectedList.value.length && !single) {
       isShowDownloadMultiple.value = true
     } else {
-      musicInfo.value = list.value[index]
+      // 如果直接传入了 musicInfo,使用它;否则从 list 中获取
+      musicInfo.value = directMusicInfo || list.value[index]
       nextTick(() => {
         isShowDownload.value = true
       })

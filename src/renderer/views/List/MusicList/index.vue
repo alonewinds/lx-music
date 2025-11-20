@@ -255,6 +255,7 @@ export default {
       setSelectedIndex,
       handlePlayMusic,
       listRef,
+      handleShowDownloadModal,
     })
 
     const loadAllLists = async () => {

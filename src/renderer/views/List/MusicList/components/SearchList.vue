@@ -29,17 +29,44 @@
           </div>
           <div v-if="resultList" ref="dom_scrollContainer" class="scroll" :class="$style.list" :style="listStyle">
             <ul ref="dom_list">
-              <li v-for="(item, index) in resultList" :key="item.songmid" :class="selectIndex === index ? $style.select : null" @mouseenter="selectIndex = index" @click="handleTemplistClick(index)">
+              <li v-for="(item, index) in resultList" :key="item.songmid" :class="selectIndex === index ? $style.select : null" @mouseenter="selectIndex = index" @click="handleTemplistClick(index)" @contextmenu.prevent="handleRightClick($event, index)">
                 <div :class="$style.img" />
                 <div :class="$style.text">
                   <h3 :class="$style.text">{{ item.name }} - {{ item.singer }}</h3>
                   <h3 v-if="item.meta.albumName" :class="[$style.text, $style.albumName]">{{ item.meta.albumName }}</h3>
                 </div>
+                
+                <!-- 操作按钮 -->
+                <div :class="$style.actions">
+                  <button 
+                    type="button" 
+                    :class="$style.actionBtn"
+                    :aria-label="$t('list__play')"
+                    @click.stop="handleAction('play', index)"
+                  >
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="100%" viewBox="0 0 287.386 287.386" space="preserve">
+                      <use xlink:href="#icon-testPlay" />
+                    </svg>
+                  </button>
+                  <button 
+                    v-if="assertApiSupport(item.source) && item.source != 'local'"
+                    type="button"
+                    :class="$style.actionBtn"
+                    :aria-label="$t('list__download')"
+                    @click.stop="handleAction('download', index)"
+                  >
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="100%" viewBox="0 0 475.078 475.077" space="preserve">
+                      <use xlink:href="#icon-download" />
+                    </svg>
+                  </button>
+                </div>
+                
                 <div v-if="isGlobal && item.listName" :class="$style.listName">{{ item.listName }}</div>
                 <div :class="$style.source">{{ item.source }}</div>
               </li>
             </ul>
           </div>
+          <base-menu v-model="isShowItemMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
         </div>
       </transition>
     </div>
@@ -49,7 +76,12 @@
 <script>
 import { debounce } from '@common/utils'
 import { clipboardReadText } from '@common/utils/electron'
-import { toRaw } from '@common/utils/vueTools'
+import { toRaw, computed, reactive, ref } from '@common/utils/vueTools'
+import { useRouter } from '@common/utils/vueRouter'
+import { assertApiSupport } from '@renderer/store/utils'
+import { useI18n } from '@renderer/plugins/i18n'
+import musicSdk from '@renderer/utils/musicSdk'
+import { hasDislike } from '@renderer/core/dislikeList'
 
 export default {
   props: {
@@ -73,6 +105,78 @@ export default {
     },
   },
   emits: ['action'],
+  setup() {
+    const t = useI18n()
+    const isShowItemMenu = ref(false)
+    const menuLocation = reactive({ x: 0, y: 0 })
+    const rightClickIndex = ref(-1)
+    const itemMenuControl = reactive({
+      play: true,
+      playLater: true,
+      copyName: true,
+      download: true,
+      search: true,
+      dislike: true,
+      toggleSource: true,
+      sourceDetail: true,
+    })
+
+    const menus = computed(() => {
+      return [
+        {
+          name: t('list__play'),
+          action: 'play',
+          disabled: !itemMenuControl.play,
+        },
+        {
+          name: t('list__download'),
+          action: 'download',
+          disabled: !itemMenuControl.download,
+        },
+        {
+          name: t('list__play_later'),
+          action: 'playLater',
+          disabled: !itemMenuControl.playLater,
+        },
+        {
+          name: t('list__toggle_source'),
+          action: 'toggleSource',
+          disabled: !itemMenuControl.toggleSource,
+        },
+        {
+          name: t('list__copy_name'),
+          action: 'copyName',
+          disabled: !itemMenuControl.copyName,
+        },
+        {
+          name: t('list__source_detail'),
+          action: 'sourceDetail',
+          disabled: !itemMenuControl.sourceDetail,
+        },
+        {
+          name: t('list__search'),
+          action: 'search',
+          disabled: !itemMenuControl.search,
+        },
+        {
+          name: t('list__dislike'),
+          action: 'dislike',
+          disabled: !itemMenuControl.dislike,
+        },
+      ]
+    })
+
+    return {
+      assertApiSupport,
+      isShowItemMenu,
+      menuLocation,
+      rightClickIndex,
+      itemMenuControl,
+      menus,
+      musicSdk,
+      hasDislike,
+    }
+  },
   data() {
     return {
       text: '',
@@ -166,11 +270,29 @@ export default {
     },
     handleTemplistClick(index) {
       if (index < 0) return
-      const id = this.resultList[index].id
-      this.sendEvent('listClick', {
-        index: this.list.findIndex(m => m.id == id),
-        isPlay: this.isModDown,
-      })
+      const item = this.resultList[index]
+      
+      if (this.isGlobal && item.listId) {
+        // 全局搜索模式: 跳转到目标歌单
+        const router = useRouter()
+        router.replace({
+          path: '/list',
+          query: { 
+            id: item.listId, 
+            musicId: item.id 
+          },
+        }).catch(_ => _)
+        
+        // 关闭搜索框
+        this.sendEvent('hide')
+      } else {
+        // 当前歌单搜索模式: 保持原有逻辑
+        const id = item.id
+        this.sendEvent('listClick', {
+          index: this.list.findIndex(m => m.id == id),
+          isPlay: this.isModDown,
+        })
+      }
     },
     handleHide() {
       this.sendEvent('hide')
@@ -243,6 +365,41 @@ export default {
     toggleSearchScope() {
       this.isGlobal = !this.isGlobal
       this.handleDelaySearch()
+    },
+    handleAction(action, index) {
+      const item = this.resultList[index]
+      this.sendEvent('action', { action, item, index })
+    },
+    handleRightClick(event, index) {
+      const item = this.resultList[index]
+      this.rightClickIndex = index
+      
+      // 更新菜单控制状态
+      this.itemMenuControl.sourceDetail = !!this.musicSdk[item.source]?.getMusicDetailPageUrl
+      this.itemMenuControl.download = this.assertApiSupport(item.source) && item.source != 'local'
+      this.itemMenuControl.dislike = !this.hasDislike(item)
+      
+      // 设置菜单位置
+      this.menuLocation.x = event.pageX
+      this.menuLocation.y = event.pageY
+      
+      // 显示菜单
+      this.isShowItemMenu = true
+    },
+    handleMenuClick(action) {
+      const item = this.resultList[this.rightClickIndex]
+      this.isShowItemMenu = false
+      
+      if (!action || this.rightClickIndex < 0) return
+      
+      // 发送菜单操作事件到父组件
+      this.sendEvent('menuAction', { 
+        action: action.action, 
+        item, 
+        index: this.rightClickIndex 
+      })
+      
+      this.rightClickIndex = -1
     },
   },
 }
@@ -400,6 +557,41 @@ export default {
   align-items: center;
   // transform: rotate(45deg);
   // background-color:
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  margin: 0 8px;
+  gap: 4px;
+}
+
+.actionBtn {
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 6px;
+  color: var(--color-button-font);
+  outline: none;
+  transition: background-color 0.2s ease;
+  line-height: 0;
+  opacity: 0.8;
+  
+  svg {
+    height: 14px;
+    width: 14px;
+  }
+  
+  &:hover {
+    background-color: var(--color-button-background-hover);
+    opacity: 1;
+  }
+  
+  &:active {
+    background-color: var(--color-button-background-active);
+  }
 }
 
 </style>

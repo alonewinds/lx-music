@@ -1,6 +1,6 @@
 import { ref, onBeforeUnmount } from '@common/utils/vueTools'
 
-export default ({ setSelectedIndex, handlePlayMusic, listRef }) => {
+export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownloadModal }) => {
   const isShowSearchBar = ref(false)
   const searchList = ref([])
 
@@ -8,17 +8,133 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef }) => {
     isShowSearchBar.value = true
   }
 
-  const handleMusicSearchAction = ({ action, data: { index, isPlay } = {} }) => {
+  const handleMusicSearchAction = ({ action, data }) => {
     isShowSearchBar.value = false
     switch (action) {
       case 'listClick':
-        if (index < 0) return
-        listRef.value.scrollToIndex(index, -150, true, () => {
-          setSelectedIndex(index)
+        if (data.index < 0) return
+        listRef.value.scrollToIndex(data.index, -150, true, () => {
+          setSelectedIndex(data.index)
           setTimeout(() => {
             setSelectedIndex(-1)
-            if (isPlay) handlePlayMusic(index)
+            if (data.isPlay) handlePlayMusic(data.index)
           }, 600)
+        })
+        break
+      case 'action':
+        // 处理按钮操作(播放、下载)
+        handleSearchAction(data)
+        break
+      case 'menuAction':
+        // 处理右键菜单操作
+        handleSearchMenuAction(data)
+        break
+    }
+  }
+
+  const handleSearchAction = ({ action, item }) => {
+    const { toRaw } = require('@common/utils/vueTools')
+
+    switch (action) {
+      case 'play':
+        // 在全局搜索模式下,item 包含 listId
+        if (item.listId) {
+          // 全局搜索结果:直接播放该歌曲
+          const { playList } = require('@renderer/core/player')
+          // 需要先找到歌曲在目标歌单中的索引
+          const { getListMusics } = require('@renderer/store/list/action')
+          void getListMusics(item.listId).then(list => {
+            const index = list.findIndex(m => m.id === item.id)
+            if (index >= 0) {
+              playList(item.listId, index)
+            }
+          })
+        } else {
+          // 当前歌单搜索结果:使用索引播放
+          const index = listRef.value.$props.list.findIndex(m => m.id === item.id)
+          if (index >= 0) {
+            handlePlayMusic(index, true)
+          }
+        }
+        break
+      case 'download':
+        // 使用 toRaw 清理对象,确保可以被序列化
+        handleShowDownloadModal(-1, true, toRaw(item))
+        break
+    }
+  }
+
+  const handleSearchMenuAction = ({ action, item }) => {
+    const { clipboardWriteText } = require('@common/utils/electron')
+    const { toRaw } = require('@common/utils/vueTools')
+    const { addTempPlayList } = require('@renderer/store/player/action')
+    const { addDislikeInfo } = require('@renderer/core/dislikeList')
+    const { playMusicInfo } = require('@renderer/store/player/state')
+    const { playNext, playList } = require('@renderer/core/player')
+    const { hasDislike } = require('@renderer/core/dislikeList')
+    const { openUrl } = require('@common/utils/electron')
+    const { getListMusics } = require('@renderer/store/list/action')
+    const musicSdk = require('@renderer/utils/musicSdk').default
+    const dialog = require('@renderer/plugins/Dialog').default
+
+    switch (action) {
+      case 'play':
+        // 播放歌曲
+        if (item.listId) {
+          // 全局搜索结果:直接播放
+          void getListMusics(item.listId).then(list => {
+            const index = list.findIndex(m => m.id === item.id)
+            if (index >= 0) {
+              playList(item.listId, index)
+            }
+          })
+        } else {
+          // 当前歌单搜索结果
+          const index = listRef.value.$props.list.findIndex(m => m.id === item.id)
+          if (index >= 0) handlePlayMusic(index)
+        }
+        break
+      case 'playLater':
+        // 稍后播放 - 使用 toRaw 清理对象
+        addTempPlayList([{ listId: item.listId || 'default', musicInfo: toRaw(item) }])
+        break
+      case 'download':
+        // 下载 - 使用 toRaw 清理对象
+        handleShowDownloadModal(-1, true, toRaw(item))
+        break
+      case 'search':
+        // 搜索
+        window.app_event.search(item.name)
+        break
+      case 'copyName':
+        // 复制歌曲名
+        clipboardWriteText(`${item.name} - ${item.singer}`)
+        break
+      case 'toggleSource':
+        // 切换音源 - 这个功能需要在歌单上下文中,暂不支持
+        console.log('toggleSource not supported in search results')
+        break
+      case 'sourceDetail':
+        // 打开音源详情页
+        if (musicSdk[item.source]?.getMusicDetailPageUrl) {
+          const url = musicSdk[item.source].getMusicDetailPageUrl(item)
+          if (url) openUrl(url)
+        }
+        break
+      case 'dislike':
+        // 不喜欢
+        void dialog.confirm({
+          message: item.singer
+            ? window.i18n.t('lists__dislike_music_singer_tip', { name: item.name, singer: item.singer })
+            : window.i18n.t('lists__dislike_music_tip', { name: item.name }),
+          cancelButtonText: window.i18n.t('cancel_button_text_2'),
+          confirmButtonText: window.i18n.t('confirm_button_text'),
+        }).then(confirm => {
+          if (!confirm) return
+          void addDislikeInfo([{ name: item.name, singer: item.singer }])
+          if (hasDislike(playMusicInfo.musicInfo)) {
+            playNext(true)
+          }
         })
         break
     }

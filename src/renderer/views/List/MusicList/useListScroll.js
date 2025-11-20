@@ -1,9 +1,9 @@
-import { onMounted, onBeforeUnmount } from '@common/utils/vueTools'
+import { onMounted, onBeforeUnmount, nextTick } from '@common/utils/vueTools'
 import { useRoute, useRouter } from '@common/utils/vueRouter'
 import { setListPosition, getListPosition } from '@renderer/utils/data'
 import { appSetting } from '@renderer/store/setting'
 
-export default ({ props, listRef, list, handleRestoreScroll }) => {
+export default ({ props, listRef, list, handleRestoreScroll, dom_listContent }) => {
   const route = useRoute()
   const router = useRouter()
 
@@ -12,7 +12,36 @@ export default ({ props, listRef, list, handleRestoreScroll }) => {
   }
 
   const handleScrollList = (index, isAnimation, callback = () => { }) => {
-    listRef.value.scrollToIndex(index, -150, isAnimation, callback)
+    // 获取容器高度和表头高度,计算偏移量使目标项出现在窗口正中央
+    const container = listRef.value?.$refs?.dom_scrollContainer
+    let offset = -150 // 默认偏移量
+
+    if (container && dom_listContent.value) {
+      const containerHeight = container.clientHeight
+      const itemHeight = listRef.value.$props.itemHeight
+
+      // 计算使目标项居中的偏移量
+      // 我们希望歌曲的中心对齐到容器的中心
+      offset = -(containerHeight / 2 - itemHeight / 2)
+
+      console.log('handleScrollList - index:', index, 'offset:', offset)
+    }
+
+    // 使用 nextTick 和 requestAnimationFrame 确保虚拟列表已经渲染完成
+    void nextTick(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          console.log('handleScrollList - 执行滚动')
+          listRef.value.scrollToIndex(index, offset, isAnimation, callback)
+
+          // 延迟检查实际滚动位置
+          setTimeout(() => {
+            const actualScrollTop = container?.scrollTop
+            console.log('handleScrollList - 实际 scrollTop:', actualScrollTop)
+          }, 500)
+        })
+      })
+    })
   }
 
   const restoreScroll = async (index, isAnimation) => {

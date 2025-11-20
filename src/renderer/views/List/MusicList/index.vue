@@ -254,7 +254,7 @@ export default {
       listRef,
     })
 
-    const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll })
+    const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll, dom_listContent })
 
 
     const handleListItemClick = (event, index) => {

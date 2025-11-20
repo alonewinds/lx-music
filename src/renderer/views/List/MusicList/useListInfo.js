@@ -45,22 +45,32 @@ export default ({ props, onLoadedList }) => {
   // 监听 musicId 变化，用于高亮显示指定歌曲
   watch(() => props.musicId, (musicId) => {
     if (!musicId || !list.value.length) return
-    
+
     // 查找歌曲在列表中的索引
     const index = list.value.findIndex(item => item.id === musicId)
     if (index !== -1) {
       // 设置选中索引以高亮显示
       selectedIndex.value = index
-      
+
       // 通知父组件滚动到该位置
       onLoadedList(index)
-      
-      // 3秒后取消高亮
-      setTimeout(() => {
-        if (selectedIndex.value === index) {
-          selectedIndex.value = -1
-        }
-      }, 3000)
+    }
+  }, {
+    immediate: true,
+  })
+
+  // 监听列表变化，确保在列表加载完成后能重新检查 musicId
+  watch(() => list.value.length, () => {
+    if (!props.musicId || !list.value.length) return
+
+    // 查找歌曲在列表中的索引
+    const index = list.value.findIndex(item => item.id === props.musicId)
+    if (index !== -1) {
+      // 设置选中索引以高亮显示
+      selectedIndex.value = index
+
+      // 通知父组件滚动到该位置
+      onLoadedList(index)
     }
   })
 

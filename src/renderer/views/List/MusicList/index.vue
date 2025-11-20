@@ -259,6 +259,8 @@ export default {
 
     const handleListItemClick = (event, index) => {
       if (rightClickSelectedIndex.value > -1) return
+      // 清除通过 musicId 设置的高亮状态
+      setSelectedIndex(-1)
       handleSelectData(index)
       doubleClickPlay(index)
     }

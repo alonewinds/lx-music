@@ -16,23 +16,40 @@
             <span 
               v-for="loc in item.locations" 
               :key="`${loc.listId}-${loc.index}`" 
-              :class="[$style.locationTag, $style.clickable]"
-              :title="`点击跳转到 ${loc.listName}`"
-              @click="handleGotoList(loc, item.musicInfo)"
+              :class="$style.locationTag"
             >
-              {{ loc.listName }}
+              <span 
+                :class="$style.locationName"
+                :title="`点击跳转到 ${loc.listName}`"
+                @click="handleGotoList(loc, item.musicInfo)"
+              >
+                {{ loc.listName }}
+              </span>
+              <span 
+                :class="$style.deleteIcon"
+                :title="`从 ${loc.listName} 删除`"
+                @click.stop="handleDeleteFromList(loc, item, index)"
+              >
+                ×
+              </span>
             </span>
           </div>
         </div>
         <div :class="$style.label">{{ item.musicInfo.source }}</div>
         <div :class="$style.label">{{ item.musicInfo.interval }}</div>
         <div :class="$style.btns">
-          <button type="button" :class="$style.btn" @click="handlePlay(item)">
+          <button type="button" :class="$style.btn" :title="$t('list__play')" @click="handlePlay(item)">
             <svg v-once version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="50%" viewBox="0 0 287.386 287.386" space="preserve">
               <use xlink:href="#icon-testPlay" />
             </svg>
           </button>
-          <button type="button" :class="$style.btn" @click="handleShowDeleteMenu(item, index)">
+          <button 
+            v-if="item.locations.length > 1"
+            type="button" 
+            :class="$style.btn" 
+            :title="'从所有歌单删除'"
+            @click="handleDeleteFromAll(item, index)"
+          >
             <svg v-once version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="50%" viewBox="0 0 212.982 212.982" space="preserve">
               <use xlink:href="#icon-delete" />
             </svg>
@@ -43,9 +60,6 @@
     <div v-else :class="$style.noItem">
       <p v-text="$t('no_item')" />
     </div>
-
-    <!-- 删除选择菜单 -->
-    <base-menu v-model="isShowDeleteMenu" :menus="deleteMenus" :xy="menuLocation" item-name="name" @menu-click="handleDeleteMenuClick" />
   </material-modal>
 </template>
 
@@ -74,12 +88,6 @@ export default {
     const listItemHeight = computed(() => {
       return Math.ceil((isFullscreen.value ? getFontSizeWithScreen() : appSetting['common.fontSize']) * 4.5)
     })
-
-    const isShowDeleteMenu = ref(false)
-    const menuLocation = ref({ x: 0, y: 0 })
-    const currentItem = ref(null)
-    const currentIndex = ref(-1)
-    const deleteMenus = ref([])
 
     const handleFilterList = async() => {
       try {
@@ -140,91 +148,76 @@ export default {
       }, 100)
     }
 
-    const handleShowDeleteMenu = (item, index) => {
-      currentItem.value = item
-      currentIndex.value = index
-      
-      // 构建删除菜单
-      const menus = []
-      
-      // 为每个位置添加删除选项
-      item.locations.forEach(loc => {
-        menus.push({
-          name: `从 "${loc.listName}" 删除`,
-          action: 'delete-from-list',
-          data: loc,
-        })
-      })
-      
-      // 如果有多个位置，添加"从所有歌单删除"选项
-      if (item.locations.length > 1) {
-        menus.push({
-          name: '---',
-          action: 'separator',
-        })
-        menus.push({
-          name: '从所有歌单删除',
-          action: 'delete-from-all',
-        })
+
+    // 从单个歌单删除
+    const handleDeleteFromList = async(loc, item, itemIndex) => {
+      try {
+        // 乐观更新 UI - 创建新的 locations 数组
+        const newLocations = item.locations.filter(l => l.listId !== loc.listId)
+        
+        // 如果剩余位置≤1,说明不再是重复歌曲,从列表中移除整个项目
+        if (newLocations.length <= 1) {
+          // 创建新的列表数组,移除当前项目
+          duplicateList.value = duplicateList.value.filter((_, idx) => idx !== itemIndex)
+        } else {
+          // 更新当前项目的 locations
+          // 创建新的列表数组,更新当前项目
+          duplicateList.value = duplicateList.value.map((listItem, idx) => {
+            if (idx === itemIndex) {
+              return {
+                ...listItem,
+                locations: newLocations,
+              }
+            }
+            return listItem
+          })
+        }
+        
+        // 后台删除 - 使用 nextTick 确保 UI 更新完成后再执行
+        await nextTick()
+        await removeListMusics({ listId: loc.listId, ids: [item.musicInfo.id] })
+      } catch (error) {
+        console.error('删除失败:', error)
+        // 如果失败,刷新列表恢复正确状态
+        await handleFilterList()
       }
-      
-      deleteMenus.value = menus
-      
-      // 显示菜单（在鼠标位置）
-      const event = window.event
-      menuLocation.value = { x: event.clientX, y: event.clientY }
-      isShowDeleteMenu.value = true
     }
 
-    const handleDeleteMenuClick = async(action) => {
-      isShowDeleteMenu.value = false
+
+    // 从所有歌单删除
+    const handleDeleteFromAll = async(item, itemIndex) => {
+      const confirmed = await dialog.confirm({
+        message: `确定要从所有歌单中删除 "${item.musicInfo.name}" 吗？`,
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+      })
       
-      // 如果 action 为 null 或 undefined（用户点击其他地方关闭菜单），直接返回
-      if (!action || !currentItem.value) {
-        currentItem.value = null
-        currentIndex.value = -1
-        return
-      }
+      if (!confirmed) return
       
-      if (action.action === 'delete-from-list') {
-        // 从单个歌单删除
-        const loc = action.data
-        await removeListMusics({ listId: loc.listId, ids: [currentItem.value.musicInfo.id] })
+      try {
+        // 乐观更新 - 创建新的列表数组,移除当前项目
+        duplicateList.value = duplicateList.value.filter((_, idx) => idx !== itemIndex)
         
-        // 刷新列表
-        await handleFilterList()
-      } else if (action.action === 'delete-from-all') {
-        // 从所有歌单删除
-        const confirmed = await dialog.confirm({
-          message: `确定要从所有歌单中删除 "${currentItem.value.musicInfo.name}" 吗？`,
-          confirmButtonText: '删除',
-        })
-        
-        if (confirmed) {
-          // 从所有位置删除
-          for (const loc of currentItem.value.locations) {
-            await removeListMusics({ listId: loc.listId, ids: [currentItem.value.musicInfo.id] })
-          }
-          
-          // 刷新列表
-          await handleFilterList()
+        // 后台删除所有位置 - 使用 nextTick 确保 UI 更新完成后再执行
+        await nextTick()
+        for (const loc of item.locations) {
+          await removeListMusics({ listId: loc.listId, ids: [item.musicInfo.id] })
         }
+      } catch (error) {
+        console.error('删除失败:', error)
+        // 如果失败,刷新列表恢复正确状态
+        await handleFilterList()
       }
-      
-      currentItem.value = null
-      currentIndex.value = -1
     }
+
 
     return {
       listItemHeight,
       duplicateList,
-      isShowDeleteMenu,
-      menuLocation,
-      deleteMenus,
       handlePlay,
       handleGotoList,
-      handleShowDeleteMenu,
-      handleDeleteMenuClick,
+      handleDeleteFromList,
+      handleDeleteFromAll,
     }
   },
 }
@@ -306,16 +299,43 @@ export default {
   border-radius: 10px;
   color: var(--color-font-label);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
   
-  &.clickable {
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background-color: var(--color-primary-font-active);
-      transform: translateY(-1px);
-    }
+  &:hover {
+    background-color: var(--color-primary-font-active);
   }
+}
+
+.locationName {
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.deleteIcon {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  color: #ff4444;
+  
+  &:hover {
+    opacity: 1 !important;
+    transform: scale(1.3);
+    color: #ff0000;
+  }
+}
+
+.locationTag:hover .deleteIcon {
+  opacity: 0.6;
 }
 
 .label {

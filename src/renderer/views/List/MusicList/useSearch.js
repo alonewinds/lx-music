@@ -33,9 +33,14 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
   }
 
   const handleMusicSearchAction = ({ action, data }) => {
-    isShowSearchBar.value = false
     switch (action) {
+      case 'hide':
+        // 点击关闭按钮 - 关闭搜索栏
+        isShowSearchBar.value = false
+        break
       case 'listClick':
+        // 点击歌曲跳转到所属歌单 - 需要关闭搜索栏
+        isShowSearchBar.value = false
         if (data.index < 0) return
         listRef.value.scrollToIndex(data.index, -150, true, () => {
           setSelectedIndex(data.index)
@@ -46,11 +51,11 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         })
         break
       case 'action':
-        // 处理按钮操作(播放、下载)
+        // 处理按钮操作(播放、下载) - 不关闭搜索栏
         handleSearchAction(data)
         break
       case 'menuAction':
-        // 处理右键菜单操作
+        // 处理右键菜单操作 - 根据具体操作决定是否关闭
         handleSearchMenuAction(data)
         break
     }
@@ -80,6 +85,8 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         }
         break
       case 'download':
+        // 下载 - 关闭搜索栏
+        isShowSearchBar.value = false
         // 使用 deepToRaw 深度清理对象,确保可以被序列化
         handleShowDownloadModal(-1, true, deepToRaw(item))
         break
@@ -121,11 +128,14 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         addTempPlayList([{ listId: item.listId || 'default', musicInfo: deepToRaw(item) }])
         break
       case 'download':
-        // 下载 - 使用 deepToRaw 清理对象
+        // 下载 - 关闭搜索栏
+        isShowSearchBar.value = false
+        // 使用 deepToRaw 清理对象
         handleShowDownloadModal(-1, true, deepToRaw(item))
         break
       case 'search':
-        // 搜索 - 跳转到搜索页面
+        // 搜索 - 跳转到搜索页面,需要关闭搜索栏
+        isShowSearchBar.value = false
         router.push({
           path: '/search',
           query: {

@@ -37,6 +37,12 @@
               need="need" value="source" :disabled="disabledSortFislds" :label="$t('list_sort_modal_by_source')"
             />
           </li>
+          <li :class="$style.listItem">
+            <base-checkbox
+              id="list_sort_modal_field_play_count" v-model="sortField" name="list_sort_modal_field"
+              need="need" value="playCount" :disabled="disabledSortFislds" :label="$t('list_sort_modal_by_play_count')"
+            />
+          </li>
         </ul>
       </section>
       <section>
@@ -57,7 +63,7 @@
           <li :class="$style.listItem">
             <base-checkbox
               id="list_sort_modal_type_random" v-model="sortType" name="list_sort_modal_type"
-              need="need" value="random" :label="$t('list_sort_modal_by_random')"
+              need="need" value="random" :disabled="disabledRandomSort" :label="$t('list_sort_modal_by_random')"
             />
           </li>
         </ul>
@@ -74,6 +80,7 @@
 import { ref, computed } from '@common/utils/vueTools'
 // import { dialog } from '@renderer/plugins/Dialog'
 import { getListMusics, updateListMusicsPosition } from '@renderer/store/list/action'
+import { getBatchPlayCount } from '@renderer/store/playCount'
 import { useI18n } from '@root/lang'
 import { LIST_IDS } from '@common/constants'
 
@@ -113,7 +120,15 @@ export default {
       // })) return
 
       let list = [...(await getListMusics(props.listInfo.id))]
-      list = await window.lx.worker.main.sortListMusicInfo(list, sortType.value, sortField.value, window.i18n.locale)
+      let playCounts
+      if (sortField.value == 'playCount') {
+        const ids = list.map(m => m.id)
+        const map = await getBatchPlayCount(ids)
+        playCounts = Object.fromEntries(map)
+        console.log('[PlayCount] Sorting by play count, data:', playCounts)
+      }
+      console.log('[PlayCount] Sending to worker:', { sortType: sortType.value, sortField: sortField.value, playCountsSize: playCounts ? Object.keys(playCounts).length : 0 })
+      list = await window.lx.worker.main.sortListMusicInfo(list, sortType.value, sortField.value, window.i18n.locale, playCounts)
       console.log(sortType.value, sortField.value)
 
       closeModal()
@@ -135,10 +150,15 @@ export default {
       return sortType.value == 'random'
     })
 
+    const disabledRandomSort = computed(() => {
+      return sortField.value == 'playCount'
+    })
+
     return {
       sortField,
       sortType,
       disabledSortFislds,
+      disabledRandomSort,
       closeModal,
       handleSort,
       handleAfterLeave,

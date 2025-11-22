@@ -118,7 +118,7 @@ const getIntv = (musicInfo: LX.Music.MusicInfo) => {
   return intv
 }
 
-export type SortFieldName = 'name' | 'singer' | 'albumName' | 'interval' | 'source'
+export type SortFieldName = 'name' | 'singer' | 'albumName' | 'interval' | 'source' | 'playCount'
 export type SortFieldType = 'up' | 'down' | 'random'
 /**
  * 排序歌曲
@@ -128,7 +128,7 @@ export type SortFieldType = 'up' | 'down' | 'random'
  * @param localeId 排序语言
  * @returns
  */
-export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: SortFieldType, fieldName: SortFieldName, localeId: string) => {
+export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: SortFieldType, fieldName: SortFieldName, localeId: string, playCounts?: Record<string, number>) => {
   // console.log(sortType, fieldName, localeId)
   // const locale = new Intl.Locale(localeId)
   switch (sortType) {
@@ -160,6 +160,19 @@ export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: So
               } else return b.meta.albumName == null ? 1 : a.meta.albumName.localeCompare(b.meta.albumName, localeId)
             })
             break
+          case 'playCount': {
+            if (!playCounts) {
+              console.log('[Worker] No playCounts provided for sorting (up)')
+              break
+            }
+            console.log('[Worker] Sorting by playCount (up), sample data:', Object.keys(playCounts).slice(0, 3))
+            list.sort((a, b) => {
+              const countA = playCounts[a.id] ?? 0
+              const countB = playCounts[b.id] ?? 0
+              return countA - countB
+            })
+            break
+          }
         }
       }
       break
@@ -188,6 +201,20 @@ export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: So
               } else return b.meta.albumName == null ? -1 : b.meta.albumName.localeCompare(a.meta.albumName, localeId)
             })
             break
+          case 'playCount': {
+            if (!playCounts) {
+              console.log('[Worker] No playCounts provided for sorting')
+              break
+            }
+            console.log('[Worker] Sorting by playCount (down), sample data:', Object.keys(playCounts).slice(0, 3), playCounts[Object.keys(playCounts)[0]])
+            list.sort((a, b) => {
+              const countA = playCounts[a.id] ?? 0
+              const countB = playCounts[b.id] ?? 0
+              // console.log(`[Worker] Comparing ${a.id}(${countA}) vs ${b.id}(${countB})`)
+              return countB - countA
+            })
+            break
+          }
         }
       }
       break

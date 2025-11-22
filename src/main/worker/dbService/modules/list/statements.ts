@@ -144,6 +144,17 @@ export const createMusicInfoByMusicInfoIdQueryStatement = () => {
     WHERE "id"=?`)
 }
 
+/**
+ * 创建根据音乐名字与歌手查询音乐信息语句
+ * @returns 查询语句
+ */
+export const createMusicInfoByNameSingerQueryStatement = () => {
+  const db = getDB()
+  return db.prepare<[string, string]>(`SELECT "id", "name", "singer", "source", "interval", "meta", "listId"
+    FROM "main"."my_list_music_info"
+    WHERE "name"=? AND "singer"=?`)
+}
+
 
 /**
  * 创建音乐信息排序插入语句

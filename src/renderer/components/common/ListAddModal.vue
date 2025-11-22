@@ -72,7 +72,7 @@ export default {
 
     const checkMusicExist = (musicInfo) => {
       const mid = musicInfo.id
-      void getMusicExistListIds(mid).then(ids => {
+      void getMusicExistListIds(musicInfo).then(ids => {
         if (mid != musicInfo.id) return
         for (const list of lists.value) {
           if (ids.includes(list.id)) list.isExist = true

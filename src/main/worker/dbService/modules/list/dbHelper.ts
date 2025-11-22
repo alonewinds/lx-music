@@ -17,6 +17,7 @@ import {
   createMusicInfoOrderClearStatement,
   createMusicInfoByListAndMusicInfoIdQueryStatement,
   createMusicInfoByMusicInfoIdQueryStatement,
+  createMusicInfoByNameSingerQueryStatement,
 } from './statements'
 
 const idFixRxp = /\.0$/
@@ -288,6 +289,17 @@ export const queryMusicInfoByListIdAndMusicInfoId = (listId: string, musicInfoId
 export const queryMusicInfoByMusicInfoId = (id: string) => {
   const musicInfoByMusicInfoIdQueryStatement = createMusicInfoByMusicInfoIdQueryStatement()
   return musicInfoByMusicInfoIdQueryStatement.all(id) as LX.DBService.MusicInfo[]
+}
+
+/**
+ * 创建根据音乐名字与歌手查询所有列表的音乐信息
+ * @param name 音乐名字
+ * @param singer 歌手
+ * @returns
+ */
+export const queryMusicInfoByNameSinger = (name: string, singer: string) => {
+  const musicInfoByNameSingerQueryStatement = createMusicInfoByNameSingerQueryStatement()
+  return musicInfoByNameSingerQueryStatement.all(name, singer) as LX.DBService.MusicInfo[]
 }
 
 /**

@@ -13,6 +13,7 @@ import {
   queryMusicInfoByListId,
   queryMusicInfoByListIdAndMusicInfoId,
   queryMusicInfoByMusicInfoId,
+  queryMusicInfoByNameSinger,
   removeMusicInfoByListId,
   removeMusicInfos,
   updateMusicInfoOrder,
@@ -373,6 +374,25 @@ export const listDataOverwrite = (myListData: MakeOptional<LX.List.ListDataFull,
 /**
  * 检查音乐是否存在列表中
  * @param listId 列表id
+/**
+ * 将时间字符串转换为秒数
+ * @param timeStr 时间字符串 (mm:ss 或 hh:mm:ss)
+ * @returns 秒数
+ */
+const timeToSeconds = (timeStr: string): number => {
+  const parts = timeStr.split(':').map(Number)
+  let seconds = 0
+  if (parts.length === 3) {
+    seconds += parts[0] * 3600 + parts[1] * 60 + parts[2]
+  } else if (parts.length === 2) {
+    seconds += parts[0] * 60 + parts[1]
+  }
+  return seconds
+}
+
+/**
+ * 检查音乐是否存在列表中
+ * @param listId 列表id
  * @param musicInfoId 音乐id
  * @returns
  */
@@ -383,10 +403,30 @@ export const checkListExistMusic = (listId: string, musicInfoId: string): boolea
 
 /**
  * 获取所有存在该音乐的列表id
- * @param musicInfoId 音乐id
+ * @param musicInfo 音乐信息
  * @returns
  */
-export const getMusicExistListIds = (musicInfoId: string): string[] => {
-  const musicInfos = queryMusicInfoByMusicInfoId(musicInfoId)
-  return musicInfos.map(m => m.listId)
+export const getMusicExistListIds = (musicInfo: LX.Music.MusicInfo): string[] => {
+  const musicInfos = queryMusicInfoByMusicInfoId(musicInfo.id)
+  const musicInfosByNameSinger = queryMusicInfoByNameSinger(musicInfo.name, musicInfo.singer)
+
+  const listIds = new Set<string>()
+  for (const info of musicInfos) listIds.add(info.listId)
+
+  // 模糊匹配时长，允许 3 秒误差
+  if (musicInfo.interval) {
+    const targetSeconds = timeToSeconds(musicInfo.interval)
+    for (const info of musicInfosByNameSinger) {
+      if (!info.interval) continue
+      const currentSeconds = timeToSeconds(info.interval)
+      if (Math.abs(targetSeconds - currentSeconds) <= 3) {
+        listIds.add(info.listId)
+      }
+    }
+  } else {
+    // 如果当前歌曲没有时长信息，则回退到仅匹配歌名和歌手
+    for (const info of musicInfosByNameSinger) listIds.add(info.listId)
+  }
+
+  return Array.from(listIds)
 }

@@ -13,8 +13,8 @@
             <use xlink:href="#icon-refresh" />
           </svg>
         </button>
-        <button :class="$style.listsAdd" aria-label="查找全部重复" @click="handleCrossListDuplicate">
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="70%" viewBox="0 0 30.239 30.239" space="preserve">
+        <button :class="$style.listsAdd" aria-label="查找重复歌曲" @click="handleCrossListDuplicate">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="65%" viewBox="0 0 30.239 30.239" space="preserve">
             <use xlink:href="#icon-search" />
           </svg>
         </button>

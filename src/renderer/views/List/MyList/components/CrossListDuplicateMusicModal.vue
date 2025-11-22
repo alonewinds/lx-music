@@ -1,7 +1,7 @@
 <template>
-  <material-modal :show="visible" bg-close teleport="#view" width="70%" max-width="1000px" @close="$emit('update:visible', false)">
+  <material-modal :show="visible" bg-close teleport="#view" width="70%" max-width="1000px" background-color="var(--color-primary-light-600-alpha-200)" @close="$emit('update:visible', false)">
     <div :class="$style.header">
-      <h2>全歌单重复歌曲检索</h2>
+      <h2>查找重复歌曲</h2>
       <p v-if="duplicateList.length">共找到 {{ duplicateList.length }} 首重复歌曲</p>
     </div>
     <base-virtualized-list

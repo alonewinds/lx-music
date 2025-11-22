@@ -65,6 +65,10 @@ export default {
       type: String,
       default: 'auto',
     },
+    backgroundColor: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['after-enter', 'after-leave', 'close'],
   data() {
@@ -156,6 +160,7 @@ export default {
         width: this.width,
         height: this.height,
         maxHeight: this.maxHeight,
+        backgroundColor: this.backgroundColor,
       }
     },
     filter() {

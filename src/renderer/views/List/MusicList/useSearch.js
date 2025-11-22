@@ -44,10 +44,7 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         if (data.index < 0) return
         listRef.value.scrollToIndex(data.index, -150, true, () => {
           setSelectedIndex(data.index)
-          setTimeout(() => {
-            setSelectedIndex(-1)
-            if (data.isPlay) handlePlayMusic(data.index)
-          }, 600)
+          if (data.isPlay) handlePlayMusic(data.index)
         })
         break
       case 'action':

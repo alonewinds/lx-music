@@ -94,7 +94,7 @@ import ListSortModal from './components/ListSortModal.vue'
 import ListUpdateModal from './components/ListUpdateModal.vue'
 
 import { defaultList, loveList, userLists, fetchingListStatus } from '@renderer/store/list/state'
-import { removeUserList } from '@renderer/store/list/action'
+import { removeUserList, clearListMusics } from '@renderer/store/list/action'
 
 import { ref, watch } from '@common/utils/vueTools'
 import { useRouter } from '@common/utils/vueRouter'
@@ -174,6 +174,15 @@ export default {
       })
     }
 
+    const handleClearPlaylist = async(listInfo) => {
+      if (!await dialog.confirm({
+        message: t('list_sort_modal_tip_confirm'),
+        confirmButtonText: t('confirm_button_text'),
+        cancelButtonText: t('cancel_button_text'),
+      })) return
+      void clearListMusics([listInfo.id])
+    }
+
     const {
       menus,
       menuLocation,
@@ -191,6 +200,7 @@ export default {
       handleDuplicateList,
       handleRename,
       handleRemove,
+      handleClearPlaylist,
     })
 
     const handleListsItemRigthClick = (event, index) => {

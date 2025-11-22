@@ -15,6 +15,7 @@ export default ({
   handleExportList,
   handleUpdateSourceList,
   handleRemove,
+  handleClearPlaylist,
 }) => {
   const menuControl = reactive({
     rename: true,
@@ -26,6 +27,7 @@ export default ({
     export: true,
     sync: false,
     remove: true,
+    clear: false,
   })
   const t = useI18n()
   const menuLocation = reactive({ x: 0, y: 0 })
@@ -74,6 +76,11 @@ export default ({
         disabled: !menuControl.export,
       },
       {
+        name: '清空播放列表',
+        action: 'clear',
+        disabled: !menuControl.clear,
+      },
+      {
         name: t('lists__remove'),
         action: 'remove',
         disabled: !menuControl.remove,
@@ -100,14 +107,21 @@ export default ({
     let source
     switch (index) {
       case -1:
+        menuControl.rename = false
+        menuControl.remove = false
+        menuControl.sync = false
+        menuControl.clear = false
+        break
       case -2:
         menuControl.rename = false
         menuControl.remove = false
         menuControl.sync = false
+        menuControl.clear = true
         break
       default:
         menuControl.rename = true
         menuControl.remove = true
+        menuControl.clear = false
         source = userLists[index].source
         menuControl.sync = !!source && !!musicSdk[source]?.songList
         break
@@ -175,6 +189,9 @@ export default ({
         break
       case 'sync':
         handleUpdateSourceList(listInfo)
+        break
+      case 'clear':
+        handleClearPlaylist(listInfo)
         break
       case 'remove':
         handleRemove(listInfo)

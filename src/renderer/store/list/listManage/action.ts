@@ -107,6 +107,7 @@ const overwriteUserList = (lists: LX.List.UserListInfo[]) => {
 
 
 export const listDataOverwrite = ({ defaultList, loveList, userList, tempList }: MakeOptional<LX.List.ListDataFull, 'tempList'>): string[] => {
+  if (!userList || !defaultList || !loveList) return []
   const updatedListIds: string[] = []
   const newUserIds: string[] = []
   const newUserListInfos = userList.map(({ list, ...listInfo }) => {
@@ -286,7 +287,7 @@ export const listMusicUpdateInfo = (musicInfos: LX.List.ListActionMusicUpdate): 
   return Array.from(updateListIds)
 }
 
-export const listMusicUpdatePosition = async(listId: string, position: number, ids: string[]): Promise<string[]> => {
+export const listMusicUpdatePosition = async (listId: string, position: number, ids: string[]): Promise<string[]> => {
   let targetList = allMusicList.get(listId)
   if (!targetList) return listId == loveList.id ? [listId] : []
 

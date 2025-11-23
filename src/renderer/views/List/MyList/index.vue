@@ -20,7 +20,7 @@
         </button>
       </div>
     </div>
-    <ul ref="dom_lists_list" class="scroll" :class="[$style.listsContent, { [$style.sortable]: isModDown }]">
+    <ul ref="dom_lists_list" class="scroll" :class="[$style.listsContent, { [$style.sortable]: isDragging }]">
       <li
         class="default-list" :class="[$style.listsItem, {[$style.active]: defaultList.id == listId}, {[$style.clicked]: rightClickItemIndex == -2}, {[$style.fetching]: fetchingListStatus[defaultList.id]}]"
         :aria-label="$t(defaultList.name)" :aria-selected="defaultList.id == listId"
@@ -230,7 +230,7 @@ export default {
       menuClick(action, index)
     }
 
-    const { isModDown } = useDarg({ dom_lists_list, handleMenuClick, handleSaveListName })
+    const { isDragging } = useDarg({ dom_lists_list, handleMenuClick, handleSaveListName })
 
 
     watch(() => props.listId, (listId) => {
@@ -272,7 +272,7 @@ export default {
       menuLocation,
       handleListToggle,
       handleGotoList,
-      isModDown,
+      isDragging,
       hideMenu: handleMenuClick,
     }
   },

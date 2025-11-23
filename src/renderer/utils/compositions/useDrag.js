@@ -4,7 +4,7 @@ import { clearDownKeys } from '@renderer/event'
 
 Sortable.mount(new AutoScroll())
 
-const noop = () => {}
+const noop = () => { }
 
 export default ({ dom_list, dragingItemClassName, filter, onUpdate, onStart = noop, onEnd = noop }) => {
   let sortable
@@ -12,7 +12,7 @@ export default ({ dom_list, dragingItemClassName, filter, onUpdate, onStart = no
   onMounted(() => {
     sortable = Sortable.create(dom_list.value, {
       animation: 150,
-      disabled: true,
+      disabled: false,
       forceFallback: false,
       filter: filter ? '.' + filter : null,
       ghostClass: dragingItemClassName,
@@ -27,7 +27,7 @@ export default ({ dom_list, dragingItemClassName, filter, onUpdate, onStart = no
       },
       onUnchoose() {
         onEnd()
-        // 处于拖动状态期间，键盘事件无法监听，拖动结束手动清理按下的键
+        // 处于拖动状态期间,键盘事件无法监听,拖动结束手动清理按下的键
         // window.app_event.emit(eventBaseName.setClearDownKeys)
         clearDownKeys()
       },

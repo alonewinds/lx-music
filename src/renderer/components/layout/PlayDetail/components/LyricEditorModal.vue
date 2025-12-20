@@ -87,12 +87,14 @@ teleport(to="#root")
 
       //- 底部操作栏
       div(:class="$style.footer")
-        base-btn(:class="$style.cancelBtn" @click="handleCancel") {{ $t('lyric_editor__cancel') }}
+        base-btn(:class="$style.footerBtn" @click="handleCopy") {{ $t('lyric_editor__copy') }}
+        base-btn(:class="$style.footerBtn" @click="handleCancel") {{ $t('btn_cancel') }}
         base-btn(
-          :class="$style.saveBtn"
+          :class="$style.footerBtn"
+          color="primary"
           :disabled="lines.length === 0"
           @click="handleSave"
-        ) {{ $t('lyric_editor__save') }}
+        ) {{ $t('btn_save') }}
 </template>
 
 <script>
@@ -263,6 +265,17 @@ export default {
       emit('close')
     }
 
+    // 复制歌词
+    const handleCopy = async () => {
+      const lrc = buildLrcFromLines(lines.value, timestamps.value)
+      try {
+        await navigator.clipboard.writeText(lrc)
+        // 可以添加一个简单的提示，这里暂且省略或复用已有的提示机制
+      } catch (err) {
+        console.error('Failed to copy lyric:', err)
+      }
+    }
+
     // 键盘快捷键
     const handleKeydown = (e) => {
       if (!props.visible) return
@@ -345,6 +358,7 @@ export default {
       handleUndo,
       handleLineClick,
       handleSave,
+      handleCopy,
       handleCancel,
       handleSeek,
       handleSeekStart,

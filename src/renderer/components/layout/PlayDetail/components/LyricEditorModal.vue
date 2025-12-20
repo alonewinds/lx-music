@@ -3,7 +3,6 @@ teleport(to="#root")
   div(
     v-if="visible"
     :class="$style.overlay"
-    @click.self="handleCancel"
   )
     div(:class="$style.modal")
       //- 标题栏
@@ -58,6 +57,7 @@ teleport(to="#root")
             div(
               v-for="(line, index) in lines"
               :key="index"
+              :data-index="index"
               :class="[$style.lineItem, { [$style.active]: index === currentLineIndex, [$style.stamped]: timestamps[index] >= 0 }]"
               @click="handleLineClick(index)"
             )
@@ -167,10 +167,30 @@ export default {
 
     // 处理文本输入
     const handleTextInput = () => {
-      lines.value = splitLyricText(rawText.value)
-      // 重置时间戳数组
-      timestamps.value = new Array(lines.value.length).fill(-1)
-      currentLineIndex.value = 0
+      const newLines = splitLyricText(rawText.value)
+      const oldTimestamps = timestamps.value
+      
+      // 尝试保留时间戳
+      if (newLines.length === oldTimestamps.length) {
+        // 行数未变（如修改错别字），直接更新文本，完整保留时间戳
+        lines.value = newLines
+        // timestamps.value 保持不变
+      } else {
+        // 行数变化（如增删行）
+        // 策略：按索引保留现有时间戳，多出的补 -1
+        const newTimestamps = new Array(newLines.length).fill(-1)
+        const count = Math.min(newLines.length, oldTimestamps.length)
+        for (let i = 0; i < count; i++) {
+          newTimestamps[i] = oldTimestamps[i]
+        }
+        lines.value = newLines
+        timestamps.value = newTimestamps
+      }
+      
+      // 修正当前行索引，避免越界，而不是重置为 0
+      if (currentLineIndex.value >= lines.value.length) {
+        currentLineIndex.value = Math.max(0, lines.value.length - 1)
+      }
     }
 
     // 播放/暂停切换
@@ -225,10 +245,9 @@ export default {
         const container = linesContainerRef.value
         if (!container) return
 
-        const lineElements = container.querySelectorAll('[class*="lineItem"]')
-        const currentElement = lineElements[currentLineIndex.value]
+        const currentElement = container.querySelector(`[data-index="${currentLineIndex.value}"]`)
         if (currentElement) {
-          currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          currentElement.scrollIntoView({ behavior: 'auto', block: 'center' })
         }
       })
     }

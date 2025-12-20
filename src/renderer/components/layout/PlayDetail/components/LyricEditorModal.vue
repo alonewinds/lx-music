@@ -39,8 +39,15 @@ teleport(to="#root")
             span(:class="$style.timeValue") {{ currentTimeDisplay }}
             span(:class="$style.timeDuration") / {{ durationDisplay }}
           
-          //- 播放进度条
-          div(:class="$style.progressContainer")
+          //- 播放控制区（播放按钮 + 进度条）
+          div(:class="$style.playbackSection")
+            base-btn(
+              :class="$style.playBtn"
+              @click="togglePlay"
+            )
+              svg(version="1.1" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 1024 1024")
+                use(:xlink:href="isPlaying ? '#icon-pause' : '#icon-play'")
+
             input(
               type="range"
               :class="$style.progressBar"
@@ -67,13 +74,6 @@ teleport(to="#root")
           //- 操作按钮
           div(:class="$style.controls")
             base-btn(
-              :class="$style.controlBtn"
-              @click="togglePlay"
-            )
-              svg(version="1.1" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 1024 1024")
-                use(:xlink:href="isPlaying ? '#icon-pause' : '#icon-play'")
-
-            base-btn(
               :class="[$style.controlBtn, $style.stampBtn]"
               :disabled="lines.length === 0 || currentLineIndex >= lines.length"
               @click="handleStamp"
@@ -85,9 +85,13 @@ teleport(to="#root")
               @click="handleUndo"
             ) {{ $t('lyric_editor__undo') }}
 
+            base-btn(
+              :class="$style.controlBtn"
+              @click="handleCopy"
+            ) {{ $t('lyric_editor__copy') }}
+
       //- 底部操作栏
       div(:class="$style.footer")
-        base-btn(:class="$style.footerBtn" @click="handleCopy") {{ $t('lyric_editor__copy') }}
         base-btn(:class="$style.footerBtn" @click="handleCancel") {{ $t('btn_cancel') }}
         base-btn(
           :class="$style.footerBtn"
@@ -494,41 +498,7 @@ export default {
   opacity: 0.7;
 }
 
-.progressContainer {
-  margin-bottom: 10px;
-  padding: 0 10px;
-}
 
-.progressBar {
-  width: 100%;
-  height: 6px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: var(--color-primary-background-hover);
-  border-radius: 3px;
-  cursor: pointer;
-  outline: none;
-
-  &::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    background: var(--color-primary);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.1s;
-    
-    &:hover {
-      transform: scale(1.2);
-    }
-  }
-
-  &::-webkit-slider-runnable-track {
-    height: 6px;
-    border-radius: 3px;
-  }
-}
 
 .timeLabel {
   font-size: 12px;
@@ -620,6 +590,62 @@ export default {
   }
 }
 
+.playbackSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}
+
+.playBtn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  background: var(--color-primary-background-hover);
+
+  &:hover {
+    background: var(--color-primary-background-active);
+  }
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--color-primary-background-hover);
+  border-radius: 3px;
+  cursor: pointer;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+    
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+
+  &::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+  }
+}
+
 .footer {
   display: flex;
   justify-content: flex-end;
@@ -628,18 +654,7 @@ export default {
   border-top: 1px solid var(--color-primary-background-hover);
 }
 
-.cancelBtn {
+.footerBtn {
   min-width: 80px;
-}
-
-.saveBtn {
-  min-width: 80px;
-  background: var(--color-primary) !important;
-  color: #fff !important;
-
-  &[disabled] {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
 }
 </style>

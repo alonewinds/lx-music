@@ -120,9 +120,10 @@ import useMusicActions from './useMusicActions'
 import useSearch from './useSearch'
 import useListScroll from './useListScroll'
 import useMusicToggle from './useMusicToggle'
+import useMusicListDrag from './useMusicListDrag'
 import { appSetting } from '@renderer/store/setting'
 import { defaultList, loveList, userLists } from '@renderer/store/list/state'
-import { getListMusics } from '@renderer/store/list/action'
+import { getListMusics, updateListMusicsPosition } from '@renderer/store/list/action'
 import { LIST_IDS } from '@common/constants'
 export default {
   name: 'MusicList',
@@ -285,6 +286,29 @@ export default {
 
     const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll, dom_listContent })
 
+    // 拖拽排序
+    useMusicListDrag({
+      listRef,
+      onUpdate(fromIndex, toIndex) {
+        console.log('[MusicList] onUpdate called, fromIndex:', fromIndex, 'toIndex:', toIndex)
+        console.log('[MusicList] list.value.length:', list.value.length)
+        console.log('[MusicList] item at fromIndex:', list.value[fromIndex])
+        
+        const item = list.value[fromIndex]
+        
+        console.log('[MusicList] Calling updateListMusicsPosition with:', {
+          listId: props.listId,
+          position: toIndex,
+          ids: [item.id],
+        })
+        
+        updateListMusicsPosition({
+          listId: props.listId,
+          position: toIndex,
+          ids: [item.id],
+        })
+      }
+    })
 
     const handleListItemClick = (event, index) => {
       if (rightClickSelectedIndex.value > -1) return
@@ -461,6 +485,28 @@ export default {
   p {
     font-size: 24px;
     color: var(--color-font-label);
+  }
+}
+
+:global(.music-list-dragging) {
+  opacity: 0.4;
+  background-color: var(--color-primary-background-hover);
+}
+
+/* Sortable 的 fallback 元素样式 */
+:global(.sortable-fallback) {
+  opacity: 1 !important; /* 完全不透明，让内容清晰可见 */
+  background-color: var(--color-primary-background-hover) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+  cursor: move !important;
+  z-index: 9999 !important;
+  
+  /* 确保内部的 list-item 正确显示 */
+  .list-item {
+    background: transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    color: var(--color-font) !important; /* 确保文字颜色正确 */
   }
 }
 

@@ -35,7 +35,14 @@
         </div>
       </div>
     </transition>
-    <LyricMenu v-model="lyricMenuVisible" :xy="lyricMenuXY" :lyric-info="lyricInfo" @update-lyric="handleUpdateLyric" />
+    <LyricMenu v-model="lyricMenuVisible" :xy="lyricMenuXY" :lyric-info="lyricInfo" @update-lyric="handleUpdateLyric" @open-editor="handleOpenEditor" />
+    <LyricEditorModal
+      :visible="lyricEditorVisible"
+      :music-info="playMusicInfo.musicInfo"
+      :existing-lyric="lyricInfo.lyric"
+      @close="handleCloseEditor"
+      @save="handleSaveLyric"
+    />
   </div>
 </template>
 
@@ -57,13 +64,16 @@ import {
 import { onMounted, onBeforeUnmount, computed, reactive, ref, nextTick, watch } from '@common/utils/vueTools'
 import useLyric from '@renderer/utils/compositions/useLyric'
 import LyricMenu from './components/LyricMenu.vue'
+import LyricEditorModal from './components/LyricEditorModal.vue'
 import { appSetting } from '@renderer/store/setting'
-import { setLyricOffset } from '@renderer/core/lyric'
+import { setLyricOffset, setLyric as refreshLyric } from '@renderer/core/lyric'
 import useSelectAllLrc from './useSelectAllLrc'
+import { saveLyricEdited } from '@renderer/utils/ipc'
 
 export default {
   components: {
     LyricMenu,
+    LyricEditorModal,
   },
   setup() {
     const isZoomActiveLrc = computed(() => appSetting['playDetail.isZoomActiveLrc'])
@@ -154,6 +164,43 @@ export default {
       window.app_event.off('lyricUpdated', updateMusicInfo)
     })
 
+    // 歌词编辑器状态
+    const lyricEditorVisible = ref(false)
+
+    const handleOpenEditor = () => {
+      updateMusicInfo()
+      lyricEditorVisible.value = true
+    }
+
+    const handleCloseEditor = () => {
+      lyricEditorVisible.value = false
+    }
+
+    const handleSaveLyric = async({ lyric: lrcText }) => {
+      const musicInfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
+      
+      const lyricInfoToSave = {
+        lyric: lrcText,
+      }
+
+      // 保存到数据库（作为编辑过的歌词）
+      await saveLyricEdited(musicInfo, lyricInfoToSave)
+
+      // 更新当前播放状态
+      setMusicInfo({
+        lrc: lrcText,
+      })
+
+      // 刷新歌词显示
+      refreshLyric()
+
+      // 关闭编辑器
+      lyricEditorVisible.value = false
+
+      // 触发歌词更新事件
+      window.app_event.lyricUpdated()
+    }
+
     return {
       dom_lyric,
       dom_lyric_text,
@@ -179,6 +226,11 @@ export default {
       handleShowLyricMenu,
       handleUpdateLyric,
       lyricInfo,
+      playMusicInfo,
+      lyricEditorVisible,
+      handleOpenEditor,
+      handleCloseEditor,
+      handleSaveLyric,
     }
   },
   methods: {

@@ -40,6 +40,16 @@
           <button :class="$style.btn" :disabled="offsetDisabled" ignore-tip :aria-label="$t('lyric_menu__offset_dec_100')" @click="setOffset(-100)">- 100ms</button>
         </div>
       </div>
+      <div :class="$style.group">
+        <div :class="$style.subGroup">
+          <button :class="[$style.btn, $style.editBtn]" @click="openLyricEditor">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="16px" viewBox="0 0 24 24" space="preserve">
+              <use xlink:href="#icon-edit" />
+            </svg>
+            {{ $t('lyric_menu__edit_lyric') }}
+          </button>
+        </div>
+      </div>
     </div>
   </teleport>
 </template>
@@ -83,7 +93,7 @@ export default {
       required: true,
     },
   },
-  emits: ['updateLyric', 'update:modelValue'],
+  emits: ['updateLyric', 'update:modelValue', 'openEditor'],
   setup(props, { emit }) {
     // const appSetting = useRefGetter('appSetting')
     // const playDetailSetting = useRefGetter('playDetailSetting')
@@ -188,6 +198,11 @@ export default {
       parseLrcOffset()
     })
 
+    const openLyricEditor = () => {
+      emit('update:modelValue', false)
+      emit('openEditor')
+    }
+
     return {
       appSetting,
       dom_menu,
@@ -201,6 +216,7 @@ export default {
       offsetReset,
       setFontAlign,
       offsetDisabled,
+      openLyricEditor,
     }
   },
 }
@@ -289,6 +305,19 @@ export default {
 
   &[disabled] {
     opacity: .3;
+  }
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  color: var(--color-primary);
+
+  svg {
+    fill: currentColor;
   }
 }
 

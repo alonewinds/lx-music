@@ -50,6 +50,16 @@
           </button>
         </div>
       </div>
+      <div :class="$style.group">
+        <div :class="$style.subGroup">
+          <button :class="[$style.btn, $style.editBtn]" @click="openLyricSearch">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="16px" viewBox="0 0 24 24" space="preserve">
+              <use xlink:href="#icon-search" />
+            </svg>
+            {{ $t('lyric_menu__search_lyric') }}
+          </button>
+        </div>
+      </div>
     </div>
   </teleport>
 </template>
@@ -93,7 +103,7 @@ export default {
       required: true,
     },
   },
-  emits: ['updateLyric', 'update:modelValue', 'openEditor'],
+  emits: ['updateLyric', 'update:modelValue', 'openEditor', 'openSearch'],
   setup(props, { emit }) {
     // const appSetting = useRefGetter('appSetting')
     // const playDetailSetting = useRefGetter('playDetailSetting')
@@ -203,6 +213,11 @@ export default {
       emit('openEditor')
     }
 
+    const openLyricSearch = () => {
+      emit('update:modelValue', false)
+      emit('openSearch')
+    }
+
     return {
       appSetting,
       dom_menu,
@@ -217,6 +232,7 @@ export default {
       setFontAlign,
       offsetDisabled,
       openLyricEditor,
+      openLyricSearch,
     }
   },
 }

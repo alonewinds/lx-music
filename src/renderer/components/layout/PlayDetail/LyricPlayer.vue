@@ -35,13 +35,19 @@
         </div>
       </div>
     </transition>
-    <LyricMenu v-model="lyricMenuVisible" :xy="lyricMenuXY" :lyric-info="lyricInfo" @update-lyric="handleUpdateLyric" @open-editor="handleOpenEditor" />
+    <LyricMenu v-model="lyricMenuVisible" :xy="lyricMenuXY" :lyric-info="lyricInfo" @update-lyric="handleUpdateLyric" @open-editor="handleOpenEditor" @open-search="handleOpenSearch" />
     <LyricEditorModal
       :visible="lyricEditorVisible"
       :music-info="playMusicInfo.musicInfo"
       :existing-lyric="lyricInfo.lyric"
       @close="handleCloseEditor"
       @save="handleSaveLyric"
+    />
+    <LyricSearchModal
+      :visible="lyricSearchVisible"
+      :music-info="playMusicInfo.musicInfo"
+      @close="handleCloseSearch"
+      @apply="handleApplySearchLyric"
     />
   </div>
 </template>
@@ -65,6 +71,7 @@ import { onMounted, onBeforeUnmount, computed, reactive, ref, nextTick, watch } 
 import useLyric from '@renderer/utils/compositions/useLyric'
 import LyricMenu from './components/LyricMenu.vue'
 import LyricEditorModal from './components/LyricEditorModal.vue'
+import LyricSearchModal from './components/LyricSearchModal.vue'
 import { appSetting } from '@renderer/store/setting'
 import { setLyricOffset, setLyric as refreshLyric } from '@renderer/core/lyric'
 import useSelectAllLrc from './useSelectAllLrc'
@@ -74,6 +81,7 @@ export default {
   components: {
     LyricMenu,
     LyricEditorModal,
+    LyricSearchModal,
   },
   setup() {
     const isZoomActiveLrc = computed(() => appSetting['playDetail.isZoomActiveLrc'])
@@ -201,6 +209,49 @@ export default {
       window.app_event.lyricUpdated()
     }
 
+    // 歌词搜索状态
+    const lyricSearchVisible = ref(false)
+
+    const handleOpenSearch = () => {
+      updateMusicInfo()
+      lyricSearchVisible.value = true
+    }
+
+    const handleCloseSearch = () => {
+      lyricSearchVisible.value = false
+    }
+
+    const handleApplySearchLyric = async(lyricContent) => {
+      const musicInfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
+      
+      const lyricInfoToSave = {
+        lyric: lyricContent.lyric,
+        tlyric: lyricContent.tlyric,
+        rlyric: lyricContent.rlyric,
+        lxlyric: lyricContent.lxlyric,
+      }
+
+      // 保存到数据库（作为编辑过的歌词）
+      await saveLyricEdited(musicInfo, lyricInfoToSave)
+
+      // 更新当前播放状态
+      setMusicInfo({
+        lrc: lyricContent.lyric,
+        tlrc: lyricContent.tlyric,
+        rlrc: lyricContent.rlyric,
+        lxlrc: lyricContent.lxlyric,
+      })
+
+      // 刷新歌词显示
+      refreshLyric()
+
+      // 关闭搜索弹窗
+      lyricSearchVisible.value = false
+
+      // 触发歌词更新事件
+      window.app_event.lyricUpdated()
+    }
+
     return {
       dom_lyric,
       dom_lyric_text,
@@ -231,6 +282,10 @@ export default {
       handleOpenEditor,
       handleCloseEditor,
       handleSaveLyric,
+      lyricSearchVisible,
+      handleOpenSearch,
+      handleCloseSearch,
+      handleApplySearchLyric,
     }
   },
   methods: {

@@ -69,6 +69,9 @@ const handleDesktopLyricMessage = (action: LX.DesktopLyric.WinMainActions) => {
             scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
             scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
             glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+            glowMode: appSetting['desktopLyric.style.lyricGlowMode'],
+            glowColor1: appSetting['desktopLyric.style.lyricGlowColor1'],
+            glowColor2: appSetting['desktopLyric.style.lyricGlowColor1'],
           },
         },
       })
@@ -118,6 +121,9 @@ export const init = () => {
       scaleAmount: appSetting['playDetail.effect.scaleAmount'],
       scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
       glowAnimateEnabled: appSetting['playDetail.effect.glowAnimateEnabled'],
+      glowMode: appSetting['playDetail.style.lyricGlowMode'],
+      glowColor1: appSetting['playDetail.style.lyricGlowColor1'],
+      glowColor2: appSetting['playDetail.style.lyricGlowColor1'],
     } as any,
     // offset: 80,
   })
@@ -218,8 +224,11 @@ export const setEffectSettings = () => {
     scaleAmount: appSetting['playDetail.effect.scaleAmount'],
     scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
     glowAnimateEnabled: enable && appSetting['playDetail.effect.glowAnimateEnabled'],
+    glowMode: appSetting['playDetail.style.lyricGlowMode'],
+    glowColor1: appSetting['playDetail.style.lyricGlowColor1'],
+    glowColor2: appSetting['playDetail.style.lyricGlowColor1'],
   }
-  lrc.setEffectSettings(effectSettings as any)
+  lrc.setEffectSettings(effectSettings)
 }
 
 export const syncDesktopEffectSettings = () => {
@@ -233,6 +242,9 @@ export const syncDesktopEffectSettings = () => {
       scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
       glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+      glowMode: appSetting['desktopLyric.style.lyricGlowMode'],
+      glowColor1: appSetting['desktopLyric.style.lyricGlowColor1'],
+      glowColor2: appSetting['desktopLyric.style.lyricGlowColor1'],
     },
   })
 }
@@ -291,6 +303,9 @@ export const sendInfo = () => {
         scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
         scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
         glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+        glowMode: appSetting['desktopLyric.style.lyricGlowMode'],
+        glowColor1: appSetting['desktopLyric.style.lyricGlowColor1'],
+        glowColor2: appSetting['desktopLyric.style.lyricGlowColor1'],
       },
     },
   })

@@ -14,6 +14,9 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
   const scaleAmount = effectSettings?.scaleAmount ?? 1.15
   const scaleLongSyllableDuration = effectSettings?.scaleLongSyllableDuration ?? 700
   const glowEnabled = effectSettings?.glowAnimateEnabled ?? false
+  const glowMode = effectSettings?.glowMode ?? 'soft'
+  const glowColor1 = effectSettings?.glowColor1
+  const glowColor2 = effectSettings?.glowColor2
 
   // Check if this is a long syllable that should have scale effect
   const isLongSyllable = scaleEnabled && duration >= scaleLongSyllableDuration
@@ -38,9 +41,16 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
       parts.push(`brightness(${brightness})`)
     }
     if (glowIntensity > 0) {
-      // Use CSS variable for glow color to avoid issues with transparent text color
-      // Fallback to white if the variable is not defined
-      parts.push(`drop-shadow(0 0 ${glowIntensity}px var(--lyric-played-color, white))`)
+      // Use user-defined colors if available, otherwise fallback to played color
+      const color1 = glowColor1 || 'var(--lyric-played-color, white)'
+      const color2 = glowColor2 || color1
+
+      if (glowMode === 'gradient') {
+        parts.push(`drop-shadow(0 0 ${glowIntensity}px ${color1})`)
+        parts.push(`drop-shadow(0 0 ${glowIntensity * 2}px ${color2})`)
+      } else {
+        parts.push(`drop-shadow(0 0 ${glowIntensity}px ${color1})`)
+      }
     }
     return parts.length > 0 ? parts.join(' ') : undefined
   }

@@ -9,6 +9,8 @@ export default () => {
         () => appSetting['playDetail.effect.floatEnabled'],
         () => appSetting['playDetail.effect.scaleEnabled'],
         () => appSetting['playDetail.effect.glowAnimateEnabled'],
+        () => appSetting['playDetail.style.lyricGlowMode'],
+        () => appSetting['playDetail.style.lyricGlowColor1'],
     ], () => {
         setEffectSettings()
     })
@@ -19,6 +21,8 @@ export default () => {
         () => appSetting['desktopLyric.effect.floatEnabled'],
         () => appSetting['desktopLyric.effect.scaleEnabled'],
         () => appSetting['desktopLyric.effect.glowAnimateEnabled'],
+        () => appSetting['desktopLyric.style.lyricGlowMode'],
+        () => appSetting['desktopLyric.style.lyricGlowColor1'],
     ], () => {
         syncDesktopEffectSettings()
     })

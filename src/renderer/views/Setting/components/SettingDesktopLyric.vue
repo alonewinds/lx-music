@@ -32,8 +32,6 @@ dd
     base-checkbox(id="setting_desktop_lyric_zoom" :model-value="appSetting['desktopLyric.style.isZoomActiveLrc']" :label="$t('desktop_lyric__lrc_active_zoom_on')" @update:model-value="updateSetting({ 'desktopLyric.style.isZoomActiveLrc': $event })")
   .gap-top
     base-checkbox(id="setting_desktop_lyric_effect_enable" :model-value="appSetting['desktopLyric.effect.enable']" :label="$t('setting__effect_enable')" @update:model-value="updateSetting({'desktopLyric.effect.enable': $event})")
-  //- .gap-top
-    base-checkbox(id="setting_desktop_lyric_fontWeight" :model-value="appSetting['desktopLyric.style.fontWeight']" @update:model-value="updateSetting({ 'desktopLyric.style.fontWeight': $event })" :label="$t('setting__desktop_lyric_font_weight')")
 
 dd
   h3#setting__desktop_lyric_font_weight {{ $t('setting__desktop_lyric_font_weight') }}
@@ -41,7 +39,6 @@ dd
     base-checkbox.gap-left(id="setting_setting__desktop_lyric_font_weight_font" :model-value="appSetting['desktopLyric.style.isFontWeightFont']" :label="$t('setting__desktop_lyric_font_weight_font')" @update:model-value="updateSetting({ 'desktopLyric.style.isFontWeightFont': $event })")
     base-checkbox.gap-left(id="setting_setting__desktop_lyric_font_weight_line" :model-value="appSetting['desktopLyric.style.isFontWeightLine']" :label="$t('setting__desktop_lyric_font_weight_line')" @update:model-value="updateSetting({ 'desktopLyric.style.isFontWeightLine': $event })")
     base-checkbox.gap-left(id="setting_setting__desktop_lyric_font_weight_extended" :model-value="appSetting['desktopLyric.style.isFontWeightExtended']" :label="$t('setting__desktop_lyric_font_weight_extended')" @update:model-value="updateSetting({ 'desktopLyric.style.isFontWeightExtended': $event })")
-
 
 dd
   h3#desktop_lyric_direction {{ $t('setting__desktop_lyric_direction') }}
@@ -68,6 +65,7 @@ dd
     .p
       base-btn.btn(min @click="changeLineGap(-1)") {{ $t('setting__desktop_lyric_line_gap_dec') }}
       base-btn.btn(min @click="changeLineGap(1)") {{ $t('setting__desktop_lyric_line_gap_add') }}
+
 dd
   h3#desktop_lyric_color {{ $t('setting__desktop_lyric_color') }}
   div
@@ -84,6 +82,7 @@ dd
           div(:class="$style.label") {{ $t('setting__desktop_lyric_shadow_color') }}
     .p.gap-top
       base-btn.btn(min @click="resetColor") {{ $t('setting__desktop_lyric_color_reset') }}
+
 dd
   h3#desktop_lyric_glow_effect {{ $t('lyric_menu__glow_effect') }}
   div
@@ -93,17 +92,12 @@ dd
       div(:class="$style.groupContent")
         div(:class="$style.item")
           div(ref="glow_color1_ref" :class="$style.color")
-          div(:class="$style.label") {{ $t('lyric_menu__glow_color1') }}
-        div(:class="$style.item")
-          div(ref="glow_color2_ref" :class="$style.color")
-          div(:class="$style.label") {{ $t('lyric_menu__glow_color2') }}
-    .gap-top
-      span.label {{ $t('lyric_menu__glow_intensity') }}: 
-      base-slider-bar.gap-left(:min="0.1" :max="2" :value="appSetting['desktopLyric.style.lyricGlowIntensity']" @change="setDesktopLyricGlowIntensity")
+          div(:class="$style.label") {{ $t('lyric_menu__glow_color') }}
+
 dd
   h3#desktop_lyric_font {{ $t('setting__desktop_lyric_font') }}
   div
-    base-selection.gap-teft(:list="fontList" :model-value="appSetting['desktopLyric.style.font']" item-key="id" item-name="label" @update:model-value="updateSetting({ 'desktopLyric.style.font': $event })")
+    base-selection.gap-left(:list="fontList" :model-value="appSetting['desktopLyric.style.font']" item-key="id" item-name="label" @update:model-value="updateSetting({ 'desktopLyric.style.font': $event })")
 
 dd
   h3#desktop_lyric_reset {{ $t('setting__desktop_lyric_reset') }}
@@ -122,8 +116,6 @@ import {
   updateSetting,
   setDesktopLyricGlowMode,
   setDesktopLyricGlowColor1,
-  setDesktopLyricGlowColor2,
-  setDesktopLyricGlowIntensity,
 } from '@renderer/store/setting'
 import { useI18n } from '@renderer/plugins/i18n'
 import { pickrTools } from '@renderer/utils/pickrTools'
@@ -153,102 +145,36 @@ const defaultShadowColors = [
   'rgba(0, 0, 0, 0.15)',
 ]
 
-const useLyricUnplayColor = () => {
-  const lyric_unplay_color_ref = ref(null)
-  let tools
-
-  const initLyricUnplayColor = (color, changed, reset) => {
-    if (!lyric_unplay_color_ref.value) return
-    tools = pickrTools.create(lyric_unplay_color_ref.value, color, defaultUnplayColors, changed, reset)
-  }
-  const destroyLyricUnplayColor = () => {
-    if (!tools) return
-    tools.destroy()
-    tools = null
-  }
-  const setLyricUnplayColor = (color) => {
-    tools?.setColor(color)
-  }
-
-  return {
-    lyric_unplay_color_ref,
-    initLyricUnplayColor,
-    destroyLyricUnplayColor,
-    setLyricUnplayColor,
-  }
-}
-
-const useLyricPlayedColor = () => {
-  const lyric_played_color_ref = ref(null)
-  let tools
-
-  const initLyricPlayedColor = (color, changed, reset) => {
-    if (!lyric_played_color_ref.value) return
-    tools = pickrTools.create(lyric_played_color_ref.value, color, defaultPlayedColors, changed, reset)
-  }
-  const destroyLyricPlayedColor = () => {
-    if (!tools) return
-    tools.destroy()
-    tools = null
-  }
-  const setLyricPlayedColor = (color) => {
-    tools?.setColor(color)
-  }
-
-  return {
-    lyric_played_color_ref,
-    initLyricPlayedColor,
-    destroyLyricPlayedColor,
-    setLyricPlayedColor,
-  }
-}
-
-const useLyricShadowColor = () => {
-  const lyric_shadow_color_ref = ref(null)
-  let tools
-
-  const initLyricShadowColor = (color, changed, reset) => {
-    if (!lyric_shadow_color_ref.value) return
-    tools = pickrTools.create(lyric_shadow_color_ref.value, color, defaultShadowColors, changed, reset)
-  }
-  const destroyLyricShadowColor = () => {
-    if (!tools) return
-    tools.destroy()
-    tools = null
-  }
-  const setLyricShadowColor = (color) => {
-    tools?.setColor(color)
-  }
-
-  return {
-    lyric_shadow_color_ref,
-    initLyricShadowColor,
-    destroyLyricShadowColor,
-    setLyricShadowColor,
-  }
-}
-
 const useLyricColor = () => {
-  const { lyric_unplay_color_ref, initLyricUnplayColor, destroyLyricUnplayColor, setLyricUnplayColor } = useLyricUnplayColor()
-  const { lyric_played_color_ref, initLyricPlayedColor, destroyLyricPlayedColor, setLyricPlayedColor } = useLyricPlayedColor()
-  const { lyric_shadow_color_ref, initLyricShadowColor, destroyLyricShadowColor, setLyricShadowColor } = useLyricShadowColor()
+  const lyric_unplay_color_ref = ref(null)
+  const lyric_played_color_ref = ref(null)
+  const lyric_shadow_color_ref = ref(null)
+  let tools_unplay
+  let tools_played
+  let tools_shadow
 
   const initColors = () => {
-    initLyricUnplayColor(appSetting['desktopLyric.style.lyricUnplayColor'], (color) => {
-      updateSetting({ 'desktopLyric.style.lyricUnplayColor': color })
-    })
-    initLyricPlayedColor(appSetting['desktopLyric.style.lyricPlayedColor'], (color) => {
-      updateSetting({ 'desktopLyric.style.lyricPlayedColor': color })
-    })
-    initLyricShadowColor(appSetting['desktopLyric.style.lyricShadowColor'], (color) => {
-      updateSetting({ 'desktopLyric.style.lyricShadowColor': color })
-    })
+    if (lyric_unplay_color_ref.value) {
+      tools_unplay = pickrTools.create(lyric_unplay_color_ref.value, appSetting['desktopLyric.style.lyricUnplayColor'], defaultUnplayColors, (color) => {
+        updateSetting({ 'desktopLyric.style.lyricUnplayColor': color })
+      })
+    }
+    if (lyric_played_color_ref.value) {
+      tools_played = pickrTools.create(lyric_played_color_ref.value, appSetting['desktopLyric.style.lyricPlayedColor'], defaultPlayedColors, (color) => {
+        updateSetting({ 'desktopLyric.style.lyricPlayedColor': color })
+      })
+    }
+    if (lyric_shadow_color_ref.value) {
+      tools_shadow = pickrTools.create(lyric_shadow_color_ref.value, appSetting['desktopLyric.style.lyricShadowColor'], defaultShadowColors, (color) => {
+        updateSetting({ 'desktopLyric.style.lyricShadowColor': color })
+      })
+    }
   }
 
   const destroyColors = () => {
-    destroyLyricUnplayColor()
-    destroyLyricPlayedColor()
-    destroyLyricShadowColor()
+    tools_unplay?.destroy()
+    tools_played?.destroy()
+    tools_shadow?.destroy()
   }
 
   const resetColor = () => {
@@ -258,17 +184,13 @@ const useLyricColor = () => {
       'desktopLyric.style.lyricShadowColor': 'rgba(0, 0, 0, 0.18)',
     }
     updateSetting(defaultSetting)
-    setLyricUnplayColor(defaultSetting['desktopLyric.style.lyricUnplayColor'])
-    setLyricPlayedColor(defaultSetting['desktopLyric.style.lyricPlayedColor'])
-    setLyricShadowColor(defaultSetting['desktopLyric.style.lyricShadowColor'])
+    tools_unplay?.setColor(defaultSetting['desktopLyric.style.lyricUnplayColor'])
+    tools_played?.setColor(defaultSetting['desktopLyric.style.lyricPlayedColor'])
+    tools_shadow?.setColor(defaultSetting['desktopLyric.style.lyricShadowColor'])
   }
 
-  onMounted(() => {
-    initColors()
-  })
-  onBeforeUnmount(() => {
-    destroyColors()
-  })
+  onMounted(initColors)
+  onBeforeUnmount(destroyColors)
 
   return {
     lyric_unplay_color_ref,
@@ -280,62 +202,25 @@ const useLyricColor = () => {
 
 const useGlowColor = () => {
   const glow_color1_ref = ref(null)
-  const glow_color2_ref = ref(null)
   let tools1
-  let tools2
-
-  const initGlowColor1 = (color, changed, reset) => {
-    if (!glow_color1_ref.value) return
-    tools1 = pickrTools.create(glow_color1_ref.value, color, defaultPlayedColors, changed, reset)
-  }
-  const destroyGlowColor1 = () => {
-    if (!tools1) return
-    tools1.destroy()
-    tools1 = null
-  }
-  const setGlowColor1 = (color) => {
-    tools1?.setColor(color)
-  }
-
-  const initGlowColor2 = (color, changed, reset) => {
-    if (!glow_color2_ref.value) return
-    tools2 = pickrTools.create(glow_color2_ref.value, color, defaultPlayedColors, changed, reset)
-  }
-  const destroyGlowColor2 = () => {
-    if (!tools2) return
-    tools2.destroy()
-    tools2 = null
-  }
-  const setGlowColor2 = (color) => {
-    tools2?.setColor(color)
-  }
 
   const initColors = () => {
-    initGlowColor1(appSetting['desktopLyric.style.lyricGlowColor1'], (color) => {
-      updateSetting({ 'desktopLyric.style.lyricGlowColor1': color })
-    })
-    initGlowColor2(appSetting['desktopLyric.style.lyricGlowColor2'], (color) => {
-      updateSetting({ 'desktopLyric.style.lyricGlowColor2': color })
-    })
+    if (glow_color1_ref.value) {
+      tools1 = pickrTools.create(glow_color1_ref.value, appSetting['desktopLyric.style.lyricGlowColor1'], defaultPlayedColors, (color) => {
+        updateSetting({ 'desktopLyric.style.lyricGlowColor1': color })
+      })
+    }
   }
 
   const destroyColors = () => {
-    destroyGlowColor1()
-    destroyGlowColor2()
+    tools1?.destroy()
   }
 
-  onMounted(() => {
-    initColors()
-  })
-  onBeforeUnmount(() => {
-    destroyColors()
-  })
+  onMounted(initColors)
+  onBeforeUnmount(destroyColors)
 
   return {
     glow_color1_ref,
-    glow_color2_ref,
-    setGlowColor1,
-    setGlowColor2,
   }
 }
 
@@ -358,9 +243,6 @@ export default {
 
     const {
       glow_color1_ref,
-      glow_color2_ref,
-      setGlowColor1,
-      setGlowColor2,
     } = useGlowColor()
 
     const systemFontList = ref([])
@@ -374,7 +256,7 @@ export default {
       ]
     })
     void getSystemFonts().then(fonts => {
-      systemFontList.value = fonts.map(f => ({ id: f, label: f.replace(/(^"|"$)/g, '') }))
+      if (fonts) systemFontList.value = fonts.map(f => ({ id: f, label: f.replace(/(^"|"$)/g, '') }))
     })
 
     const resetWindowSetting = () => {
@@ -395,15 +277,11 @@ export default {
       lyric_shadow_color_ref,
       resetColor,
       resetWindowSetting,
-
       fontList,
       isLinux,
-
       glowModeList,
       setDesktopLyricGlowMode,
-      setDesktopLyricGlowIntensity,
       glow_color1_ref,
-      glow_color2_ref,
     }
   },
 }
@@ -442,5 +320,4 @@ export default {
   text-align: center;
   line-height: 1.1;
 }
-
 </style>

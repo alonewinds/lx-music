@@ -26,15 +26,7 @@ dd
       div(:class="$style.groupContent")
         div(:class="$style.item")
           div(ref="glow_color1_ref" :class="$style.color")
-          div(:class="$style.label") {{ $t('lyric_menu__glow_color1') }}
-        div(:class="$style.item")
-          div(ref="glow_color2_ref" :class="$style.color")
-          div(:class="$style.label") {{ $t('lyric_menu__glow_color2') }}
-    .gap-top
-      span.label {{ $t('lyric_menu__glow_intensity') }}: 
-      base-slider-bar.gap-left(:min="0.1" :max="2" :value="appSetting['playDetail.style.lyricGlowIntensity']" @change="setLyricGlowIntensity")
-
-
+          div(:class="$style.label") {{ $t('lyric_menu__glow_color') }}
 
 </template>
 
@@ -45,8 +37,6 @@ import {
   updateSetting,
   setLyricGlowMode,
   setLyricGlowColor1,
-  setLyricGlowColor2,
-  setLyricGlowIntensity,
 } from '@renderer/store/setting'
 import { useI18n } from '@renderer/plugins/i18n'
 import { pickrTools } from '@renderer/utils/pickrTools'
@@ -65,54 +55,25 @@ const defaultGlowColors = [
 
 const useGlowColor = () => {
   const glow_color1_ref = ref(null)
-  const glow_color2_ref = ref(null)
   let tools1
-  let tools2
-
-  const initGlowColor1 = (color, changed, reset) => {
-    if (!glow_color1_ref.value) return
-    tools1 = pickrTools.create(glow_color1_ref.value, color, defaultGlowColors, changed, reset)
-  }
-  const destroyGlowColor1 = () => {
-    if (!tools1) return
-    tools1.destroy()
-    tools1 = null
-  }
-
-  const initGlowColor2 = (color, changed, reset) => {
-    if (!glow_color2_ref.value) return
-    tools2 = pickrTools.create(glow_color2_ref.value, color, defaultGlowColors, changed, reset)
-  }
-  const destroyGlowColor2 = () => {
-    if (!tools2) return
-    tools2.destroy()
-    tools2 = null
-  }
 
   const initColors = () => {
-    initGlowColor1(appSetting['playDetail.style.lyricGlowColor1'], (color) => {
-      setLyricGlowColor1(color)
-    })
-    initGlowColor2(appSetting['playDetail.style.lyricGlowColor2'], (color) => {
-      setLyricGlowColor2(color)
-    })
+    if (glow_color1_ref.value) {
+      tools1 = pickrTools.create(glow_color1_ref.value, appSetting['playDetail.style.lyricGlowColor1'], defaultGlowColors, (color) => {
+        setLyricGlowColor1(color)
+      })
+    }
   }
 
   const destroyColors = () => {
-    destroyGlowColor1()
-    destroyGlowColor2()
+    tools1?.destroy()
   }
 
-  onMounted(() => {
-    initColors()
-  })
-  onBeforeUnmount(() => {
-    destroyColors()
-  })
+  onMounted(initColors)
+  onBeforeUnmount(destroyColors)
 
   return {
     glow_color1_ref,
-    glow_color2_ref,
   }
 }
 
@@ -122,7 +83,6 @@ export default {
     const t = useI18n()
     const {
       glow_color1_ref,
-      glow_color2_ref,
     } = useGlowColor()
 
     const glowModeList = computed(() => {
@@ -137,9 +97,7 @@ export default {
       updateSetting,
       glowModeList,
       setLyricGlowMode,
-      setLyricGlowIntensity,
       glow_color1_ref,
-      glow_color2_ref,
     }
   },
 }

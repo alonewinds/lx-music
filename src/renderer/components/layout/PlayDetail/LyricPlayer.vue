@@ -155,8 +155,9 @@ export default {
       return {
         textAlign: appSetting['playDetail.style.align'],
         '--lyric-glow-color-1': appSetting['playDetail.style.lyricGlowColor1'],
-        '--lyric-glow-color-2': appSetting['playDetail.style.lyricGlowColor2'],
-        '--lyric-glow-intensity': appSetting['playDetail.style.lyricGlowIntensity'],
+        '--lyric-glow-color-2': appSetting['playDetail.style.lyricGlowColor1'],
+        '--lyric-glow-intensity': 3,
+        '--lyric-played-color': 'var(--color-primary-dark-200)',
       }
     })
     const lrcFontSize = computed(() => {

@@ -68,6 +68,9 @@ declare namespace LX {
       scaleAmount: number
       scaleLongSyllableDuration: number
       glowAnimateEnabled: boolean
+      glowMode: string
+      glowColor1: string
+      glowColor2: string
     }
 
     type LyricActions = LyricAction<'set_info', {

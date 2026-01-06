@@ -49,11 +49,19 @@ export default () => {
     position?: number
     playbackRate?: number
   } = {}) => {
-    navigator.mediaSession.setPositionState({
-      duration: state.duration ?? getDuration(),
-      playbackRate: state.playbackRate ?? getPlaybackRate(),
-      position: state.position ?? getCurrentTime(),
-    })
+    const duration = state.duration ?? getDuration()
+    const position = state.position ?? getCurrentTime()
+    if (isNaN(duration) || duration <= 0) return
+
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate: state.playbackRate ?? getPlaybackRate(),
+        position: Math.min(Math.max(position, 0), duration),
+      })
+    } catch (e) {
+      console.warn('setPositionState error:', e)
+    }
   }
 
   const setProgress = (time: number) => {

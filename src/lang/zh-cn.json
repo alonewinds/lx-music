@@ -739,6 +739,7 @@
   "list_add__btn_title": "把该歌曲添加到「{name}」",
   "list_add__confirm": "是否继续添加？",
   "list_add__duplicate_tip": "当前歌曲已存在于以下歌单：",
+  "list_add__duplicate_hint": "点击歌单名可跳转到该歌曲",
   "list_add__multiple_btn_title": "把这些歌曲添加到「{name}」",
   "list_add__multiple_title_add": "添加已选的 {num} 首歌曲到...",
   "list_add__multiple_title_move": "移动已选的 {num} 首歌曲到...",

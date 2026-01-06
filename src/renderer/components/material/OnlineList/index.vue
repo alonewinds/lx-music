@@ -94,6 +94,14 @@
     <common-list-add-multiple-modal v-model:show="isShowListAddMultiple" :music-list="selectedList" teleport="#view" @confirm="removeAllSelect" />
     <common-download-modal v-model:show="isShowDownload" :music-info="selectedDownloadMusicInfo" teleport="#view" />
     <common-download-multiple-modal v-model:show="isShowDownloadMultiple" :list="selectedList" teleport="#view" @confirm="removeAllSelect" />
+    <common-duplicate-song-modal
+      v-model:show="isShowDuplicateModal"
+      :music-info="pendingMusicInfo"
+      :existing-lists="duplicateExistingLists"
+      @confirm="handleDuplicateConfirm"
+      @cancel="handleDuplicateCancel"
+      teleport="#view"
+    />
     <base-menu v-model="isShowItemMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
   </div>
 </template>
@@ -168,6 +176,12 @@ export default {
       isShowListAddMultiple,
       selectedAddMusicInfo,
       handleShowMusicAddModal,
+      // 重复歌曲模态框相关
+      isShowDuplicateModal,
+      duplicateExistingLists,
+      pendingMusicInfo,
+      handleDuplicateConfirm,
+      handleDuplicateCancel,
     } = useMusicAdd({ selectedList, props })
 
     const {
@@ -276,6 +290,13 @@ export default {
       isShowDownload,
       isShowDownloadMultiple,
       selectedDownloadMusicInfo,
+
+      // 重复歌曲模态框相关
+      isShowDuplicateModal,
+      duplicateExistingLists,
+      pendingMusicInfo,
+      handleDuplicateConfirm,
+      handleDuplicateCancel,
 
       scrollToTop,
       actionButtonsVisible,

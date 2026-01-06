@@ -8,6 +8,17 @@ teleport(to="#root")
       //- 标题栏
       div(:class="$style.header")
         h3(:class="$style.title") {{ $t('lyric_editor__title') }}
+        //- 模式切换按钮
+        div(:class="$style.modeSwitch")
+          button(
+            :class="[$style.modeBtn, { [$style.active]: editMode === 'line' }]"
+            @click="switchMode('line')"
+          ) {{ $t('lyric_editor__mode_line') }}
+          button(
+            :class="[$style.modeBtn, { [$style.active]: editMode === 'word' }]"
+            @click="switchMode('word')"
+            :disabled="linesData.length === 0"
+          ) {{ $t('lyric_editor__mode_word') }}
         button(:class="$style.closeBtn" @click="handleCancel")
           svg(version="1.1" xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24")
             use(xlink:href="#icon-close")
@@ -18,7 +29,7 @@ teleport(to="#root")
         div(:class="$style.inputSection")
           div(:class="$style.sectionHeader")
             span {{ $t('lyric_editor__input_label') }}
-            span(:class="$style.lineCount") ({{ lines.length }} {{ $t('lyric_editor__lines') }})
+            span(:class="$style.lineCount") ({{ linesData.length }} {{ $t('lyric_editor__lines') }})
           textarea(
             ref="textareaRef"
             v-model="rawText"
@@ -31,7 +42,8 @@ teleport(to="#root")
         div(:class="$style.stampSection")
           div(:class="$style.sectionHeader")
             span {{ $t('lyric_editor__stamp_label') }}
-            span(:class="$style.progress") {{ timestampedCount }}/{{ lines.length }}
+            span(:class="$style.progress" v-if="editMode === 'line'") {{ lineTimestampedCount }}/{{ linesData.length }}
+            span(:class="$style.progress" v-else) {{ wordProgressText }}
 
           //- 当前播放时间和进度条
           div(:class="$style.timeDisplay")
@@ -59,29 +71,66 @@ teleport(to="#root")
               @mouseup="handleSeekEnd"
             )
 
-          //- 歌词滚动列表
-          div(ref="linesContainerRef" :class="$style.linesContainer")
+          //- 逐行模式：歌词行列表
+          div(v-if="editMode === 'line'" ref="linesContainerRef" :class="$style.linesContainer")
             div(
-              v-for="(line, index) in lines"
+              v-for="(line, index) in linesData"
               :key="index"
               :data-index="index"
-              :class="[$style.lineItem, { [$style.active]: index === currentLineIndex, [$style.stamped]: timestamps[index] >= 0 }]"
+              :class="[$style.lineItem, { [$style.active]: index === currentLineIndex, [$style.stamped]: line.lineTime >= 0, [$style.hasWordTime]: line.isWordMode }]"
               @click="handleLineClick(index)"
+              @dblclick="handleLineDoubleClick(index)"
             )
-              span(:class="$style.lineTime") {{ timestamps[index] >= 0 ? formatTimeDisplay(timestamps[index]) : '--:--.--' }}
-              span(:class="$style.lineText") {{ line }}
+              span(:class="$style.lineTime") {{ line.lineTime >= 0 ? formatTimeDisplay(line.lineTime) : '--:--.--' }}
+              span(:class="$style.lineText") {{ line.text }}
+              span(v-if="line.isWordMode" :class="$style.wordBadge") {{ $t('lyric_editor__word_mode_badge') }}
+
+          //- 逐字模式：字符列表
+          div(v-else :class="$style.wordModeContainer")
+            //- 当前行信息
+            div(:class="$style.wordLineInfo")
+              span(:class="$style.wordLineLabel") {{ $t('lyric_editor__current_line') }}:
+              span(:class="$style.wordLineText") {{ currentLineText }}
+              base-btn(
+                v-if="linesData.length > 0"
+                :class="$style.changeLineBtn"
+                @click="showLineSelector = !showLineSelector"
+              ) {{ $t('lyric_editor__change_line') }}
+
+            //- 行选择器
+            div(v-if="showLineSelector" :class="$style.lineSelector")
+              div(
+                v-for="(line, index) in linesData"
+                :key="index"
+                :class="[$style.lineSelectorItem, { [$style.active]: index === currentLineIndex }]"
+                @click="selectLine(index)"
+              )
+                span(:class="$style.lineSelectorTime") {{ line.lineTime >= 0 ? formatTimeDisplay(line.lineTime) : '--:--.--' }}
+                span(:class="$style.lineSelectorText") {{ line.text }}
+
+            //- 字符打轴区
+            div(ref="wordsContainerRef" :class="$style.wordsContainer")
+              span(
+                v-for="(word, index) in currentWords"
+                :key="index"
+                :data-word-index="index"
+                :class="[$style.wordItem, { [$style.active]: index === currentWordIndex, [$style.stamped]: word.offset >= 0 }]"
+                @click="handleWordClick(index)"
+              )
+                span(:class="$style.wordChar") {{ word.char }}
+                span(:class="$style.wordTime" v-if="word.offset >= 0") {{ formatWordTime(word) }}
 
           //- 操作按钮
           div(:class="$style.controls")
             base-btn(
               :class="[$style.controlBtn, $style.stampBtn]"
-              :disabled="lines.length === 0 || currentLineIndex >= lines.length"
+              :disabled="!canStamp"
               @click="handleStamp"
-            ) {{ $t('lyric_editor__mark_time') }}
+            ) {{ editMode === 'line' ? $t('lyric_editor__mark_time') : $t('lyric_editor__mark_word_time') }}
 
             base-btn(
               :class="$style.controlBtn"
-              :disabled="timestampedCount === 0"
+              :disabled="!canUndo"
               @click="handleUndo"
             ) {{ $t('lyric_editor__undo') }}
 
@@ -96,21 +145,24 @@ teleport(to="#root")
         base-btn(
           :class="$style.footerBtn"
           color="primary"
-          :disabled="lines.length === 0"
+          :disabled="linesData.length === 0"
           @click="handleSave"
         ) {{ $t('btn_save') }}
 </template>
 
 <script>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from '@common/utils/vueTools'
+import { ref, computed, watch, onBeforeUnmount, nextTick } from '@common/utils/vueTools'
 import { getCurrentTime as getPlayerCurrentTime, getDuration as getPlayerDuration, setCurrentTime, setPause, setPlay } from '@renderer/plugins/player'
 import { isPlay } from '@renderer/store/player/state'
 import {
   splitLyricText,
   formatTimeDisplay,
-  buildLrcFromLines,
-  getTimestampedCount,
-  parseLrcToLines,
+  isLxlrcFormat,
+  parseLxlrcToLines,
+  convertLrcToLineData,
+  buildLxlrcFromLines,
+  createLineData,
+  getWordTimestampedCount,
 } from '@renderer/utils/lyricEditor'
 
 export default {
@@ -133,19 +185,67 @@ export default {
   setup(props, { emit }) {
     const textareaRef = ref(null)
     const linesContainerRef = ref(null)
+    const wordsContainerRef = ref(null)
     const rawText = ref('')
-    const lines = ref([])
-    const timestamps = ref([])
+    const linesData = ref([])
     const currentLineIndex = ref(0)
+    const currentWordIndex = ref(0)
     const currentTime = ref(0)
+    const editMode = ref('line') // 'line' | 'word'
+    const showLineSelector = ref(false)
     let animationFrameId = null
+    let lastWordStampTime = -1 // 记录上一个字的打轴时间
 
     const isPlaying = computed(() => isPlay.value)
-    const timestampedCount = computed(() => getTimestampedCount(timestamps.value))
-    const currentTimeDisplay = computed(() => formatTimeDisplay(currentTime.value))
     const duration = ref(0)
+    const currentTimeDisplay = computed(() => formatTimeDisplay(currentTime.value))
     const durationDisplay = computed(() => formatTimeDisplay(duration.value))
     const isSeeking = ref(false)
+
+    // 逐行模式进度
+    const lineTimestampedCount = computed(() => {
+      return linesData.value.filter(line => line.lineTime >= 0).length
+    })
+
+    // 逐字模式进度
+    const currentWords = computed(() => {
+      if (linesData.value.length === 0 || currentLineIndex.value >= linesData.value.length) {
+        return []
+      }
+      return linesData.value[currentLineIndex.value].words
+    })
+
+    const currentLineText = computed(() => {
+      if (linesData.value.length === 0 || currentLineIndex.value >= linesData.value.length) {
+        return ''
+      }
+      return linesData.value[currentLineIndex.value].text
+    })
+
+    const wordProgressText = computed(() => {
+      if (currentWords.value.length === 0) return '0/0'
+      const stamped = getWordTimestampedCount(currentWords.value)
+      return `${stamped}/${currentWords.value.length}`
+    })
+
+    // 是否可以打轴
+    const canStamp = computed(() => {
+      if (linesData.value.length === 0) return false
+      if (editMode.value === 'line') {
+        return currentLineIndex.value < linesData.value.length
+      } else {
+        return currentWords.value.length > 0 && currentWordIndex.value < currentWords.value.length
+      }
+    })
+
+    // 是否可以撤销
+    const canUndo = computed(() => {
+      if (editMode.value === 'line') {
+        return linesData.value.some(line => line.lineTime >= 0)
+      } else {
+        return currentWords.value.some(word => word.offset >= 0)
+      }
+    })
 
     // 更新当前播放时间
     const updateCurrentTime = () => {
@@ -174,28 +274,31 @@ export default {
     // 处理文本输入
     const handleTextInput = () => {
       const newLines = splitLyricText(rawText.value)
-      const oldTimestamps = timestamps.value
+      const oldLinesData = linesData.value
       
-      // 尝试保留时间戳
-      if (newLines.length === oldTimestamps.length) {
-        // 行数未变（如修改错别字），直接更新文本，完整保留时间戳
-        lines.value = newLines
-        // timestamps.value 保持不变
+      if (newLines.length === oldLinesData.length) {
+        // 行数未变，尝试保留时间戳
+        linesData.value = newLines.map((text, i) => {
+          const oldLine = oldLinesData[i]
+          if (text === oldLine.text) {
+            return oldLine
+          }
+          // 文本变化，创建新的 LineData 但保留行时间
+          return createLineData(text, oldLine.lineTime)
+        })
       } else {
-        // 行数变化（如增删行）
-        // 策略：按索引保留现有时间戳，多出的补 -1
-        const newTimestamps = new Array(newLines.length).fill(-1)
-        const count = Math.min(newLines.length, oldTimestamps.length)
-        for (let i = 0; i < count; i++) {
-          newTimestamps[i] = oldTimestamps[i]
-        }
-        lines.value = newLines
-        timestamps.value = newTimestamps
+        // 行数变化
+        linesData.value = newLines.map((text, i) => {
+          if (i < oldLinesData.length) {
+            return createLineData(text, oldLinesData[i].lineTime)
+          }
+          return createLineData(text)
+        })
       }
       
-      // 修正当前行索引，避免越界，而不是重置为 0
-      if (currentLineIndex.value >= lines.value.length) {
-        currentLineIndex.value = Math.max(0, lines.value.length - 1)
+      // 修正当前行索引
+      if (currentLineIndex.value >= linesData.value.length) {
+        currentLineIndex.value = Math.max(0, linesData.value.length - 1)
       }
     }
 
@@ -208,41 +311,160 @@ export default {
       }
     }
 
-    // 打轴操作
-    const handleStamp = () => {
-      if (currentLineIndex.value >= lines.value.length) return
+    // 模式切换
+    const switchMode = (mode) => {
+      if (mode === editMode.value) return
+      editMode.value = mode
+      showLineSelector.value = false
+      
+      if (mode === 'word') {
+        currentWordIndex.value = 0
+        lastWordStampTime = -1
+        // 如果当前行已有逐字时间，找到第一个未打轴的字
+        if (currentWords.value.length > 0) {
+          const firstUnstamped = currentWords.value.findIndex(w => w.offset < 0)
+          currentWordIndex.value = firstUnstamped >= 0 ? firstUnstamped : currentWords.value.length
+        }
+      }
+    }
+
+    // 逐行模式：打轴
+    const handleLineStamp = () => {
+      if (currentLineIndex.value >= linesData.value.length) return
 
       const time = getPlayerCurrentTime() * 1000
-      timestamps.value[currentLineIndex.value] = time
+      linesData.value[currentLineIndex.value].lineTime = time
 
       // 移动到下一行
-      if (currentLineIndex.value < lines.value.length - 1) {
+      if (currentLineIndex.value < linesData.value.length - 1) {
         currentLineIndex.value++
         scrollToCurrentLine()
       }
     }
 
-    // 撤销上一次打轴
-    const handleUndo = () => {
-      // 找到最后一个有时间戳的行
+    // 逐字模式：打轴
+    const handleWordStamp = () => {
+      if (currentWordIndex.value >= currentWords.value.length) return
+
+      const time = getPlayerCurrentTime() * 1000
+      const lineTime = linesData.value[currentLineIndex.value].lineTime
+      
+      // 如果行时间还没设置，使用当前时间作为行时间
+      if (lineTime < 0) {
+        linesData.value[currentLineIndex.value].lineTime = time
+      }
+
+      const actualLineTime = linesData.value[currentLineIndex.value].lineTime
+      const offset = Math.max(0, Math.round(time - actualLineTime))
+
+      // 设置当前字的 offset
+      const word = currentWords.value[currentWordIndex.value]
+      word.offset = offset
+
+      // 计算上一个字的 duration
+      if (currentWordIndex.value > 0) {
+        const prevWord = currentWords.value[currentWordIndex.value - 1]
+        if (prevWord.offset >= 0 && prevWord.duration < 0) {
+          prevWord.duration = Math.max(0, offset - prevWord.offset)
+        }
+      }
+
+      // 标记为逐字模式
+      linesData.value[currentLineIndex.value].isWordMode = true
+      lastWordStampTime = time
+
+      // 移动到下一个字
+      if (currentWordIndex.value < currentWords.value.length - 1) {
+        currentWordIndex.value++
+        scrollToCurrentWord()
+      } else {
+        // 最后一个字，设置一个默认的 duration
+        if (word.duration < 0) {
+          word.duration = 500 // 默认 500ms
+        }
+      }
+    }
+
+    // 统一的打轴处理
+    const handleStamp = () => {
+      if (editMode.value === 'line') {
+        handleLineStamp()
+      } else {
+        handleWordStamp()
+      }
+    }
+
+    // 逐行模式：撤销
+    const handleLineUndo = () => {
       let lastStampedIndex = -1
-      for (let i = timestamps.value.length - 1; i >= 0; i--) {
-        if (timestamps.value[i] >= 0) {
+      for (let i = linesData.value.length - 1; i >= 0; i--) {
+        if (linesData.value[i].lineTime >= 0) {
           lastStampedIndex = i
           break
         }
       }
 
       if (lastStampedIndex >= 0) {
-        timestamps.value[lastStampedIndex] = -1
+        linesData.value[lastStampedIndex].lineTime = -1
         currentLineIndex.value = lastStampedIndex
         scrollToCurrentLine()
+      }
+    }
+
+    // 逐字模式：撤销
+    const handleWordUndo = () => {
+      let lastStampedIndex = -1
+      for (let i = currentWords.value.length - 1; i >= 0; i--) {
+        if (currentWords.value[i].offset >= 0) {
+          lastStampedIndex = i
+          break
+        }
+      }
+
+      if (lastStampedIndex >= 0) {
+        const word = currentWords.value[lastStampedIndex]
+        word.offset = -1
+        word.duration = -1
+        currentWordIndex.value = lastStampedIndex
+        scrollToCurrentWord()
+      }
+    }
+
+    // 统一的撤销处理
+    const handleUndo = () => {
+      if (editMode.value === 'line') {
+        handleLineUndo()
+      } else {
+        handleWordUndo()
       }
     }
 
     // 点击行选择
     const handleLineClick = (index) => {
       currentLineIndex.value = index
+    }
+
+    // 双击行进入逐字编辑
+    const handleLineDoubleClick = (index) => {
+      currentLineIndex.value = index
+      switchMode('word')
+    }
+
+    // 点击字选择
+    const handleWordClick = (index) => {
+      currentWordIndex.value = index
+    }
+
+    // 选择行（逐字模式）
+    const selectLine = (index) => {
+      currentLineIndex.value = index
+      currentWordIndex.value = 0
+      showLineSelector.value = false
+      lastWordStampTime = -1
+      
+      // 找到第一个未打轴的字
+      const firstUnstamped = currentWords.value.findIndex(w => w.offset < 0)
+      currentWordIndex.value = firstUnstamped >= 0 ? firstUnstamped : currentWords.value.length
     }
 
     // 滚动到当前行
@@ -258,10 +480,31 @@ export default {
       })
     }
 
+    // 滚动到当前字
+    const scrollToCurrentWord = () => {
+      void nextTick(() => {
+        const container = wordsContainerRef.value
+        if (!container) return
+
+        const currentElement = container.querySelector(`[data-word-index="${currentWordIndex.value}"]`)
+        if (currentElement) {
+          currentElement.scrollIntoView({ behavior: 'auto', block: 'center' })
+        }
+      })
+    }
+
+    // 格式化字的时间显示
+    const formatWordTime = (word) => {
+      if (word.offset < 0) return ''
+      const offsetSec = (word.offset / 1000).toFixed(2)
+      const durationSec = word.duration >= 0 ? (word.duration / 1000).toFixed(2) : '?'
+      return `${offsetSec}s/${durationSec}s`
+    }
+
     // 保存歌词
     const handleSave = () => {
-      const lrc = buildLrcFromLines(lines.value, timestamps.value)
-      emit('save', { lyric: lrc })
+      const lxlrc = buildLxlrcFromLines(linesData.value)
+      emit('save', { lyric: lxlrc })
     }
 
     // 取消
@@ -271,10 +514,9 @@ export default {
 
     // 复制歌词
     const handleCopy = async () => {
-      const lrc = buildLrcFromLines(lines.value, timestamps.value)
+      const lxlrc = buildLxlrcFromLines(linesData.value)
       try {
-        await navigator.clipboard.writeText(lrc)
-        // 可以添加一个简单的提示，这里暂且省略或复用已有的提示机制
+        await navigator.clipboard.writeText(lxlrc)
       } catch (err) {
         console.error('Failed to copy lyric:', err)
       }
@@ -287,7 +529,7 @@ export default {
       if (e.code === 'Space' && !e.target.matches('textarea, input')) {
         e.preventDefault()
         e.stopPropagation()
-        e.lx_handled = true // 阻止全局快捷键处理（如播放/暂停）
+        e.lx_handled = true
         handleStamp()
       }
     }
@@ -297,33 +539,34 @@ export default {
       if (val) {
         // 加载现有歌词
         if (props.existingLyric) {
-          // 解析 LRC 格式歌词以恢复时间戳
-          const parsed = parseLrcToLines(props.existingLyric)
-          if (parsed.length > 0 && parsed.some(p => p.time >= 0)) {
-            // 有时间戳的 LRC 格式
-            lines.value = parsed.map(p => p.text)
-            timestamps.value = parsed.map(p => p.time)
-            // 重建 rawText 以显示在输入框
-            rawText.value = lines.value.join('\n')
+          if (isLxlrcFormat(props.existingLyric)) {
+            // lxlrc 格式（包含逐字时间）
+            linesData.value = parseLxlrcToLines(props.existingLyric)
           } else {
-            // 纯文本格式
-            rawText.value = props.existingLyric
-            handleTextInput()
+            // 普通 LRC 或纯文本
+            linesData.value = convertLrcToLineData(props.existingLyric)
           }
+          // 重建 rawText
+          rawText.value = linesData.value.map(l => l.text).join('\n')
+          
           // 找到第一个未打轴的行
-          currentLineIndex.value = timestamps.value.findIndex(t => t < 0)
-          if (currentLineIndex.value < 0) currentLineIndex.value = lines.value.length
+          const firstUnstamped = linesData.value.findIndex(l => l.lineTime < 0)
+          currentLineIndex.value = firstUnstamped >= 0 ? firstUnstamped : linesData.value.length
         } else {
           rawText.value = ''
-          lines.value = []
-          timestamps.value = []
+          linesData.value = []
           currentLineIndex.value = 0
         }
+
+        editMode.value = 'line'
+        currentWordIndex.value = 0
+        showLineSelector.value = false
+        lastWordStampTime = -1
 
         // 开始监听播放时间
         animationFrameId = requestAnimationFrame(updateCurrentTime)
 
-        // 添加键盘事件（使用捕获阶段，优先于全局快捷键处理）
+        // 添加键盘事件
         window.addEventListener('keydown', handleKeydown, true)
       } else {
         // 停止监听
@@ -345,22 +588,35 @@ export default {
     return {
       textareaRef,
       linesContainerRef,
+      wordsContainerRef,
       rawText,
-      lines,
-      timestamps,
+      linesData,
       currentLineIndex,
+      currentWordIndex,
       currentTime,
       currentTimeDisplay,
       duration,
       durationDisplay,
       isPlaying,
-      timestampedCount,
+      editMode,
+      showLineSelector,
+      lineTimestampedCount,
+      currentWords,
+      currentLineText,
+      wordProgressText,
+      canStamp,
+      canUndo,
       formatTimeDisplay,
+      formatWordTime,
       handleTextInput,
       togglePlay,
+      switchMode,
       handleStamp,
       handleUndo,
       handleLineClick,
+      handleLineDoubleClick,
+      handleWordClick,
+      selectLine,
       handleSave,
       handleCopy,
       handleCancel,
@@ -389,7 +645,7 @@ export default {
 }
 
 .modal {
-  width: 800px;
+  width: 850px;
   max-width: 90vw;
   max-height: 85vh;
   background: var(--color-content-background);
@@ -406,6 +662,7 @@ export default {
   justify-content: space-between;
   padding: 15px 20px;
   border-bottom: 1px solid var(--color-primary-background-hover);
+  gap: 15px;
 }
 
 .title {
@@ -413,6 +670,39 @@ export default {
   font-size: 16px;
   font-weight: 500;
   color: var(--color-font);
+}
+
+.modeSwitch {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 5px;
+}
+
+.modeBtn {
+  padding: 6px 16px;
+  border: 1px solid var(--color-primary-background-hover);
+  background: var(--color-primary-background);
+  color: var(--color-font-label);
+  border-radius: @radius-border;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+
+  &:hover:not([disabled]) {
+    background: var(--color-primary-background-hover);
+  }
+
+  &.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .closeBtn {
@@ -498,8 +788,6 @@ export default {
   opacity: 0.7;
 }
 
-
-
 .timeLabel {
   font-size: 12px;
   color: var(--color-font-label);
@@ -526,6 +814,7 @@ export default {
   padding: 8px 12px;
   cursor: pointer;
   transition: background-color 0.2s;
+  gap: 8px;
 
   &:hover {
     background: var(--color-primary-background-hover);
@@ -537,6 +826,12 @@ export default {
 
   &.stamped {
     .lineTime {
+      color: var(--color-primary);
+    }
+  }
+
+  &.hasWordTime {
+    .lineText {
       color: var(--color-primary);
     }
   }
@@ -557,6 +852,149 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.wordBadge {
+  flex-shrink: 0;
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 10px;
+}
+
+// 逐字模式样式
+.wordModeContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wordLineInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--color-primary-background);
+  border-radius: @radius-border;
+  margin-bottom: 10px;
+}
+
+.wordLineLabel {
+  font-size: 12px;
+  color: var(--color-font-label);
+  flex-shrink: 0;
+}
+
+.wordLineText {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-font);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.changeLineBtn {
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.lineSelector {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid var(--color-primary-background-hover);
+  border-radius: @radius-border;
+  background: var(--color-primary-background);
+  margin-bottom: 10px;
+}
+
+.lineSelectorItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  cursor: pointer;
+  gap: 8px;
+
+  &:hover {
+    background: var(--color-primary-background-hover);
+  }
+
+  &.active {
+    background: var(--color-primary-background-active);
+  }
+}
+
+.lineSelectorTime {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--color-font-label);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.lineSelectorText {
+  font-size: 13px;
+  color: var(--color-font);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wordsContainer {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--color-primary-background-hover);
+  border-radius: @radius-border;
+  background: var(--color-primary-background);
+  padding: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+}
+
+.wordItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: @radius-border;
+  background: var(--color-primary-background-hover);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 50px;
+
+  &:hover {
+    background: var(--color-primary-background-active);
+  }
+
+  &.active {
+    background: var(--color-primary);
+    color: #fff;
+
+    .wordTime {
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  &.stamped:not(.active) {
+    border: 2px solid var(--color-primary);
+  }
+}
+
+.wordChar {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.wordTime {
+  font-size: 10px;
+  color: var(--color-font-label);
+  margin-top: 4px;
+  font-family: monospace;
 }
 
 .controls {

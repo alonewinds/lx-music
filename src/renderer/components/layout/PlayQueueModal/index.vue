@@ -2,11 +2,9 @@
 material-modal(
   :show="isShowPlayQueue"
   :bg-close="true"
-  max-width="500px"
-  max-height="70%"
   @close="handleClose"
 )
-  main(:class="$style.main")
+  main(:class="$style.main" style="width: 420px; height: 520px;")
     h2(:class="$style.title") {{ $t('play_queue__title') }}
     
     div(v-if="!hasContent" :class="$style.empty")

@@ -3,6 +3,7 @@ teleport(to="#root")
   div(
     v-if="visible"
     :class="$style.overlay"
+    @click.self="handleClose"
   )
     div(:class="$style.modal")
       //- 标题栏

@@ -34,6 +34,9 @@ export default ({ selectedList, props, removeAllSelect, emit }: {
       // 第一首歌直接播放，剩余歌曲添加到稍后播放队列
       const [firstSong, ...restSongs] = songsToPlay
 
+      // 将歌曲添加到试听列表（DEFAULT列表），以便用户后续查看
+      await addListMusics(defaultList.id, songsToPlay)
+
       // 如果有多首歌，剩余的添加到稍后播放列表
       if (restSongs.length > 0) {
         addTempPlayList(restSongs.map(s => ({

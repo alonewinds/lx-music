@@ -30,6 +30,7 @@
         <div
           class="list-item" :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
+          @mousedown="startDrag($event, index)"
         >
           <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 5%;">
             <transition name="play-active">
@@ -62,6 +63,7 @@
           class="list-item"
           :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
+          @mousedown="startDrag($event, index)"
         >
           <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 5%;">
             <transition name="play-active">
@@ -287,20 +289,12 @@ export default {
     const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll, dom_listContent })
 
     // 拖拽排序
-    useMusicListDrag({
+    const { startDrag } = useMusicListDrag({
       listRef,
+      list,
       onUpdate(fromIndex, toIndex) {
-        console.log('[MusicList] onUpdate called, fromIndex:', fromIndex, 'toIndex:', toIndex)
-        console.log('[MusicList] list.value.length:', list.value.length)
-        console.log('[MusicList] item at fromIndex:', list.value[fromIndex])
-        
         const item = list.value[fromIndex]
-        
-        console.log('[MusicList] Calling updateListMusicsPosition with:', {
-          listId: props.listId,
-          position: toIndex,
-          ids: [item.id],
-        })
+        if (!item) return
         
         updateListMusicsPosition({
           listId: props.listId,
@@ -414,6 +408,8 @@ export default {
       selectedToggleMusicInfo,
       toggleSource,
       loadAllLists,
+      
+      startDrag,
     }
   },
 }
@@ -493,20 +489,44 @@ export default {
   background-color: var(--color-primary-background-hover);
 }
 
-/* Sortable 的 fallback 元素样式 */
-:global(.sortable-fallback) {
-  opacity: 1 !important; /* 完全不透明，让内容清晰可见 */
+/* 拖拽时的占位符样式 (ghost) */
+:global(.music-list-ghost) {
+  opacity: 0.3;
   background-color: var(--color-primary-background-hover) !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
-  cursor: move !important;
+}
+
+/* 被选中的元素样式 (chosen) */
+:global(.music-list-chosen) {
+  background-color: var(--color-primary-background-hover) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 拖拽中的元素样式 (drag) */
+:global(.music-list-drag) {
+  opacity: 1 !important;
+  background-color: var(--color-primary-background) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: grabbing !important;
   z-index: 9999 !important;
   
-  /* 确保内部的 list-item 正确显示 */
+  .list-item {
+    background: transparent !important;
+  }
+}
+
+/* Fallback 模式下拖拽的元素样式 */
+:global(.music-list-fallback) {
+  opacity: 1 !important;
+  background-color: var(--color-primary-background) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  cursor: grabbing !important;
+  z-index: 99999 !important;
+  pointer-events: none;
+  
   .list-item {
     background: transparent !important;
     display: flex !important;
     align-items: center !important;
-    color: var(--color-font) !important; /* 确保文字颜色正确 */
   }
 }
 

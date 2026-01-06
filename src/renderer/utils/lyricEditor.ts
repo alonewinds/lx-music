@@ -75,12 +75,15 @@ export function buildLrcFromLines(lines: string[], timestamps: number[]): string
 
 /**
  * 解析 LRC 格式歌词为行数组（供预览使用）
+ * 支持双时间标签格式：[开始时间]歌词[结束时间]
  * @param lrc LRC 格式歌词
  * @returns 解析后的行数组
  */
 export function parseLrcToLines(lrc: string): Array<{ time: number; text: string }> {
   const lines: Array<{ time: number; text: string }> = []
   const timeTagRegex = /^\[(\d+):(\d+)(?:\.(\d+))?\]/
+  // 用于去除行尾时间标签的正则
+  const trailingTimeTagRegex = /\[\d+:\d+(?:\.\d+)?\]\s*$/
 
   for (const line of lrc.split(/\r?\n/)) {
     const trimmedLine = line.trim()
@@ -89,7 +92,9 @@ export function parseLrcToLines(lrc: string): Array<{ time: number; text: string
     const match = trimmedLine.match(timeTagRegex)
     if (match) {
       const time = parseTimeTag(match[0])
-      const text = trimmedLine.slice(match[0].length)
+      let text = trimmedLine.slice(match[0].length)
+      // 去除行尾的时间标签（如果有）
+      text = text.replace(trailingTimeTagRegex, '').trim()
       lines.push({ time, text })
     } else {
       // 没有时间标签的行，时间设为 -1
@@ -351,6 +356,17 @@ export function parseLxlrcToLines(lxlrc: string): LineData[] {
  */
 export function isLxlrcFormat(lyric: string): boolean {
   return /<\d+,\d+>/.test(lyric)
+}
+
+/**
+ * 检查歌词是否为普通 LRC 格式（行首有时间标签）
+ * @param lyric 歌词字符串
+ * @returns 是否为 LRC 格式
+ */
+export function isLrcFormat(lyric: string): boolean {
+  // 检查是否有行首时间标签 [mm:ss.xx] 或 [mm:ss]
+  // 排除元数据标签如 [ti:xxx], [ar:xxx]
+  return /^\[\d+:\d+(?:\.\d+)?\]/m.test(lyric)
 }
 
 /**

@@ -163,6 +163,7 @@ import {
   smartParseLyric,
   isLxlrcFormat,
   isPerCharTimestampFormat,
+  isLrcFormat,
 } from '@renderer/utils/lyricEditor'
 
 export default {
@@ -275,8 +276,8 @@ export default {
     const handleTextInput = () => {
       const inputText = rawText.value
       
-      // 检查输入是否包含时间信息（lxlrc 格式或每字时间戳格式）
-      const hasTimestampInfo = isLxlrcFormat(inputText) || isPerCharTimestampFormat(inputText)
+      // 检查输入是否包含时间信息（lxlrc、每字时间戳或普通 LRC 格式）
+      const hasTimestampInfo = isLxlrcFormat(inputText) || isPerCharTimestampFormat(inputText) || isLrcFormat(inputText)
       
       if (hasTimestampInfo) {
         // 输入包含时间信息，使用智能解析保留时间戳

@@ -1,5 +1,5 @@
 import Lyric from '@common/utils/lyric-font-player'
-import { markRawList } from '@common/utils/vueTools'
+import { markRawList, watch } from '@common/utils/vueTools'
 import { setLines, setOffset, setTempOffset, setText, lyrics } from '@lyric/store/lyric'
 import { musicInfo, setting } from '@lyric/store/state'
 
@@ -12,28 +12,48 @@ export const init = () => {
     rate: setting['player.playbackRate'],
     isVertical: setting['desktopLyric.direction'] == 'vertical',
     effectSettings: {
+      enable: setting['desktopLyric.effect.enable'],
+      floatEnabled: setting['desktopLyric.effect.enable'] && setting['desktopLyric.effect.floatEnabled'],
+      floatAmount: setting['desktopLyric.effect.floatAmount'],
+      scaleEnabled: setting['desktopLyric.effect.enable'] && setting['desktopLyric.effect.scaleEnabled'],
+      scaleAmount: setting['desktopLyric.effect.scaleAmount'],
+      scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
+      glowAnimateEnabled: setting['desktopLyric.effect.enable'] && setting['desktopLyric.effect.glowAnimateEnabled'],
+    } as any,
+    onPlay(line, text) {
+      setText(text, Math.max(line, 0))
+    },
+    onSetLyric(lines, offset) {
+      setLines(markRawList([...lines]))
+      setText(lines[0] ?? '', 0)
+      setOffset(offset)
+      setTempOffset(0)
+    },
+    onUpdateLyric(lines) {
+      setLines(markRawList([...lines]))
+      setText(lines[0] ?? '', 0)
+    },
+  })
+
+  // Watch for setting changes and update effects
+  watch([
+    () => setting['desktopLyric.effect.enable'],
+    () => setting['desktopLyric.effect.floatEnabled'],
+    () => setting['desktopLyric.effect.floatAmount'],
+    () => setting['desktopLyric.effect.scaleEnabled'],
+    () => setting['desktopLyric.effect.scaleAmount'],
+    () => setting['desktopLyric.effect.scaleLongSyllableDuration'],
+    () => setting['desktopLyric.effect.glowAnimateEnabled'],
+  ], () => {
+    setEffectSettings({
+      enable: setting['desktopLyric.effect.enable'],
       floatEnabled: setting['desktopLyric.effect.floatEnabled'],
       floatAmount: setting['desktopLyric.effect.floatAmount'],
       scaleEnabled: setting['desktopLyric.effect.scaleEnabled'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
       glowAnimateEnabled: setting['desktopLyric.effect.glowAnimateEnabled'],
-    } as any,
-    onPlay(line, text) {
-      setText(text, Math.max(line, 0))
-      // console.log(line, text)
-    },
-    onSetLyric(lines, offset) { // listening lyrics seting event
-      // console.log(lines) // lines is array of all lyric text
-      setLines(markRawList([...lines]))
-      setText(lines[0] ?? '', 0)
-      setOffset(offset) // 歌词延迟
-      setTempOffset(0) // 重置临时延迟
-    },
-    onUpdateLyric(lines) {
-      setLines(markRawList([...lines]))
-      setText(lines[0] ?? '', 0)
-    },
+    })
   })
 }
 
@@ -58,7 +78,6 @@ export const setLyric = () => {
   )
 }
 
-
 export const play = (time: number) => {
   if (!lyrics.lyric) return
   lrc.play(time)
@@ -70,10 +89,21 @@ export const pause = () => {
 
 export const stop = () => {
   lrc.setLyric('')
-  // setLines([])
   setText('', 0)
 }
 
 export const setVertical = (isVertical: boolean) => {
   lrc.setVertical(isVertical)
+}
+
+export const setEffectSettings = (settings: LX.DesktopLyric.EffectSettings) => {
+  const { enable, floatEnabled, floatAmount, scaleEnabled, scaleAmount, scaleLongSyllableDuration, glowAnimateEnabled } = settings
+  lrc.setEffectSettings({
+    floatEnabled: enable && floatEnabled,
+    floatAmount,
+    scaleEnabled: enable && scaleEnabled,
+    scaleAmount,
+    scaleLongSyllableDuration,
+    glowAnimateEnabled: enable && glowAnimateEnabled,
+  } as any)
 }

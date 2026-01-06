@@ -7,6 +7,8 @@ dd
     base-checkbox(id="setting_play_detail_lyric_delayScroll" :model-value="appSetting['playDetail.isDelayScroll']" :label="$t('setting__play_detail_lyric_delay_scroll')" @update:model-value="updateSetting({ 'playDetail.isDelayScroll': $event })")
   .gap-top
     base-checkbox(id="setting_play_detail_lyric_progress_enable" :model-value="appSetting['playDetail.isShowLyricProgressSetting']" :label="$t('setting__play_detail_lyric_progress')" @update:model-value="updateSetting({'playDetail.isShowLyricProgressSetting': $event})")
+  .gap-top
+    base-checkbox(id="setting_play_detail_effect_enable" :model-value="appSetting['playDetail.effect.enable']" :label="$t('setting__effect_enable')" @update:model-value="updateSetting({'playDetail.effect.enable': $event})")
 
 dd
   h3#play_detail_align {{ $t('setting__play_detail_align') }}
@@ -31,6 +33,8 @@ dd
     .gap-top
       span.label {{ $t('lyric_menu__glow_intensity') }}: 
       base-slider-bar.gap-left(:min="0.1" :max="2" :value="appSetting['playDetail.style.lyricGlowIntensity']" @change="setLyricGlowIntensity")
+
+
 
 </template>
 

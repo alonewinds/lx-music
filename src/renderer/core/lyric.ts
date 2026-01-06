@@ -61,6 +61,15 @@ const handleDesktopLyricMessage = (action: LX.DesktopLyric.WinMainActions) => {
           isPlay: isPlay.value,
           line: lyric.line,
           played_time: getCurrentTime(),
+          effectSettings: {
+            enable: appSetting['desktopLyric.effect.enable'],
+            floatEnabled: appSetting['desktopLyric.effect.floatEnabled'],
+            floatAmount: appSetting['desktopLyric.effect.floatAmount'],
+            scaleEnabled: appSetting['desktopLyric.effect.scaleEnabled'],
+            scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
+            scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
+            glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+          },
         },
       })
       break
@@ -200,6 +209,34 @@ export const setDisabledAutoPause = (disabledAutoPause: boolean) => {
   lrc.setDisabledAutoPause(disabledAutoPause)
 }
 
+export const setEffectSettings = () => {
+  const enable = appSetting['playDetail.effect.enable']
+  const effectSettings = {
+    floatEnabled: enable && appSetting['playDetail.effect.floatEnabled'],
+    floatAmount: appSetting['playDetail.effect.floatAmount'],
+    scaleEnabled: enable && appSetting['playDetail.effect.scaleEnabled'],
+    scaleAmount: appSetting['playDetail.effect.scaleAmount'],
+    scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
+    glowAnimateEnabled: enable && appSetting['playDetail.effect.glowAnimateEnabled'],
+  }
+  lrc.setEffectSettings(effectSettings as any)
+}
+
+export const syncDesktopEffectSettings = () => {
+  sendDesktopLyricInfo({
+    action: 'set_effect_settings',
+    data: {
+      enable: appSetting['desktopLyric.effect.enable'],
+      floatEnabled: appSetting['desktopLyric.effect.floatEnabled'],
+      floatAmount: appSetting['desktopLyric.effect.floatAmount'],
+      scaleEnabled: appSetting['desktopLyric.effect.scaleEnabled'],
+      scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
+      scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
+      glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+    },
+  })
+}
+
 let sources = new Map<string, boolean>()
 let prevDisabled = false
 export const setDisableAutoPauseBySource = (disabled: boolean, source: string) => {
@@ -246,6 +283,15 @@ export const sendInfo = () => {
       isPlay: isPlay.value,
       line: lyric.line,
       played_time: getCurrentTime(),
+      effectSettings: {
+        enable: appSetting['desktopLyric.effect.enable'],
+        floatEnabled: appSetting['desktopLyric.effect.floatEnabled'],
+        floatAmount: appSetting['desktopLyric.effect.floatAmount'],
+        scaleEnabled: appSetting['desktopLyric.effect.scaleEnabled'],
+        scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
+        scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
+        glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+      },
     },
   })
 }

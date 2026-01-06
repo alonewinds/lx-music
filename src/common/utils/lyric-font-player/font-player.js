@@ -30,12 +30,19 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
     return parts.length > 0 ? parts.join(' ') : undefined
   }
 
-  // Build filter value for glow
-  const getFilter = (brightness) => {
-    if (glowEnabled && brightness !== 1) {
-      return `brightness(${brightness})`
+  // Build filter value for glow (brightness + drop-shadow)
+  const getFilter = (brightness, glowIntensity = 0) => {
+    if (!glowEnabled) return undefined
+    const parts = []
+    if (brightness !== 1) {
+      parts.push(`brightness(${brightness})`)
     }
-    return undefined
+    if (glowIntensity > 0) {
+      // Use CSS variable for glow color to avoid issues with transparent text color
+      // Fallback to white if the variable is not defined
+      parts.push(`drop-shadow(0 0 ${glowIntensity}px var(--lyric-played-color, white))`)
+    }
+    return parts.length > 0 ? parts.join(' ') : undefined
   }
 
   let keyframes
@@ -50,9 +57,9 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
     const midTransform = getTransform(-floatAmount / 2, scaleAmount)
     const endTransform = getTransform(0, 1)
 
-    const startFilter = getFilter(1)
-    const midFilter = getFilter(1.3)
-    const endFilter = getFilter(1)
+    const startFilter = getFilter(1, 0)
+    const midFilter = getFilter(1.3, 8)  // Glow: brightness boost + 8px drop-shadow at midpoint
+    const endFilter = getFilter(1, 0)
 
     // Create keyframes with all effects
     if (floatEnabled || isLongSyllable || glowEnabled) {

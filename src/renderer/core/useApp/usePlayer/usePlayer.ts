@@ -33,6 +33,7 @@ import useWatchList from './useWatchList'
 import { HOTKEY_PLAYER } from '@common/hotKey'
 import { playNext, pause, playPrev, togglePlay, collectMusic, uncollectMusic, dislikeMusic } from '@renderer/core/player'
 import usePlaybackRate from './usePlaybackRate'
+import useLyricEffect from './useLyricEffect'
 import useSoundEffect from './useSoundEffect'
 import useMaxOutputChannelCount from './useMaxOutputChannelCount'
 import { setPowerSaveBlocker } from '@renderer/core/player/utils'
@@ -50,6 +51,7 @@ export default () => {
   useMaxOutputChannelCount()
   useSoundEffect()
   usePlaybackRate()
+  useLyricEffect()
   useWatchList()
   usePreloadNextMusic()
 
@@ -155,7 +157,7 @@ export default () => {
 
 
   onBeforeUnmount(() => {
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     window.key_event.off(HOTKEY_PLAYER.next.action, handlePlayNext)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     window.key_event.off(HOTKEY_PLAYER.prev.action, handlePlayPrev)

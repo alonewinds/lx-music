@@ -30,6 +30,8 @@ dd
     base-checkbox(id="setting_desktop_lyric_ellipsis" :model-value="appSetting['desktopLyric.style.ellipsis']" :label="$t('setting__desktop_lyric_ellipsis')" @update:model-value="updateSetting({ 'desktopLyric.style.ellipsis': $event })")
   .gap-top
     base-checkbox(id="setting_desktop_lyric_zoom" :model-value="appSetting['desktopLyric.style.isZoomActiveLrc']" :label="$t('desktop_lyric__lrc_active_zoom_on')" @update:model-value="updateSetting({ 'desktopLyric.style.isZoomActiveLrc': $event })")
+  .gap-top
+    base-checkbox(id="setting_desktop_lyric_effect_enable" :model-value="appSetting['desktopLyric.effect.enable']" :label="$t('setting__effect_enable')" @update:model-value="updateSetting({'desktopLyric.effect.enable': $event})")
   //- .gap-top
     base-checkbox(id="setting_desktop_lyric_fontWeight" :model-value="appSetting['desktopLyric.style.fontWeight']" @update:model-value="updateSetting({ 'desktopLyric.style.fontWeight': $event })" :label="$t('setting__desktop_lyric_font_weight')")
 

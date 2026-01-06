@@ -35,6 +35,7 @@ declare namespace LX {
       'desktopLyric.style.lyricGlowColor1': LX.AppSetting['desktopLyric.style.lyricGlowColor1']
       'desktopLyric.style.lyricGlowColor2': LX.AppSetting['desktopLyric.style.lyricGlowColor2']
       'desktopLyric.style.lyricGlowIntensity': LX.AppSetting['desktopLyric.style.lyricGlowIntensity']
+      'desktopLyric.effect.enable': LX.AppSetting['desktopLyric.effect.enable']
       'desktopLyric.effect.floatEnabled': LX.AppSetting['desktopLyric.effect.floatEnabled']
       'desktopLyric.effect.floatAmount': LX.AppSetting['desktopLyric.effect.floatAmount']
       'desktopLyric.effect.scaleEnabled': LX.AppSetting['desktopLyric.effect.scaleEnabled']
@@ -59,6 +60,16 @@ declare namespace LX {
     }
     type LyricAction<A, D = undefined> = D extends undefined ? LyricActionBase<A> : LyricActionData<A, D>
 
+    export interface EffectSettings {
+      enable: boolean
+      floatEnabled: boolean
+      floatAmount: number
+      scaleEnabled: boolean
+      scaleAmount: number
+      scaleLongSyllableDuration: number
+      glowAnimateEnabled: boolean
+    }
+
     type LyricActions = LyricAction<'set_info', {
       id: string | null
       singer: string
@@ -72,6 +83,7 @@ declare namespace LX {
       isPlay: boolean
       line: number
       played_time: number
+      effectSettings: EffectSettings
     }>
       | LyricAction<'set_status', {
         isPlay: boolean
@@ -89,6 +101,7 @@ declare namespace LX {
       | LyricAction<'set_play', number>
       | LyricAction<'set_pause'>
       | LyricAction<'set_stop'>
+      | LyricAction<'set_effect_settings', EffectSettings>
       | LyricAction<'send_analyser_data_array', Uint8Array>
 
 

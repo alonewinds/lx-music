@@ -75,9 +75,10 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.style.lyricGlowColor2': 'rgba(7, 197, 86, 1)', // 默认绿色
   'playDetail.style.lyricGlowIntensity': 0.5, // 辉光强度 0-1
   // 播放详情页歌词动态特效
-  'playDetail.effect.floatEnabled': true, // 字符浮动动画
+  'playDetail.effect.enable': false, // 歌词动画特效总开关
+  'playDetail.effect.floatEnabled': false, // 字符浮动动画
   'playDetail.effect.floatAmount': 8, // 浮动幅度（像素）
-  'playDetail.effect.scaleEnabled': true, // 缩放呼吸动画
+  'playDetail.effect.scaleEnabled': false, // 缩放呼吸动画
   'playDetail.effect.scaleAmount': 1.15, // 缩放倍率
   'playDetail.effect.scaleLongSyllableDuration': 700, // 长音节阈值（ms）
   'playDetail.effect.glowAnimateEnabled': false, // 动态发光（随播放进度变化）
@@ -118,9 +119,10 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.style.lyricGlowColor2': 'rgba(7, 197, 86, 1)',
   'desktopLyric.style.lyricGlowIntensity': 0.5,
   // 桌面歌词动态特效
-  'desktopLyric.effect.floatEnabled': true, // 字符浮动动画
+  'desktopLyric.effect.enable': false, // 歌词动画特效总开关
+  'desktopLyric.effect.floatEnabled': false, // 字符浮动动画
   'desktopLyric.effect.floatAmount': 8, // 浮动幅度（像素）
-  'desktopLyric.effect.scaleEnabled': true, // 缩放呼吸动画
+  'desktopLyric.effect.scaleEnabled': false, // 缩放呼吸动画
   'desktopLyric.effect.scaleAmount': 1.15, // 缩放倍率
   'desktopLyric.effect.scaleLongSyllableDuration': 700, // 长音节阈值（ms）
   'desktopLyric.effect.glowAnimateEnabled': false, // 动态发光

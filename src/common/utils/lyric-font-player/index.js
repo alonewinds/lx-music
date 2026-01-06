@@ -251,4 +251,15 @@ export default class Lyric {
   setDisabledAutoPause(autoPause) {
     this.linePlayer.setDisabledAutoPause(autoPause)
   }
+
+  setEffectSettings(effectSettings) {
+    this.effectSettings = effectSettings
+    // Re-initialize lines with new effect settings
+    this._initLines(this.initInfo.lines, this.initInfo.offset, true)
+    if (this.linePlayer.isPlay) {
+      const num = this.playingLineNum
+      this.playingLineNum = 0
+      this._handleLinePlayerOnPlay(num, '', this.linePlayer._currentTime())
+    } else this.playingLineNum = 0
+  }
 }

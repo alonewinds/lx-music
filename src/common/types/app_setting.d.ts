@@ -335,6 +335,11 @@ declare global {
       'playDetail.style.lyricGlowIntensity': number
 
       /**
+       * 播放详情页-是否启用歌词动画特效总开关
+       */
+      'playDetail.effect.enable': boolean
+
+      /**
        * 播放详情页-是否启用字符浮动动画
        */
       'playDetail.effect.floatEnabled': boolean
@@ -539,6 +544,11 @@ declare global {
        * 桌面歌词-辉光强度
        */
       'desktopLyric.style.lyricGlowIntensity': number
+
+      /**
+       * 桌面歌词-是否启用歌词动画特效总开关
+       */
+      'desktopLyric.effect.enable': boolean
 
       /**
        * 桌面歌词-是否启用字符浮动动画

@@ -1,7 +1,7 @@
 import { onProvideMainWindowChannel } from '@lyric/utils/ipc'
 import { onBeforeUnmount } from '@common/utils/vueTools'
 import { setMusicInfo, setIsPlay } from '../store/action'
-import { pause, play, setLyric, setLyricOffset, setPlaybackRate, stop } from './lyric'
+import { pause, play, setEffectSettings, setLyric, setLyricOffset, setPlaybackRate, stop } from './lyric'
 import { lyrics } from '@lyric/store/lyric'
 
 let mainWindowPort: Electron.IpcRendererEvent['ports'][0] | null = null
@@ -26,6 +26,7 @@ const handleDesktopLyricMessage = (event: LX.DesktopLyric.LyricActions) => {
       lyrics.rlyric = event.data.rlrc
       lyrics.lxlyric = event.data.lxlrc
       setLyric()
+      if (event.data.effectSettings) setEffectSettings(event.data.effectSettings)
       if (event.data.isPlay) {
         setImmediate(() => {
           getStatus()
@@ -61,6 +62,9 @@ const handleDesktopLyricMessage = (event: LX.DesktopLyric.LyricActions) => {
     case 'set_stop':
       setIsPlay(false)
       stop()
+      break
+    case 'set_effect_settings':
+      setEffectSettings(event.data)
       break
     default:
       for (const listener of listeners) {

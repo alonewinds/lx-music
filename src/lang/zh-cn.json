@@ -153,6 +153,7 @@
   "lyric_search__click_to_preview": "点击左侧歌曲加载歌词",
   "lyric_search__select_hint": "请先选择一首歌曲",
   "lyric_search__apply": "应用歌词",
+  "lyric_search__source_all": "全部",
   "lyric_editor__title": "歌词编辑器",
   "lyric_editor__input_label": "歌词输入",
   "lyric_editor__input_placeholder": "请粘贴或输入歌词，每行一句...",

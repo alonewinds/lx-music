@@ -33,7 +33,14 @@ teleport(to="#root")
         div(:class="$style.resultSection")
           div(:class="$style.sectionHeader")
             span {{ $t('lyric_search__results') }}
-            span(v-if="searchResults.length" :class="$style.count") ({{ searchResults.length }})
+            span(v-if="filteredResults.length" :class="$style.count") ({{ filteredResults.length }})
+            //- 歌词源筛选下拉菜单
+            select(
+              v-model="selectedSource"
+              :class="$style.sourceFilter"
+            )
+              option(value="all") {{ $t('lyric_search__source_all') }}
+              option(v-for="(name, key) in sourceNames" :key="key" :value="key") {{ name }}
           
           div(v-if="isSearching" :class="$style.loading")
             span {{ $t('lyric_search__loading') }}
@@ -46,10 +53,10 @@ teleport(to="#root")
           
           div(v-else :class="$style.resultList")
             div(
-              v-for="(item, index) in searchResults"
+              v-for="(item, index) in filteredResults"
               :key="`${item.source}-${item.id}`"
-              :class="[$style.resultItem, { [$style.selected]: selectedIndex === index }]"
-              @click="handleSelectItem(index)"
+              :class="[$style.resultItem, { [$style.selected]: selectedItem === item }]"
+              @click="handleSelectItem(item)"
             )
               span(:class="$style.sourceTag") {{ sourceNames[item.source] }}
               div(:class="$style.itemInfo")
@@ -105,10 +112,19 @@ export default {
     const searchError = ref('')
     const searchResults = ref([])
     const hasSearched = ref(false)
-    const selectedIndex = ref(-1)
+    const selectedSource = ref('all')  // 当前选中的歌词源筛选
+    const selectedItem = ref(null)     // 当前选中的结果项
     const isLoadingLyric = ref(false)
     const previewLyric = ref('')
     const currentLyricContent = ref(null)
+
+    // 根据选中的歌词源筛选结果
+    const filteredResults = computed(() => {
+      if (selectedSource.value === 'all') {
+        return searchResults.value
+      }
+      return searchResults.value.filter(item => item.source === selectedSource.value)
+    })
 
     // 初始化关键词
     watch(() => props.visible, async (val) => {
@@ -121,7 +137,8 @@ export default {
         }
         // 重置状态
         searchResults.value = []
-        selectedIndex.value = -1
+        selectedSource.value = 'all'
+        selectedItem.value = null
         previewLyric.value = ''
         currentLyricContent.value = null
         hasSearched.value = false
@@ -147,7 +164,8 @@ export default {
       isSearching.value = true
       searchError.value = ''
       searchResults.value = []
-      selectedIndex.value = -1
+      selectedSource.value = 'all'
+      selectedItem.value = null
       previewLyric.value = ''
       hasSearched.value = true
 
@@ -166,13 +184,12 @@ export default {
     }
 
     // 选择搜索结果项
-    const handleSelectItem = async (index) => {
-      if (selectedIndex.value === index) return
-      selectedIndex.value = index
+    const handleSelectItem = async (item) => {
+      if (selectedItem.value === item) return
+      selectedItem.value = item
       previewLyric.value = ''
       currentLyricContent.value = null
 
-      const item = searchResults.value[index]
       if (!item) return
 
       isLoadingLyric.value = true
@@ -205,8 +222,10 @@ export default {
       isSearching,
       searchError,
       searchResults,
+      filteredResults,
       hasSearched,
-      selectedIndex,
+      selectedSource,
+      selectedItem,
       isLoadingLyric,
       previewLyric,
       sourceNames,
@@ -336,6 +355,28 @@ export default {
 .count {
   font-size: 12px;
   opacity: 0.7;
+}
+
+.sourceFilter {
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid var(--color-primary-background-hover);
+  border-radius: @radius-border;
+  background: var(--color-primary-background);
+  color: var(--color-font);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:hover, &:focus {
+    border-color: var(--color-primary);
+  }
+
+  option {
+    background: var(--color-content-background);
+    color: var(--color-font);
+  }
 }
 
 .loadingText {

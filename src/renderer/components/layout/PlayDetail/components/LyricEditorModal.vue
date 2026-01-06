@@ -30,12 +30,27 @@ teleport(to="#root")
           div(:class="$style.sectionHeader")
             span {{ $t('lyric_editor__input_label') }}
             span(:class="$style.lineCount") ({{ linesData.length }} {{ $t('lyric_editor__lines') }})
+            button(
+              :class="[$style.toggleViewBtn, { [$style.active]: showTimestampView }]"
+              :title="showTimestampView ? $t('lyric_editor__show_plain') : $t('lyric_editor__show_timestamp')"
+              @click="toggleTimestampView"
+            ) {{ showTimestampView ? $t('lyric_editor__view_timestamp') : $t('lyric_editor__view_plain') }}
+          //- 纯文本编辑模式
           textarea(
+            v-if="!showTimestampView"
             ref="textareaRef"
             v-model="rawText"
             :class="$style.textarea"
             :placeholder="$t('lyric_editor__input_placeholder')"
             @input="handleTextInput"
+          )
+          //- 带时间轴显示模式（只读）
+          textarea(
+            v-else
+            ref="textareaRef"
+            :value="formattedLyricText"
+            :class="[$style.textarea, $style.readonlyTextarea]"
+            readonly
           )
 
         //- 右侧：打轴区
@@ -161,6 +176,7 @@ import { isPlay } from '@renderer/store/player/state'
 import {
   splitLyricText,
   formatTimeDisplay,
+  formatTimeTag,
   buildLxlrcFromLines,
   createLineData,
   getWordTimestampedCount,
@@ -198,6 +214,7 @@ export default {
     const currentTime = ref(0)
     const editMode = ref('line') // 'line' | 'word'
     const showLineSelector = ref(false)
+    const showTimestampView = ref(false) // 是否显示带时间轴的歌词格式
     let animationFrameId = null
     let lastWordStampTime = -1 // 记录上一个字的打轴时间
 
@@ -251,6 +268,44 @@ export default {
         return currentWords.value.some(word => word.offset >= 0)
       }
     })
+
+    // 格式化歌词文本（带时间轴）
+    const formattedLyricText = computed(() => {
+      if (linesData.value.length === 0) return ''
+      
+      if (editMode.value === 'line') {
+        // 逐行模式：生成普通 LRC 格式
+        return linesData.value.map(line => {
+          if (line.lineTime >= 0) {
+            return `${formatTimeTag(line.lineTime)}${line.text}`
+          }
+          return line.text
+        }).join('\n')
+      } else {
+        // 逐字模式：生成每字时间戳格式
+        return linesData.value.map(line => {
+          if (line.lineTime >= 0 && line.isWordMode && line.words.some(w => w.offset >= 0)) {
+            // 有逐字时间，生成每字时间戳格式
+            return line.words.map(w => {
+              if (w.offset >= 0) {
+                const wordTime = line.lineTime + w.offset
+                return `${formatTimeTag(wordTime)}${w.char}`
+              }
+              return w.char
+            }).join('')
+          } else if (line.lineTime >= 0) {
+            // 只有行时间
+            return `${formatTimeTag(line.lineTime)}${line.text}`
+          }
+          return line.text
+        }).join('\n')
+      }
+    })
+
+    // 切换时间轴显示
+    const toggleTimestampView = () => {
+      showTimestampView.value = !showTimestampView.value
+    }
 
     // 更新当前播放时间
     const updateCurrentTime = () => {
@@ -705,6 +760,9 @@ export default {
       wordProgressText,
       canStamp,
       canUndo,
+      showTimestampView,
+      formattedLyricText,
+      toggleTimestampView,
       formatTimeDisplay,
       formatWordTime,
       handleTextInput,
@@ -870,6 +928,34 @@ export default {
   &::placeholder {
     color: var(--color-font-label);
     opacity: 0.5;
+  }
+}
+
+.readonlyTextarea {
+  background: var(--color-primary-background-hover);
+  cursor: default;
+  color: var(--color-font-label);
+}
+
+.toggleViewBtn {
+  margin-left: auto;
+  padding: 3px 8px;
+  font-size: 11px;
+  border: 1px solid var(--color-primary-background-hover);
+  background: var(--color-primary-background);
+  color: var(--color-font-label);
+  border-radius: @radius-border;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-primary-background-hover);
+  }
+
+  &.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
   }
 }
 

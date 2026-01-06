@@ -157,12 +157,12 @@ import { isPlay } from '@renderer/store/player/state'
 import {
   splitLyricText,
   formatTimeDisplay,
-  isLxlrcFormat,
-  parseLxlrcToLines,
-  convertLrcToLineData,
   buildLxlrcFromLines,
   createLineData,
   getWordTimestampedCount,
+  smartParseLyric,
+  isLxlrcFormat,
+  isPerCharTimestampFormat,
 } from '@renderer/utils/lyricEditor'
 
 export default {
@@ -273,7 +273,32 @@ export default {
 
     // 处理文本输入
     const handleTextInput = () => {
-      const newLines = splitLyricText(rawText.value)
+      const inputText = rawText.value
+      
+      // 检查输入是否包含时间信息（lxlrc 格式或每字时间戳格式）
+      const hasTimestampInfo = isLxlrcFormat(inputText) || isPerCharTimestampFormat(inputText)
+      
+      if (hasTimestampInfo) {
+        // 输入包含时间信息，使用智能解析保留时间戳
+        linesData.value = smartParseLyric(inputText)
+        // 更新 rawText 为纯文本（去除时间标签后的文本）
+        rawText.value = linesData.value.map(l => l.text).join('\n')
+        
+        // 找到第一个未完成逐字打轴的行（或第一个未打轴的行）
+        const firstIncomplete = linesData.value.findIndex(l => {
+          if (l.lineTime < 0) return true
+          if (l.isWordMode) {
+            return l.words.some(w => w.offset < 0 || w.duration < 0)
+          }
+          return false
+        })
+        currentLineIndex.value = firstIncomplete >= 0 ? firstIncomplete : linesData.value.length
+        
+        return
+      }
+      
+      // 普通文本输入，按原逻辑处理
+      const newLines = splitLyricText(inputText)
       const oldLinesData = linesData.value
       
       if (newLines.length === oldLinesData.length) {
@@ -347,14 +372,29 @@ export default {
       if (currentWordIndex.value >= currentWords.value.length) return
 
       const time = getPlayerCurrentTime() * 1000
-      const lineTime = linesData.value[currentLineIndex.value].lineTime
+      const currentLine = linesData.value[currentLineIndex.value]
       
       // 如果行时间还没设置，使用当前时间作为行时间
-      if (lineTime < 0) {
-        linesData.value[currentLineIndex.value].lineTime = time
+      if (currentLine.lineTime < 0) {
+        currentLine.lineTime = time
+        
+        // 如果是这一行的第一个字，且上一行存在，更新上一行最后一个字的 duration
+        if (currentWordIndex.value === 0 && currentLineIndex.value > 0) {
+          const prevLine = linesData.value[currentLineIndex.value - 1]
+          if (prevLine.isWordMode && prevLine.words.length > 0) {
+            const lastWord = prevLine.words[prevLine.words.length - 1]
+            // 如果上一行最后一个字的 duration 是默认值(500)，用真实时间重新计算
+            if (lastWord.offset >= 0 && lastWord.duration === 500) {
+              const realDuration = time - prevLine.lineTime - lastWord.offset
+              if (realDuration > 0) {
+                lastWord.duration = Math.round(realDuration)
+              }
+            }
+          }
+        }
       }
 
-      const actualLineTime = linesData.value[currentLineIndex.value].lineTime
+      const actualLineTime = currentLine.lineTime
       const offset = Math.max(0, Math.round(time - actualLineTime))
 
       // 设置当前字的 offset
@@ -370,7 +410,7 @@ export default {
       }
 
       // 标记为逐字模式
-      linesData.value[currentLineIndex.value].isWordMode = true
+      currentLine.isWordMode = true
       lastWordStampTime = time
 
       // 移动到下一个字
@@ -378,9 +418,22 @@ export default {
         currentWordIndex.value++
         scrollToCurrentWord()
       } else {
-        // 最后一个字，设置一个默认的 duration
+        // 最后一个字，设置一个默认的 duration（后面跳转下一行时可能会被真实时间覆盖）
         if (word.duration < 0) {
           word.duration = 500 // 默认 500ms
+        }
+        
+        // 自动跳转到下一行
+        if (currentLineIndex.value < linesData.value.length - 1) {
+          const prevLineLastWord = word
+          const prevLineTime = actualLineTime
+          
+          currentLineIndex.value++
+          currentWordIndex.value = 0
+          lastWordStampTime = -1
+          scrollToCurrentLine()
+          
+          // 注意：下一次打轴时会为新行设置行时间
         }
       }
     }
@@ -539,13 +592,8 @@ export default {
       if (val) {
         // 加载现有歌词
         if (props.existingLyric) {
-          if (isLxlrcFormat(props.existingLyric)) {
-            // lxlrc 格式（包含逐字时间）
-            linesData.value = parseLxlrcToLines(props.existingLyric)
-          } else {
-            // 普通 LRC 或纯文本
-            linesData.value = convertLrcToLineData(props.existingLyric)
-          }
+          // 使用智能解析函数自动识别格式（支持 lxlrc、每字时间戳、普通 LRC）
+          linesData.value = smartParseLyric(props.existingLyric)
           // 重建 rawText
           rawText.value = linesData.value.map(l => l.text).join('\n')
           

@@ -131,7 +131,11 @@ teleport(to="#root")
             base-btn(
               :class="$style.controlBtn"
               :disabled="!canUndo"
+              :title="$t('lyric_editor__undo_tip')"
               @click="handleUndo"
+              @mousedown="handleUndoMouseDown"
+              @mouseup="handleUndoMouseUp"
+              @mouseleave="handleUndoMouseUp"
             ) {{ $t('lyric_editor__undo') }}
 
             base-btn(
@@ -493,6 +497,52 @@ export default {
       }
     }
 
+    // 长按撤销按钮相关
+    let undoLongPressTimer = null
+    const LONG_PRESS_DURATION = 1000 // 长按 1 秒触发
+
+    const handleUndoMouseDown = () => {
+      undoLongPressTimer = setTimeout(() => {
+        // 长按触发：一键清除所有时间轴
+        handleClearAllTimestamps()
+      }, LONG_PRESS_DURATION)
+    }
+
+    const handleUndoMouseUp = () => {
+      if (undoLongPressTimer) {
+        clearTimeout(undoLongPressTimer)
+        undoLongPressTimer = null
+      }
+    }
+
+    // 一键清除所有时间轴
+    const handleClearAllTimestamps = () => {
+      if (editMode.value === 'line') {
+        // 逐行模式：清除所有行的时间
+        linesData.value.forEach(line => {
+          line.lineTime = -1
+          line.isWordMode = false
+          line.words.forEach(word => {
+            word.offset = -1
+            word.duration = -1
+          })
+        })
+        currentLineIndex.value = 0
+        scrollToCurrentLine()
+      } else {
+        // 逐字模式：清除当前行的所有逐字时间
+        if (currentWords.value.length > 0) {
+          currentWords.value.forEach(word => {
+            word.offset = -1
+            word.duration = -1
+          })
+          linesData.value[currentLineIndex.value].isWordMode = false
+          currentWordIndex.value = 0
+          scrollToCurrentWord()
+        }
+      }
+    }
+
     // 点击行选择
     const handleLineClick = (index) => {
       currentLineIndex.value = index
@@ -662,6 +712,8 @@ export default {
       switchMode,
       handleStamp,
       handleUndo,
+      handleUndoMouseDown,
+      handleUndoMouseUp,
       handleLineClick,
       handleLineDoubleClick,
       handleWordClick,

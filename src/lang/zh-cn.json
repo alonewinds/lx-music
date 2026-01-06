@@ -174,6 +174,7 @@
   "lyric_editor__word_mode_badge": "逐字",
   "lyric_editor__current_line": "当前行",
   "lyric_editor__change_line": "切换行",
+  "lyric_editor__undo_tip": "点击撤销上一步，长按 1 秒清除所有时间轴",
   "media_device__empty_device_tip": "音频输出设备为空，若出现无法播放的情况，请检查声卡驱动是否已安装。或卸载并重新安装软件，安装时选「仅为我安装」，并保持默认安装路径。",
   "min": "最小化",
   "music_album": "专辑名",

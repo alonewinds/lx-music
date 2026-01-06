@@ -97,7 +97,7 @@
   "list__move_to": "Move to ...",
   "list__movedown": "Move down",
   "list__moveup": "Move up",
-  "list__name_default": "Default",
+  "list__name_default": "Audition List",
   "list__name_love": "Loved",
   "list__new_list_btn": "New List",
   "list__new_list_input": "New list...",
@@ -262,7 +262,7 @@
   "player__music_singer": "Artist: ",
   "player__next": "Next",
   "player__pause": "Pause",
-  "player__pic_tip": "Playback detail page\n(Right-click to locate the currently playing song in \"Your Library\")",
+  "player__pic_tip": "Player Detail (Right click to locate the current playing song in my list, Middle click to open Play Queue)",
   "player__play": "Play",
   "player__play_toggle_mode_list": "In Order",
   "player__play_toggle_mode_list_loop": "Repeat Playlist",
@@ -777,5 +777,12 @@
   "user_api_import_online__input_confirm": "Import",
   "user_api_import_online__input_loading": "Importing...",
   "user_api_import_online__input_tip": "Please enter an HTTP link",
-  "user_api_import_online__title": "Import Music API from network."
+  "user_api_import_online__title": "Import Music API from network.",
+  "play_queue__title": "Play Queue",
+  "play_queue__now_playing": "Now Playing",
+  "play_queue__play_later": "Play Later",
+  "play_queue__remaining": "Remaining",
+  "play_queue__clear": "Clear",
+  "play_queue__empty": "Queue is empty",
+  "play_queue__remove": "Remove"
 }

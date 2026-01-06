@@ -3,7 +3,7 @@
     <div :class="$style.progress">
       <common-progress-bar v-if="!isShowPlayerDetail" :class-name="$style.progressBar" :progress="progress" :handle-transition-end="handleTransitionEnd" :is-active-transition="isActiveTransition" />
     </div>
-    <div :class="$style.picContent" :aria-label="$t('player__pic_tip')" @contextmenu="handleToMusicLocation" @click="showPlayerDetail">
+    <div :class="$style.picContent" :aria-label="$t('player__pic_tip')" @contextmenu="handleToMusicLocation" @click="showPlayerDetail" @mousedown.middle.prevent="showPlayQueue">
       <img v-if="musicInfo.pic" :src="musicInfo.pic" decoding="async" @error="imgError">
       <div v-else :class="$style.emptyPic">L<span>X</span></div>
     </div>
@@ -62,6 +62,7 @@ import {
 import {
   setMusicInfo,
   setShowPlayerDetail,
+  setShowPlayQueue,
 } from '@renderer/store/player/action'
 import { appSetting } from '@renderer/store/setting'
 import { togglePlay, playNext, playPrev } from '@renderer/core/player'
@@ -110,6 +111,10 @@ export default {
       })
     }
 
+    const showPlayQueue = () => {
+      setShowPlayQueue(true)
+    }
+
     const title = computed(() => {
       return musicInfo.name
         ? appSetting['download.fileName'].replace('歌名', musicInfo.name).replace('歌手', musicInfo.singer)
@@ -138,6 +143,7 @@ export default {
       playPrev,
       handleToMusicLocation,
       isShowPlayerDetail,
+      showPlayQueue,
     }
   },
 }

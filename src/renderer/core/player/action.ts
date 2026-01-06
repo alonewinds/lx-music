@@ -64,7 +64,7 @@ const diffCurrentMusicInfo = (curMusicInfo: LX.Music.MusicInfo | LX.Download.Lis
 }
 
 let cancelDelayRetry: (() => void) | null = null
-const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<string | null> => {
+const delayRetry = async (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<string | null> => {
   // if (cancelDelayRetry) cancelDelayRetry()
   return new Promise<string | null>((resolve, reject) => {
     const time = getRandom(2, 6)
@@ -73,7 +73,7 @@ const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, i
       getMusicPlayUrl(musicInfo, isRefresh, true).then((result) => {
         cancelDelayRetry = null
         resolve(result)
-      }).catch(async(err: any) => {
+      }).catch(async (err: any) => {
         cancelDelayRetry = null
         reject(err)
       })
@@ -85,7 +85,7 @@ const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, i
     }
   })
 }
-const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false, isRetryed = false): Promise<string | null> => {
+const getMusicPlayUrl = async (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false, isRetryed = false): Promise<string | null> => {
   // this.musicInfo.url = await getMusicPlayUrl(targetSong, type)
   setAllStatus(window.i18n.t('player__getting_url'))
   if (appSetting['player.autoSkipOnError']) addLoadTimeout()
@@ -97,7 +97,7 @@ const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListIt
     musicInfo: toggleMusicInfo,
     isRefresh,
     allowToggleSource: false,
-  }) : Promise.reject(new Error('not found'))).catch(async() => {
+  }) : Promise.reject(new Error('not found'))).catch(async () => {
     return getMusicUrl({
       musicInfo,
       isRefresh,
@@ -110,7 +110,7 @@ const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListIt
     if (window.lx.isPlayedStop || diffCurrentMusicInfo(musicInfo)) return null
 
     return url
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
   }).catch(err => {
     // console.log('err', err.message)
     if (window.lx.isPlayedStop ||
@@ -147,7 +147,7 @@ export const setMusicUrl = (musicInfo: LX.Music.MusicInfo | LX.Download.ListItem
 }
 
 // 恢复上次播放的状态
-const handleRestorePlay = async(restorePlayInfo: LX.Player.SavedPlayInfo) => {
+const handleRestorePlay = async (restorePlayInfo: LX.Player.SavedPlayInfo) => {
   const musicInfo = playMusicInfo.musicInfo
   if (!musicInfo) return
 
@@ -264,6 +264,17 @@ export const playList = (listId: string, index: number) => {
   handlePlay()
 }
 
+/**
+ * 播放指定歌曲
+ * @param musicInfo 歌曲信息
+ * @param listId 列表ID
+ * @param isTempPlay 是否临时播放
+ */
+export const playMusic = (musicInfo: LX.Music.MusicInfo, listId: string | null, isTempPlay: boolean = false) => {
+  setPlayMusicInfo(listId, musicInfo, isTempPlay)
+  handlePlay()
+}
+
 const handleToggleStop = () => {
   stop()
   setTimeout(() => {
@@ -282,7 +293,7 @@ export const resetRandomNextMusicInfo = () => {
   }
 }
 
-export const getNextPlayMusicInfo = async(): Promise<LX.Player.PlayMusicInfo | null> => {
+export const getNextPlayMusicInfo = async (): Promise<LX.Player.PlayMusicInfo | null> => {
   if (tempPlayList.length) { // 如果稍后播放列表存在歌曲则直接播放改列表的歌曲
     const playMusicInfo = tempPlayList[0]
     return playMusicInfo
@@ -374,7 +385,7 @@ const handlePlayNext = (playMusicInfo: LX.Player.PlayMusicInfo) => {
  * @param isAutoToggle 是否自动切换
  * @returns
  */
-export const playNext = async(isAutoToggle = false): Promise<void> => {
+export const playNext = async (isAutoToggle = false): Promise<void> => {
   console.log('skip next', isAutoToggle)
   if (tempPlayList.length) { // 如果稍后播放列表存在歌曲则直接播放改列表的歌曲
     const playMusicInfo = tempPlayList[0]
@@ -488,7 +499,7 @@ export const playNext = async(isAutoToggle = false): Promise<void> => {
 /**
  * 上一曲
  */
-export const playPrev = async(isAutoToggle = false): Promise<void> => {
+export const playPrev = async (isAutoToggle = false): Promise<void> => {
   if (playMusicInfo.musicInfo == null) {
     handleToggleStop()
     return
@@ -638,7 +649,7 @@ export const uncollectMusic = () => {
 /**
  * 不喜欢当前播放的歌曲
  */
-export const dislikeMusic = async() => {
+export const dislikeMusic = async () => {
   if (!playMusicInfo.musicInfo) return
   const minfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
   await addDislikeInfo([{ name: minfo.name, singer: minfo.singer }])

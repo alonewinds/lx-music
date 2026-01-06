@@ -121,3 +121,62 @@ export const setPlayDetailLyricAlign = (align: LX.AppSetting['playDetail.style.a
 export const setEnableAudioVisualization = (enable: boolean) => {
   updateSetting({ 'player.audioVisualization': enable })
 }
+
+/**
+ * 设置播放详情页歌词辉光效果
+ * @param effect 辉光效果类型
+ */
+export const setLyricGlowMode = (effect: LX.AppSetting['playDetail.style.lyricGlowMode']) => {
+  updateSetting({ 'playDetail.style.lyricGlowMode': effect })
+}
+/**
+ * 设置播放详情页歌词辉光颜色1
+ * @param color 颜色
+ */
+export const setLyricGlowColor1 = (color: string) => {
+  updateSetting({ 'playDetail.style.lyricGlowColor1': color })
+}
+/**
+ * 设置播放详情页歌词辉光颜色2
+ * @param color 颜色
+ */
+export const setLyricGlowColor2 = (color: string) => {
+  updateSetting({ 'playDetail.style.lyricGlowColor2': color })
+}
+/**
+ * 设置播放详情页歌词辉光强度
+ * @param intensity 强度
+ */
+export const setLyricGlowIntensity = (intensity: number) => {
+  updateSetting({ 'playDetail.style.lyricGlowIntensity': intensity })
+}
+
+
+/**
+ * 设置桌面歌词辉光效果
+ * @param effect 辉光效果类型
+ */
+export const setDesktopLyricGlowMode = (effect: LX.AppSetting['desktopLyric.style.lyricGlowMode']) => {
+  updateSetting({ 'desktopLyric.style.lyricGlowMode': effect })
+}
+/**
+ * 设置桌面歌词辉光颜色1
+ * @param color 颜色
+ */
+export const setDesktopLyricGlowColor1 = (color: string) => {
+  updateSetting({ 'desktopLyric.style.lyricGlowColor1': color })
+}
+/**
+ * 设置桌面歌词辉光颜色2
+ * @param color 颜色
+ */
+export const setDesktopLyricGlowColor2 = (color: string) => {
+  updateSetting({ 'desktopLyric.style.lyricGlowColor2': color })
+}
+/**
+ * 设置桌面歌词辉光强度
+ * @param intensity 强度
+ */
+export const setDesktopLyricGlowIntensity = (intensity: number) => {
+  updateSetting({ 'desktopLyric.style.lyricGlowIntensity': intensity })
+}

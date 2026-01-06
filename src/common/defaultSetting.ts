@@ -70,6 +70,10 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.style.fontSize': 140,
   'playDetail.style.align': 'center',
   'playDetail.isDelayScroll': true,
+  'playDetail.style.lyricGlowMode': 'none', // 歌词辉光效果: none, soft, breathing, gradient, sweep
+  'playDetail.style.lyricGlowColor1': 'rgba(7, 197, 86, 1)', // 默认绿色
+  'playDetail.style.lyricGlowColor2': 'rgba(7, 197, 86, 1)', // 默认绿色
+  'playDetail.style.lyricGlowIntensity': 0.5, // 辉光强度 0-1
 
   'desktopLyric.enable': false,
   'desktopLyric.isLock': false,
@@ -102,6 +106,10 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.style.isFontWeightFont': true,
   'desktopLyric.style.isFontWeightLine': true,
   'desktopLyric.style.isFontWeightExtended': true,
+  'desktopLyric.style.lyricGlowMode': 'none',
+  'desktopLyric.style.lyricGlowColor1': 'rgba(7, 197, 86, 1)',
+  'desktopLyric.style.lyricGlowColor2': 'rgba(7, 197, 86, 1)',
+  'desktopLyric.style.lyricGlowIntensity': 0.5,
 
   'list.isClickPlayList': false,
   'list.isShowSource': true,

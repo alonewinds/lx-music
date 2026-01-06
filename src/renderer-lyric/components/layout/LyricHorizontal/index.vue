@@ -31,6 +31,8 @@ export default {
       if (setting['desktopLyric.style.isFontWeightFont']) name.push(styles.fontWeightFont)
       if (setting['desktopLyric.style.isFontWeightLine']) name.push(styles.fontWeightLine)
       if (setting['desktopLyric.style.isFontWeightExtended']) name.push(styles.fontWeightExtended)
+      const glowMode = setting['desktopLyric.style.lyricGlowMode']
+      if (glowMode && glowMode !== 'none') name.push(styles['glow-' + glowMode])
       return name
     })
     const lrcStyles = computed(() => ({
@@ -40,6 +42,9 @@ export default {
       textAlign: setting['desktopLyric.style.align'],
       '--line-gap': setting['desktopLyric.style.lineGap'] + 'px',
       '--line-extended-gap': (setting['desktopLyric.style.lineGap'] / 3).toFixed(2) + 'px',
+      '--lyric-glow-color-1': setting['desktopLyric.style.lyricGlowColor1'],
+      '--lyric-glow-color-2': setting['desktopLyric.style.lyricGlowColor2'],
+      '--lyric-glow-intensity': setting['desktopLyric.style.lyricGlowIntensity'],
     }))
     const isComputeHeight = computed(() => {
       return setting['desktopLyric.style.isZoomActiveLrc'] && !setting['desktopLyric.isDelayScroll']
@@ -276,5 +281,41 @@ export default {
 //   display: flex;
 //   align-items: center;
 // }
+
+
+// 辉光效果样式
+
+// 柔和发光效果
+.glow-soft {
+  :global {
+    .line-content.line-mode.active .font-lrc,
+    .line-content.font-mode.played .font-lrc {
+      text-shadow: 
+        0 0 calc(10px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1);
+    }
+    .line-content.font-mode > .line > .font-lrc > span {
+      text-shadow: 
+        0 0 calc(8px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1);
+    }
+  }
+}
+
+// 渐变辉光效果
+.glow-gradient {
+  :global {
+    .line-content.line-mode.active .font-lrc,
+    .line-content.font-mode.played .font-lrc {
+      text-shadow: 
+        0 0 calc(10px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1),
+        0 0 calc(20px * var(--lyric-glow-intensity)) var(--lyric-glow-color-2);
+    }
+    .line-content.font-mode > .line > .font-lrc > span {
+       text-shadow: 
+        0 0 calc(8px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1),
+        0 0 calc(16px * var(--lyric-glow-intensity)) var(--lyric-glow-color-2);
+    }
+  }
+}
+
 
 </style>

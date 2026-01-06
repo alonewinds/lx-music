@@ -40,6 +40,7 @@
           <button :class="$style.btn" :disabled="offsetDisabled" ignore-tip :aria-label="$t('lyric_menu__offset_dec_100')" @click="setOffset(-100)">- 100ms</button>
         </div>
       </div>
+
       <div :class="$style.group">
         <div :class="$style.subGroup">
           <button :class="[$style.btn, $style.editBtn]" @click="openLyricEditor">
@@ -323,6 +324,8 @@ export default {
     opacity: .3;
   }
 }
+
+
 
 .editBtn {
   display: flex;

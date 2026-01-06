@@ -83,6 +83,22 @@ dd
     .p.gap-top
       base-btn.btn(min @click="resetColor") {{ $t('setting__desktop_lyric_color_reset') }}
 dd
+  h3#desktop_lyric_glow_effect {{ $t('lyric_menu__glow_effect') }}
+  div
+    .gap-top
+      base-checkbox.gap-left(v-for="item in glowModeList" :key="item.id" :id="'setting_desktop_lyric_glow_mode_' + item.id" :model-value="appSetting['desktopLyric.style.lyricGlowMode']" :value="item.id" :label="item.name" @update:model-value="setDesktopLyricGlowMode($event || 'none')")
+    .p.gap-top
+      div(:class="$style.groupContent")
+        div(:class="$style.item")
+          div(ref="glow_color1_ref" :class="$style.color")
+          div(:class="$style.label") {{ $t('lyric_menu__glow_color1') }}
+        div(:class="$style.item")
+          div(ref="glow_color2_ref" :class="$style.color")
+          div(:class="$style.label") {{ $t('lyric_menu__glow_color2') }}
+    .gap-top
+      span.label {{ $t('lyric_menu__glow_intensity') }}: 
+      base-slider-bar.gap-left(:min="0.1" :max="2" :value="appSetting['desktopLyric.style.lyricGlowIntensity']" @change="setDesktopLyricGlowIntensity")
+dd
   h3#desktop_lyric_font {{ $t('setting__desktop_lyric_font') }}
   div
     base-selection.gap-teft(:list="fontList" :model-value="appSetting['desktopLyric.style.font']" item-key="id" item-name="label" @update:model-value="updateSetting({ 'desktopLyric.style.font': $event })")
@@ -99,7 +115,14 @@ dd
 import { ref, computed, onMounted, onBeforeUnmount } from '@common/utils/vueTools'
 import { getSystemFonts } from '@renderer/utils/ipc'
 import { isLinux } from '@common/utils'
-import { appSetting, updateSetting } from '@renderer/store/setting'
+import {
+  appSetting,
+  updateSetting,
+  setDesktopLyricGlowMode,
+  setDesktopLyricGlowColor1,
+  setDesktopLyricGlowColor2,
+  setDesktopLyricGlowIntensity,
+} from '@renderer/store/setting'
 import { useI18n } from '@renderer/plugins/i18n'
 import { pickrTools } from '@renderer/utils/pickrTools'
 
@@ -253,6 +276,67 @@ const useLyricColor = () => {
   }
 }
 
+const useGlowColor = () => {
+  const glow_color1_ref = ref(null)
+  const glow_color2_ref = ref(null)
+  let tools1
+  let tools2
+
+  const initGlowColor1 = (color, changed, reset) => {
+    if (!glow_color1_ref.value) return
+    tools1 = pickrTools.create(glow_color1_ref.value, color, defaultPlayedColors, changed, reset)
+  }
+  const destroyGlowColor1 = () => {
+    if (!tools1) return
+    tools1.destroy()
+    tools1 = null
+  }
+  const setGlowColor1 = (color) => {
+    tools1?.setColor(color)
+  }
+
+  const initGlowColor2 = (color, changed, reset) => {
+    if (!glow_color2_ref.value) return
+    tools2 = pickrTools.create(glow_color2_ref.value, color, defaultPlayedColors, changed, reset)
+  }
+  const destroyGlowColor2 = () => {
+    if (!tools2) return
+    tools2.destroy()
+    tools2 = null
+  }
+  const setGlowColor2 = (color) => {
+    tools2?.setColor(color)
+  }
+
+  const initColors = () => {
+    initGlowColor1(appSetting['desktopLyric.style.lyricGlowColor1'], (color) => {
+      updateSetting({ 'desktopLyric.style.lyricGlowColor1': color })
+    })
+    initGlowColor2(appSetting['desktopLyric.style.lyricGlowColor2'], (color) => {
+      updateSetting({ 'desktopLyric.style.lyricGlowColor2': color })
+    })
+  }
+
+  const destroyColors = () => {
+    destroyGlowColor1()
+    destroyGlowColor2()
+  }
+
+  onMounted(() => {
+    initColors()
+  })
+  onBeforeUnmount(() => {
+    destroyColors()
+  })
+
+  return {
+    glow_color1_ref,
+    glow_color2_ref,
+    setGlowColor1,
+    setGlowColor2,
+  }
+}
+
 export default {
   name: 'SettingDesktopLyric',
   setup() {
@@ -270,9 +354,22 @@ export default {
       resetColor,
     } = useLyricColor()
 
+    const {
+      glow_color1_ref,
+      glow_color2_ref,
+      setGlowColor1,
+      setGlowColor2,
+    } = useGlowColor()
+
     const systemFontList = ref([])
     const fontList = computed(() => {
       return [{ id: '', label: t('setting__desktop_lyric_font_default') }, ...systemFontList.value]
+    })
+    const glowModeList = computed(() => {
+      return [
+        { id: 'soft', name: t('lyric_menu__glow_soft') },
+        { id: 'gradient', name: t('lyric_menu__glow_gradient') },
+      ]
     })
     void getSystemFonts().then(fonts => {
       systemFontList.value = fonts.map(f => ({ id: f, label: f.replace(/(^"|"$)/g, '') }))
@@ -299,6 +396,12 @@ export default {
 
       fontList,
       isLinux,
+
+      glowModeList,
+      setDesktopLyricGlowMode,
+      setDesktopLyricGlowIntensity,
+      glow_color1_ref,
+      glow_color2_ref,
     }
   },
 }

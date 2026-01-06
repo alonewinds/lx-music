@@ -314,6 +314,26 @@ declare global {
        */
       'playDetail.isDelayScroll': boolean
 
+      /**
+       * 播放详情页-歌词辉光效果
+       */
+      'playDetail.style.lyricGlowMode': 'none' | 'soft' | 'breathing' | 'gradient' | 'sweep'
+
+      /**
+       * 播放详情页-歌词辉光颜色1
+       */
+      'playDetail.style.lyricGlowColor1': string
+
+      /**
+       * 播放详情页-歌词辉光颜色2
+       */
+      'playDetail.style.lyricGlowColor2': string
+
+      /**
+       * 播放详情页-歌词辉光强度
+       */
+      'playDetail.style.lyricGlowIntensity': number
+
 
       /**
        * 是否启用桌面歌词
@@ -469,6 +489,26 @@ declare global {
        * 是否加粗翻译、罗马音字体
        */
       'desktopLyric.style.isFontWeightExtended': boolean
+
+      /**
+       * 桌面歌词-辉光效果
+       */
+      'desktopLyric.style.lyricGlowMode': 'none' | 'soft' | 'breathing' | 'gradient' | 'sweep'
+
+      /**
+       * 桌面歌词-辉光颜色1
+       */
+      'desktopLyric.style.lyricGlowColor1': string
+
+      /**
+       * 桌面歌词-辉光颜色2
+       */
+      'desktopLyric.style.lyricGlowColor2': string
+
+      /**
+       * 桌面歌词-辉光强度
+       */
+      'desktopLyric.style.lyricGlowIntensity': number
 
       /**
        * 是否启用双击列表里的歌曲时自动切换到当前列表播放（仅对歌单、排行榜有效）

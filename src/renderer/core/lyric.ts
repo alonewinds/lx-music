@@ -115,12 +115,13 @@ export const init = () => {
     },
     rate: appSetting['player.playbackRate'],
     effectSettings: {
-      floatEnabled: appSetting['playDetail.effect.floatEnabled'],
+      enable: appSetting['playDetail.effect.enable'],
+      floatEnabled: appSetting['playDetail.effect.enable'],
       floatAmount: appSetting['playDetail.effect.floatAmount'],
-      scaleEnabled: appSetting['playDetail.effect.scaleEnabled'],
+      scaleEnabled: appSetting['playDetail.effect.enable'],
       scaleAmount: appSetting['playDetail.effect.scaleAmount'],
       scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
-      glowAnimateEnabled: appSetting['playDetail.effect.glowAnimateEnabled'],
+      glowAnimateEnabled: appSetting['playDetail.effect.enable'],
       glowMode: appSetting['playDetail.style.lyricGlowMode'],
       glowColor1: appSetting['playDetail.style.lyricGlowColor1'],
       glowColor2: appSetting['playDetail.style.lyricGlowColor1'],
@@ -217,13 +218,14 @@ export const setDisabledAutoPause = (disabledAutoPause: boolean) => {
 
 export const setEffectSettings = () => {
   const enable = appSetting['playDetail.effect.enable']
+  // When main enable toggle is on, enable all effects automatically
   const effectSettings = {
-    floatEnabled: enable && appSetting['playDetail.effect.floatEnabled'],
+    floatEnabled: enable,
     floatAmount: appSetting['playDetail.effect.floatAmount'],
-    scaleEnabled: enable && appSetting['playDetail.effect.scaleEnabled'],
+    scaleEnabled: enable,
     scaleAmount: appSetting['playDetail.effect.scaleAmount'],
     scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
-    glowAnimateEnabled: enable && appSetting['playDetail.effect.glowAnimateEnabled'],
+    glowAnimateEnabled: enable,
     glowMode: appSetting['playDetail.style.lyricGlowMode'],
     glowColor1: appSetting['playDetail.style.lyricGlowColor1'],
     glowColor2: appSetting['playDetail.style.lyricGlowColor1'],
@@ -232,16 +234,18 @@ export const setEffectSettings = () => {
 }
 
 export const syncDesktopEffectSettings = () => {
+  const enable = appSetting['desktopLyric.effect.enable']
+  // When main enable toggle is on, enable all effects automatically
   sendDesktopLyricInfo({
     action: 'set_effect_settings',
     data: {
-      enable: appSetting['desktopLyric.effect.enable'],
-      floatEnabled: appSetting['desktopLyric.effect.floatEnabled'],
+      enable,
+      floatEnabled: enable,
       floatAmount: appSetting['desktopLyric.effect.floatAmount'],
-      scaleEnabled: appSetting['desktopLyric.effect.scaleEnabled'],
+      scaleEnabled: enable,
       scaleAmount: appSetting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: appSetting['desktopLyric.effect.scaleLongSyllableDuration'],
-      glowAnimateEnabled: appSetting['desktopLyric.effect.glowAnimateEnabled'],
+      glowAnimateEnabled: enable,
       glowMode: appSetting['desktopLyric.style.lyricGlowMode'],
       glowColor1: appSetting['desktopLyric.style.lyricGlowColor1'],
       glowColor2: appSetting['desktopLyric.style.lyricGlowColor1'],

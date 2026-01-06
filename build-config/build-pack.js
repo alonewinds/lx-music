@@ -52,13 +52,15 @@ const options = {
     },
   ],
 }
+const path = require('path')
+
 /**
  * @type {import('electron-builder').Configuration}
  * @see https://www.electron.build/configuration/configuration
  */
 const winOptions = {
   win: {
-    icon: './resources/icons/icon.ico',
+    icon: path.join(__dirname, '../resources/icons/icon.ico'),
     legalTrademarks: 'lyswhut',
     // artifactName: '${productName}-v${version}-${env.ARCH}-${env.TARGET}.${ext}',
   },
@@ -267,7 +269,7 @@ const createTarget = {
  * @param {*} packageType 包类型
  * @param {'onTagOrDraft' | 'always' | 'never'} publishType 发布类型
  */
-const build = async(target, arch, packageType, publishType) => {
+const build = async (target, arch, packageType, publishType) => {
   if (target == 'dir') {
     await builder.build({
       dir: true,

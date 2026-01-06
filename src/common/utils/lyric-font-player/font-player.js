@@ -6,8 +6,8 @@ const timeRxpAll = /<(\d+),(\d+)>/g
 const timeRxp = /<(\d+),(\d+)>/
 
 
-// Create fill animation with all effects combined
-const createAnimation = (dom, duration, isVertical, effectSettings) => {
+// Generate keyframes for character animation
+const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
   const floatEnabled = effectSettings?.floatEnabled ?? false
   const floatAmount = effectSettings?.floatAmount ?? 8
   const scaleEnabled = effectSettings?.scaleEnabled ?? false
@@ -55,9 +55,8 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
     return parts.length > 0 ? parts.join(' ') : undefined
   }
 
-  let keyframes
   if (isVertical) {
-    keyframes = [
+    return [
       { backgroundSize: '100% 0' },
       { backgroundSize: '100% 100%' },
     ]
@@ -73,7 +72,7 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
 
     // Create keyframes with all effects
     if (floatEnabled || isLongSyllable || glowEnabled) {
-      keyframes = [
+      return [
         {
           backgroundSize: '0 100%',
           ...(startTransform && { transform: startTransform }),
@@ -92,22 +91,12 @@ const createAnimation = (dom, duration, isVertical, effectSettings) => {
         },
       ]
     } else {
-      keyframes = [
+      return [
         { backgroundSize: '0 100%' },
         { backgroundSize: '100% 100%' },
       ]
     }
   }
-
-  const hasEffects = floatEnabled || isLongSyllable || glowEnabled
-
-  return new window.Animation(
-    new window.KeyframeEffect(dom, keyframes, {
-      duration,
-      easing: hasEffects ? 'ease-out' : 'linear',
-    }),
-    document.timeline
-  )
 }
 
 
@@ -224,9 +213,11 @@ export default class FontPlayer {
     // let lineText = ''
     let lrcShadowContent
     for (const font of fonts) {
-      if (!timeRxp.test(font)) return this._handleLineParse()
+      const match = font.match(timeRxp)
+      if (!match) return this._handleLineParse()
       text = font.replace(timeRxp, '')
-      const time = parseInt(RegExp.$2)
+      const startTime = parseInt(match[1])
+      const time = parseInt(match[2])
       const animDuration = time / this._rate
 
       const dom = document.createElement('span')
@@ -234,8 +225,20 @@ export default class FontPlayer {
       // Make span inline-block so transform works (transform doesn't work on inline elements)
       dom.style.display = 'inline-block'
 
+      // Add will-change to optimize rendering for effects
+      if (this.effectSettings?.enable) {
+        dom.style.willChange = 'transform, filter, background-size'
+      }
+
       // Create animation with all effects combined (fill + float + scale + glow)
-      const animation = createAnimation(dom, animDuration, this.isVertical, this.effectSettings)
+      // We use dom.animate for better compatibility and automatic timeline handling
+      const keyframes = getAnimationKeyframes(animDuration, this.isVertical, this.effectSettings)
+      const animation = dom.animate(keyframes, {
+        duration: animDuration,
+        easing: (this.effectSettings?.floatEnabled || (this.effectSettings?.scaleEnabled && animDuration >= (this.effectSettings?.scaleLongSyllableDuration ?? 700)) || this.effectSettings?.glowAnimateEnabled) ? 'ease-out' : 'linear',
+        fill: 'both',
+      })
+      animation.pause()
 
       this.lrcContent.appendChild(dom)
       // lineText += text
@@ -251,7 +254,7 @@ export default class FontPlayer {
 
       this.fonts.push({
         text,
-        startTime: parseInt(RegExp.$1),
+        startTime,
         time,
         dom,
         animation,

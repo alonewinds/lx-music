@@ -13,12 +13,12 @@ export const init = () => {
     isVertical: setting['desktopLyric.direction'] == 'vertical',
     effectSettings: {
       enable: setting['desktopLyric.effect.enable'],
-      floatEnabled: setting['desktopLyric.effect.enable'] && setting['desktopLyric.effect.floatEnabled'],
+      floatEnabled: setting['desktopLyric.effect.enable'],
       floatAmount: setting['desktopLyric.effect.floatAmount'],
-      scaleEnabled: setting['desktopLyric.effect.enable'] && setting['desktopLyric.effect.scaleEnabled'],
+      scaleEnabled: setting['desktopLyric.effect.enable'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
-      glowAnimateEnabled: setting['desktopLyric.effect.enable'] && setting['desktopLyric.effect.glowAnimateEnabled'],
+      glowAnimateEnabled: setting['desktopLyric.effect.enable'],
       glowMode: setting['desktopLyric.style.lyricGlowMode'],
       glowColor1: setting['desktopLyric.style.lyricGlowColor1'],
       glowColor2: setting['desktopLyric.style.lyricGlowColor1'],
@@ -106,14 +106,15 @@ export const setVertical = (isVertical: boolean) => {
 }
 
 export const setEffectSettings = (settings: LX.DesktopLyric.EffectSettings) => {
-  const { enable, floatEnabled, floatAmount, scaleEnabled, scaleAmount, scaleLongSyllableDuration, glowAnimateEnabled, glowMode, glowColor1, glowColor2 } = settings
+  const { enable, floatAmount, scaleAmount, scaleLongSyllableDuration, glowMode, glowColor1, glowColor2 } = settings
+  // When main enable toggle is on, enable all effects automatically
   lrc.setEffectSettings({
-    floatEnabled: enable && floatEnabled,
+    floatEnabled: enable,
     floatAmount,
-    scaleEnabled: enable && scaleEnabled,
+    scaleEnabled: enable,
     scaleAmount,
     scaleLongSyllableDuration,
-    glowAnimateEnabled: enable && glowAnimateEnabled,
+    glowAnimateEnabled: enable,
     glowMode,
     glowColor1,
     glowColor2: glowColor1,

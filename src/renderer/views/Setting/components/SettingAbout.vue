@@ -3,10 +3,10 @@ dt#about {{ $t('setting__about') }}
 dd
   .p.small
     | 本软件完全免费，代码已开源。开源地址：
-    span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://github.com/lyswhut/lx-music-desktop#readme')") https://github.com/lyswhut/lx-music-desktop
+    span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://github.com/alonewinds/music#readme')") https://github.com/alonewinds/music
   .p.small
     | 最新版下载地址：
-    span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://github.com/lyswhut/lx-music-desktop/releases')") GitHub Releases
+    span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://github.com/alonewinds/music/releases')") GitHub Releases
   .p.small
     | 软件的常见问题可转至：
     span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://lyswhut.github.io/lx-music-doc/desktop/faq')") 桌面版常见问题
@@ -17,7 +17,7 @@ dd
     | 地阅读常见问题后，
   .p.small
     | 仍有问题可到&nbsp;GitHub&nbsp;
-    span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://github.com/lyswhut/lx-music-desktop/issues?q=is%3Aissue+')") 提交&nbsp;Issue
+    span.hover.underline(:aria-label="$t('setting__click_open')" @click="openUrl('https://github.com/alonewinds/music/issues?q=is%3Aissue+')") 提交&nbsp;Issue
     | 。
   br
   .p.small 由于软件开发的初衷仅是为了对新技术的学习与研究，因此软件直至停止维护都将会一直保持纯净。
@@ -38,7 +38,7 @@ dd
 
   .p.small
     | By:&nbsp;
-    strong 落雪无痕
+    strong Alonewinds 【基于原作者：落雪无痕 项目二次开发】
 </template>
 
 <script>

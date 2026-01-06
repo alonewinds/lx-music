@@ -31,6 +31,16 @@ declare namespace LX {
       'desktopLyric.style.isFontWeightLine': LX.AppSetting['desktopLyric.style.isFontWeightLine']
       'desktopLyric.style.isFontWeightExtended': LX.AppSetting['desktopLyric.style.isFontWeightExtended']
       'desktopLyric.style.isZoomActiveLrc': LX.AppSetting['desktopLyric.style.isZoomActiveLrc']
+      'desktopLyric.style.lyricGlowMode': LX.AppSetting['desktopLyric.style.lyricGlowMode']
+      'desktopLyric.style.lyricGlowColor1': LX.AppSetting['desktopLyric.style.lyricGlowColor1']
+      'desktopLyric.style.lyricGlowColor2': LX.AppSetting['desktopLyric.style.lyricGlowColor2']
+      'desktopLyric.style.lyricGlowIntensity': LX.AppSetting['desktopLyric.style.lyricGlowIntensity']
+      'desktopLyric.effect.floatEnabled': LX.AppSetting['desktopLyric.effect.floatEnabled']
+      'desktopLyric.effect.floatAmount': LX.AppSetting['desktopLyric.effect.floatAmount']
+      'desktopLyric.effect.scaleEnabled': LX.AppSetting['desktopLyric.effect.scaleEnabled']
+      'desktopLyric.effect.scaleAmount': LX.AppSetting['desktopLyric.effect.scaleAmount']
+      'desktopLyric.effect.scaleLongSyllableDuration': LX.AppSetting['desktopLyric.effect.scaleLongSyllableDuration']
+      'desktopLyric.effect.glowAnimateEnabled': LX.AppSetting['desktopLyric.effect.glowAnimateEnabled']
       'common.langId': LX.AppSetting['common.langId']
       'player.isShowLyricTranslation': LX.AppSetting['player.isShowLyricTranslation']
       'player.isShowLyricRoma': LX.AppSetting['player.isShowLyricRoma']
@@ -41,7 +51,7 @@ declare namespace LX {
 
     type WinMainActions = 'get_info' | 'get_status' | 'get_analyser_data_array'
 
-    interface LyricActionBase <A> {
+    interface LyricActionBase<A> {
       action: A
     }
     interface LyricActionData<A, D> extends LyricActionBase<A> {
@@ -63,23 +73,23 @@ declare namespace LX {
       line: number
       played_time: number
     }>
-    | LyricAction<'set_status', {
-      isPlay: boolean
-      line: number
-      played_time: number
-    }>
-    | LyricAction<'set_lyric', {
-      lrc: string | null
-      tlrc: string | null
-      rlrc: string | null
-      lxlrc: string | null
-    }>
-    | LyricAction<'set_offset', number>
-    | LyricAction<'set_playbackRate', number>
-    | LyricAction<'set_play', number>
-    | LyricAction<'set_pause'>
-    | LyricAction<'set_stop'>
-    | LyricAction<'send_analyser_data_array', Uint8Array>
+      | LyricAction<'set_status', {
+        isPlay: boolean
+        line: number
+        played_time: number
+      }>
+      | LyricAction<'set_lyric', {
+        lrc: string | null
+        tlrc: string | null
+        rlrc: string | null
+        lxlrc: string | null
+      }>
+      | LyricAction<'set_offset', number>
+      | LyricAction<'set_playbackRate', number>
+      | LyricAction<'set_play', number>
+      | LyricAction<'set_pause'>
+      | LyricAction<'set_stop'>
+      | LyricAction<'send_analyser_data_array', Uint8Array>
 
 
     interface NewBounds {

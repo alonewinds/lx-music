@@ -102,6 +102,14 @@ export const init = () => {
       setText(lines[0] ?? '', 0)
     },
     rate: appSetting['player.playbackRate'],
+    effectSettings: {
+      floatEnabled: appSetting['playDetail.effect.floatEnabled'],
+      floatAmount: appSetting['playDetail.effect.floatAmount'],
+      scaleEnabled: appSetting['playDetail.effect.scaleEnabled'],
+      scaleAmount: appSetting['playDetail.effect.scaleAmount'],
+      scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
+      glowAnimateEnabled: appSetting['playDetail.effect.glowAnimateEnabled'],
+    } as any,
     // offset: 80,
   })
 

@@ -19,9 +19,10 @@ export default class Lyric {
     activeLineClassName = 'active',
     shadowContent = false,
     isVertical = false,
-    onPlay = function(line, text) { },
-    onSetLyric = function(lines, offset) { },
-    onUpdateLyric = function(lines) { },
+    effectSettings = null, // { floatEnabled, floatAmount, scaleEnabled, scaleAmount, scaleLongSyllableDuration, glowAnimateEnabled }
+    onPlay = function (line, text) { },
+    onSetLyric = function (lines, offset) { },
+    onUpdateLyric = function (lines) { },
   }) {
     this.lyric = lyric
     this.extendedLyrics = extendedLyrics
@@ -42,6 +43,7 @@ export default class Lyric {
     this.shadowContent = shadowContent
 
     this.isVertical = isVertical
+    this.effectSettings = effectSettings
     this.playingLineNum = -1
     this.isLineMode = false
 
@@ -66,47 +68,63 @@ export default class Lyric {
   }
 
   _handleLinePlayerOnPlay = (num, text, curTime) => {
+    // Ensure _lineFonts is initialized (but allow empty array)
+    if (!this._lineFonts) {
+      this.onPlay(num, this._lines?.[num]?.text ?? '')
+      return
+    }
+
     if (this.isLineMode) {
       if (num < this.playingLineNum + 1) {
         for (let i = this.playingLineNum, minNum = Math.max(num, 0) - 1; i > minNum; i--) {
           const font = this._lineFonts[i]
+          if (!font) continue
           font.reset()
           font.lineContent.classList.remove(this.activeLineClassName)
         }
       } else if (num > this.playingLineNum) {
-        for (let i = Math.max(this.playingLineNum, 0); i < num; i++) {
+        for (let i = Math.max(this.playingLineNum, 0); i < num && i < this._lineFonts.length; i++) {
           const font = this._lineFonts[i]
+          if (!font) continue
           font.reset()
           font.lineContent.classList.remove(this.activeLineClassName)
         }
-      } else if (this.playingLineNum > -1) {
+      } else if (this.playingLineNum > -1 && this.playingLineNum < this._lineFonts.length) {
         const font = this._lineFonts[this.playingLineNum]
-        font.reset()
-        font.lineContent.classList.remove(this.activeLineClassName)
+        if (font) {
+          font.reset()
+          font.lineContent.classList.remove(this.activeLineClassName)
+        }
       }
     } else {
       if (num < this.playingLineNum + 1) {
         for (let i = this.playingLineNum, minNum = Math.max(num, 0) - 1; i > minNum; i--) {
           const font = this._lineFonts[i]
+          if (!font) continue
           font.lineContent.classList.remove(this.activeLineClassName)
           font.reset()
         }
       } else if (num > this.playingLineNum) {
-        for (let i = Math.max(this.playingLineNum, 0); i < num; i++) {
+        for (let i = Math.max(this.playingLineNum, 0); i < num && i < this._lineFonts.length; i++) {
           const font = this._lineFonts[i]
+          if (!font) continue
           font.lineContent.classList.remove(this.activeLineClassName)
           font.finish()
         }
-      } else if (this.playingLineNum > -1) {
+      } else if (this.playingLineNum > -1 && this.playingLineNum < this._lineFonts.length) {
         const font = this._lineFonts[this.playingLineNum]
-        font.lineContent.classList.remove(this.activeLineClassName)
+        if (font) {
+          font.lineContent.classList.remove(this.activeLineClassName)
+        }
       }
     }
     this.playingLineNum = num
-    if (num > -1) {
+    if (num > -1 && num < this._lineFonts.length) {
       const font = this._lineFonts[num]
-      font.lineContent.classList.add(this.activeLineClassName)
-      font.play(curTime - this._lines[num].time)
+      if (font) {
+        font.lineContent.classList.add(this.activeLineClassName)
+        font.play(curTime - this._lines[num].time)
+      }
     }
     this.onPlay(num, this._lines[num]?.text ?? '')
   }
@@ -133,6 +151,7 @@ export default class Lyric {
           extendedLrcClassName: this.extendedLrcClassName,
           shadowContent: this.shadowContent,
           isVertical: this.isVertical,
+          effectSettings: this.effectSettings,
         })
 
         this._lineFonts.push(fontPlayer)
@@ -159,6 +178,7 @@ export default class Lyric {
           extendedLrcClassName: this.extendedLrcClassName,
           shadowContent: this.shadowContent,
           isVertical: this.isVertical,
+          effectSettings: this.effectSettings,
         })
 
         this._lineFonts.push(fontPlayer)

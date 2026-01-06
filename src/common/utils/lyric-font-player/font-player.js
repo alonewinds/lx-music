@@ -6,20 +6,92 @@ const timeRxpAll = /<(\d+),(\d+)>/g
 const timeRxp = /<(\d+),(\d+)>/
 
 
-// Create animation
-const createAnimation = (dom, duration, isVertical) => new window.Animation(new window.KeyframeEffect(dom, isVertical
-  ? [
+// Create fill animation with all effects combined
+const createAnimation = (dom, duration, isVertical, effectSettings) => {
+  const floatEnabled = effectSettings?.floatEnabled ?? false
+  const floatAmount = effectSettings?.floatAmount ?? 8
+  const scaleEnabled = effectSettings?.scaleEnabled ?? false
+  const scaleAmount = effectSettings?.scaleAmount ?? 1.15
+  const scaleLongSyllableDuration = effectSettings?.scaleLongSyllableDuration ?? 700
+  const glowEnabled = effectSettings?.glowAnimateEnabled ?? false
+
+  // Check if this is a long syllable that should have scale effect
+  const isLongSyllable = scaleEnabled && duration >= scaleLongSyllableDuration
+
+  // Build transform values
+  const getTransform = (floatOffset, scaleValue) => {
+    const parts = []
+    if (floatEnabled && floatOffset !== 0) {
+      parts.push(`translateY(${floatOffset}px)`)
+    }
+    if (isLongSyllable && scaleValue !== 1) {
+      parts.push(`scale(${scaleValue})`)
+    }
+    return parts.length > 0 ? parts.join(' ') : undefined
+  }
+
+  // Build filter value for glow
+  const getFilter = (brightness) => {
+    if (glowEnabled && brightness !== 1) {
+      return `brightness(${brightness})`
+    }
+    return undefined
+  }
+
+  let keyframes
+  if (isVertical) {
+    keyframes = [
       { backgroundSize: '100% 0' },
       { backgroundSize: '100% 100%' },
     ]
-  : [
-      { backgroundSize: '0 100%' },
-      { backgroundSize: '100% 100%' },
-    ], {
-  duration,
-  easing: 'linear',
-},
-), document.timeline)
+  } else {
+    // Horizontal mode with combined effects
+    const startTransform = getTransform(-floatAmount, 1)
+    const midTransform = getTransform(-floatAmount / 2, scaleAmount)
+    const endTransform = getTransform(0, 1)
+
+    const startFilter = getFilter(1)
+    const midFilter = getFilter(1.3)
+    const endFilter = getFilter(1)
+
+    // Create keyframes with all effects
+    if (floatEnabled || isLongSyllable || glowEnabled) {
+      keyframes = [
+        {
+          backgroundSize: '0 100%',
+          ...(startTransform && { transform: startTransform }),
+          ...(startFilter && { filter: startFilter }),
+        },
+        ...(isLongSyllable || glowEnabled ? [{
+          backgroundSize: '50% 100%',
+          offset: 0.5,
+          ...(midTransform && { transform: midTransform }),
+          ...(midFilter && { filter: midFilter }),
+        }] : []),
+        {
+          backgroundSize: '100% 100%',
+          ...(endTransform && { transform: endTransform }),
+          ...(endFilter && { filter: endFilter }),
+        },
+      ]
+    } else {
+      keyframes = [
+        { backgroundSize: '0 100%' },
+        { backgroundSize: '100% 100%' },
+      ]
+    }
+  }
+
+  const hasEffects = floatEnabled || isLongSyllable || glowEnabled
+
+  return new window.Animation(
+    new window.KeyframeEffect(dom, keyframes, {
+      duration,
+      easing: hasEffects ? 'ease-out' : 'linear',
+    }),
+    document.timeline
+  )
+}
 
 
 // https://jsfiddle.net/ceqpnbky/
@@ -40,6 +112,7 @@ export default class FontPlayer {
     shadowContent = false,
     extendedLyrics = [],
     isVertical = false,
+    effectSettings = null, // { floatEnabled, floatAmount, scaleEnabled, scaleAmount, scaleLongSyllableDuration, glowAnimateEnabled }
   }) {
     this.time = time
     this.lyric = lyric
@@ -47,6 +120,7 @@ export default class FontPlayer {
     this._rate = rate
 
     this.isVertical = isVertical
+    this.effectSettings = effectSettings
 
     this.lineContentClassName = lineContentClassName
     this.lineClassName = lineClassName
@@ -136,10 +210,16 @@ export default class FontPlayer {
       if (!timeRxp.test(font)) return this._handleLineParse()
       text = font.replace(timeRxp, '')
       const time = parseInt(RegExp.$2)
+      const animDuration = time / this._rate
 
       const dom = document.createElement('span')
       dom.textContent = text
-      const animation = createAnimation(dom, time / this._rate, this.isVertical)
+      // Make span inline-block so transform works (transform doesn't work on inline elements)
+      dom.style.display = 'inline-block'
+
+      // Create animation with all effects combined (fill + float + scale + glow)
+      const animation = createAnimation(dom, animDuration, this.isVertical, this.effectSettings)
+
       this.lrcContent.appendChild(dom)
       // lineText += text
 
@@ -219,7 +299,9 @@ export default class FontPlayer {
         break
       case 'idle':
         font.dom.style.backgroundSize = '100% 100%'
-        if (!toFinishe) font.animation.play()
+        if (!toFinishe) {
+          font.animation.play()
+        }
         break
       default:
         if (toFinishe) {

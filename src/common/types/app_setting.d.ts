@@ -334,6 +334,36 @@ declare global {
        */
       'playDetail.style.lyricGlowIntensity': number
 
+      /**
+       * 播放详情页-是否启用字符浮动动画
+       */
+      'playDetail.effect.floatEnabled': boolean
+
+      /**
+       * 播放详情页-字符浮动幅度（像素）
+       */
+      'playDetail.effect.floatAmount': number
+
+      /**
+       * 播放详情页-是否启用缩放呼吸动画
+       */
+      'playDetail.effect.scaleEnabled': boolean
+
+      /**
+       * 播放详情页-字符缩放倍率
+       */
+      'playDetail.effect.scaleAmount': number
+
+      /**
+       * 播放详情页-长音节判定时长阈值（ms）
+       */
+      'playDetail.effect.scaleLongSyllableDuration': number
+
+      /**
+       * 播放详情页-是否启用动态发光（随播放进度变化）
+       */
+      'playDetail.effect.glowAnimateEnabled': boolean
+
 
       /**
        * 是否启用桌面歌词
@@ -509,6 +539,36 @@ declare global {
        * 桌面歌词-辉光强度
        */
       'desktopLyric.style.lyricGlowIntensity': number
+
+      /**
+       * 桌面歌词-是否启用字符浮动动画
+       */
+      'desktopLyric.effect.floatEnabled': boolean
+
+      /**
+       * 桌面歌词-字符浮动幅度（像素）
+       */
+      'desktopLyric.effect.floatAmount': number
+
+      /**
+       * 桌面歌词-是否启用缩放呼吸动画
+       */
+      'desktopLyric.effect.scaleEnabled': boolean
+
+      /**
+       * 桌面歌词-字符缩放倍率
+       */
+      'desktopLyric.effect.scaleAmount': number
+
+      /**
+       * 桌面歌词-长音节判定时长阈值（ms）
+       */
+      'desktopLyric.effect.scaleLongSyllableDuration': number
+
+      /**
+       * 桌面歌词-是否启用动态发光（随播放进度变化）
+       */
+      'desktopLyric.effect.glowAnimateEnabled': boolean
 
       /**
        * 是否启用双击列表里的歌曲时自动切换到当前列表播放（仅对歌单、排行榜有效）

@@ -11,6 +11,14 @@ export const init = () => {
     activeLineClassName: 'active',
     rate: setting['player.playbackRate'],
     isVertical: setting['desktopLyric.direction'] == 'vertical',
+    effectSettings: {
+      floatEnabled: setting['desktopLyric.effect.floatEnabled'],
+      floatAmount: setting['desktopLyric.effect.floatAmount'],
+      scaleEnabled: setting['desktopLyric.effect.scaleEnabled'],
+      scaleAmount: setting['desktopLyric.effect.scaleAmount'],
+      scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
+      glowAnimateEnabled: setting['desktopLyric.effect.glowAnimateEnabled'],
+    } as any,
     onPlay(line, text) {
       setText(text, Math.max(line, 0))
       // console.log(line, text)

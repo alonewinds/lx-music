@@ -673,9 +673,12 @@ export default {
 
     // 复制歌词
     const handleCopy = async () => {
-      const lxlrc = buildLxlrcFromLines(linesData.value)
+      // 根据当前显示模式复制相应格式
+      const textToCopy = showTimestampView.value 
+        ? formattedLyricText.value  // 带时间轴格式
+        : rawText.value             // 纯文本格式
       try {
-        await navigator.clipboard.writeText(lxlrc)
+        await navigator.clipboard.writeText(textToCopy)
       } catch (err) {
         console.error('Failed to copy lyric:', err)
       }

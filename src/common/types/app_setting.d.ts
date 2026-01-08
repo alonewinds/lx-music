@@ -310,6 +310,11 @@ declare global {
       'playDetail.style.align': 'center' | 'left' | 'right'
 
       /**
+       * 播放详情页-歌词字体
+       */
+      'playDetail.style.font': string
+
+      /**
        * 播放详情页-是否延迟桌面歌词滚动
        */
       'playDetail.isDelayScroll': boolean

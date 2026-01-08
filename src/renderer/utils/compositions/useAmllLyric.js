@@ -38,25 +38,30 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         dom_lines.forEach((dom, index) => {
             const lineOffsetTop = dom.offsetTop
             const distance = Math.abs(lineOffsetTop - centerLineY)
-            const maxDistance = 200 // Threshold for effects
+            const maxDistance = containerHeight * 0.5 // 使用容器高度的一半作为参考
 
-            // Scale effect (current line is larger)
-            const scale = index === lyric.line ? 1.1 : 1.0
+            // Scale effect (current line is slightly larger for emphasis)
+            const isActive = index === lyric.line
+            const scale = isActive ? 1.05 : 1.0
 
             // Blur and Opacity effects based on distance
             let blur = 0
             let opacity = 1
 
-            if (index !== lyric.line) {
-                blur = Math.min(2, (distance / maxDistance) * 2)
-                opacity = Math.max(0.3, 1 - (distance / (maxDistance * 2)))
+            if (!isActive) {
+                // 非线性模糊算法：距离中心越远模糊程度增长越快
+                // 使用 (distance / maxDistance)^1.5 来增强衰减感
+                const factor = Math.min(1.2, Math.pow(distance / maxDistance, 1.5))
+                blur = factor * 8 // 最大模糊增强到 8px
+                opacity = Math.max(0.15, 1 - factor * 0.8)
             }
 
             dom.style.transform = `scale(${scale})`
             dom.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none'
             dom.style.opacity = opacity.toString()
+            dom.style.fontWeight = isActive ? '700' : '500' // JS 强制加粗状态
             dom.style.willChange = 'transform, filter, opacity'
-            dom.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s, opacity 0.4s'
+            // 移除 style.transition，因为我们每帧通过 Spring 动画更新，transition 会造成冲突延迟
         })
     }
 

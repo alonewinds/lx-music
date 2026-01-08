@@ -153,11 +153,12 @@ export default {
     const lrcStyles = computed(() => {
       return {
         textAlign: appSetting['playDetail.style.align'],
+        fontFamily: appSetting['playDetail.style.font'] || 'inherit',
         '--lyric-played-color': 'var(--color-primary-dark-200)',
       }
     })
     const lrcFontSize = computed(() => {
-      let size = appSetting['playDetail.style.fontSize'] / 100
+      let size = appSetting['playDetail.style.fontSize'] / 80
       if (isFullscreen.value) size = size *= 1.4
       return {
         '--playDetail-lrc-font-size': (isShowPlayComment.value ? size * 0.82 : size) + 'rem',
@@ -317,47 +318,58 @@ export default {
   font-size: var(--playDetail-lrc-font-size, 16px);
   -webkit-mask-image: linear-gradient(transparent 0%, #fff 20%,  #fff 80%, transparent 100%);
   cursor: grab;
+  // AMLL 风格：发光融合效果
+  mix-blend-mode: plus-lighter;
   &.draging {
     cursor: grabbing;
   }
   :global {
     .font-lrc {
-      color: var(--color-450);
+      // AMLL 风格：非当前行半透明白色
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 500;
+      transition: color 0.25s, font-weight 0.25s, opacity 0.25s;
     }
     .line-content {
       line-height: 1.2;
       padding: calc(var(--playDetail-lrc-font-size, 16px) / 2) 1px;
       overflow-wrap: break-word;
-      color: var(--color-450);
+      // AMLL 风格：非当前行半透明白色
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 500;
       transition: @transition-normal;
-      transition-property: padding;
+      transition-property: padding, color, font-weight, opacity;
 
       .extended {
         font-size: 0.8em;
         margin-top: 5px;
+        opacity: 0.6;
       }
       &.line-mode {
         .font-lrc {
           transition: @transition-fast;
-          transition-property: font-size, color;
+          transition-property: font-size, color, font-weight;
         }
       }
-      &.line-mode.active .font-lrc, &.font-mode.played .font-lrc {
-        color: var(--color-primary-dark-200);
+      // AMLL 风格：当前行白色粗体（包含逐行和逐字模式的 active 状态）
+      &.active .font-lrc, &.font-mode.played .font-lrc {
+        color: rgba(255, 255, 255, 1);
+        font-weight: 700;
       }
-      &.font-mode .extended .font-lrc {
-        transition: @transition-slow;
-        transition-property: font-size, color;
+      // 当前行内容也应用白色
+      &.active {
+        color: rgba(255, 255, 255, 1);
+        font-weight: 700;
       }
 
       &.font-mode > .line > .font-lrc {
         > span {
-          transition: @transition-normal;
-          transition-property: font-size;
+          // 移除 transition，交由 JS 动力学控制以避免冲突
           font-size: 1em;
+          font-weight: inherit; // 明确继承父级加粗状态
           background-repeat: no-repeat;
-          background-color: var(--color-450);
-          background-image: -webkit-linear-gradient(top, var(--color-primary-dark-200), var(--color-primary-dark-200));
+          background-color: rgba(255, 255, 255, 0.4);
+          background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 1));
           -webkit-text-fill-color: transparent;
           -webkit-background-clip: text;
           background-size: 0 100%;
@@ -365,17 +377,6 @@ export default {
       }
     }
   }
-  // p {
-  //   padding: 8px 0;
-  //   line-height: 1.2;
-  //   overflow-wrap: break-word;
-  //   transition: @transition-normal !important;
-  //   transition-property: color, font-size;
-  // }
-  // .lrc-active {
-  //   color: var(--color-primary);
-  //   font-size: 1.2em;
-  // }
 }
 .lrcActiveZoom {
   :global {

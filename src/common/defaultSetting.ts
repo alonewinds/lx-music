@@ -69,6 +69,7 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.isShowLyricProgressSetting': false,
   'playDetail.style.fontSize': 140,
   'playDetail.style.align': 'center',
+  'playDetail.style.font': '', // 播放详情页歌词字体，空字符串表示使用默认字体
   'playDetail.isDelayScroll': true,
   // 播放详情页歌词动态特效
   'playDetail.effect.enable': false, // 歌词动画特效总开关

@@ -94,7 +94,7 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         })
 
         if (isStopScroll.value && closestLine) {
-            time = closestLine.time
+            time = closestLine.time + lyric.offset + lyric.tempOffset
             timeStr.value = formatPlayTime2(time / 1000)
         }
     }

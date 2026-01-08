@@ -4,7 +4,7 @@
       <div
         v-show="!isShowLrcSelectContent"
         ref="dom_lyric"
-        :class="['lyric', $style.lyric, { [$style.draging]: isMsDown }, { [$style.lrcActiveZoom]: isZoomActiveLrc }, $style['glow-' + lyricGlowEffect]]" :style="lrcStyles"
+        :class="['lyric', $style.lyric, { [$style.draging]: isMsDown }, { [$style.lrcActiveZoom]: isZoomActiveLrc }]" :style="lrcStyles"
         @wheel="handleWheel" @mousedown="handleLyricMouseDown" @touchstart="handleLyricTouchStart"
         @contextmenu.stop="handleShowLyricMenu"
       >
@@ -86,7 +86,6 @@ export default {
   setup() {
     const isZoomActiveLrc = computed(() => appSetting['playDetail.isZoomActiveLrc'])
     const isShowLyricProgressSetting = computed(() => appSetting['playDetail.isShowLyricProgressSetting'])
-    const lyricGlowEffect = computed(() => appSetting['playDetail.style.lyricGlowMode'])
 
     const {
       dom_lyric,
@@ -154,9 +153,6 @@ export default {
     const lrcStyles = computed(() => {
       return {
         textAlign: appSetting['playDetail.style.align'],
-        '--lyric-glow-color-1': appSetting['playDetail.style.lyricGlowColor1'],
-        '--lyric-glow-color-2': appSetting['playDetail.style.lyricGlowColor1'],
-        '--lyric-glow-intensity': 3,
         '--lyric-played-color': 'var(--color-primary-dark-200)',
       }
     })
@@ -276,7 +272,6 @@ export default {
       isShowLrcSelectContent,
       isShowLyricProgressSetting,
       isZoomActiveLrc,
-      lyricGlowEffect,
       isStopScroll,
       lyricMenuVisible,
       lyricMenuXY,
@@ -397,44 +392,6 @@ export default {
   }
 }
 
-// 辉光效果样式
-// 无效果
-.glow-none {
-  // 不做任何处理
-}
-
-// 柔和发光效果
-.glow-soft {
-  :global {
-    .line-content.line-mode.active .font-lrc,
-    .line-content.font-mode.played .font-lrc {
-      text-shadow: 
-        0 0 calc(10px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1);
-    }
-    .line-content.font-mode > .line > .font-lrc > span {
-      text-shadow: 
-        0 0 calc(8px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1);
-    }
-  }
-}
-
-// 渐变辉光效果
-.glow-gradient {
-  :global {
-    .line-content.line-mode.active .font-lrc,
-    .line-content.font-mode.played .font-lrc {
-      text-shadow: 
-        0 0 calc(10px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1),
-        0 0 calc(20px * var(--lyric-glow-intensity)) var(--lyric-glow-color-2);
-      // filter: drop-shadow(0 0 calc(8px * var(--lyric-glow-intensity)) var(--lyric-glow-color-2));
-    }
-    .line-content.font-mode > .line > .font-lrc > span {
-       text-shadow: 
-        0 0 calc(8px * var(--lyric-glow-intensity)) var(--lyric-glow-color-1),
-        0 0 calc(16px * var(--lyric-glow-intensity)) var(--lyric-glow-color-2);
-    }
-  }
-}
 
 
 .skip {

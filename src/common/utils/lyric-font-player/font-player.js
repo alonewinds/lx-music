@@ -5,7 +5,6 @@ const fontSplitRxp = /(?=<\d+,\d+>).*?/g
 const timeRxpAll = /<(\d+),(\d+)>/g
 const timeRxp = /<(\d+),(\d+)>/
 
-
 // Generate keyframes for character animation
 const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
   const floatEnabled = effectSettings?.floatEnabled ?? false
@@ -13,10 +12,6 @@ const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
   const scaleEnabled = effectSettings?.scaleEnabled ?? false
   const scaleAmount = effectSettings?.scaleAmount ?? 1.15
   const scaleLongSyllableDuration = effectSettings?.scaleLongSyllableDuration ?? 700
-  const glowEnabled = effectSettings?.glowAnimateEnabled ?? false
-  const glowMode = effectSettings?.glowMode ?? 'soft'
-  const glowColor1 = effectSettings?.glowColor1
-  const glowColor2 = effectSettings?.glowColor2
 
   // Check if this is a long syllable that should have scale effect
   const isLongSyllable = scaleEnabled && duration >= scaleLongSyllableDuration
@@ -33,28 +28,6 @@ const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
     return parts.length > 0 ? parts.join(' ') : undefined
   }
 
-  // Build filter value for glow (brightness + drop-shadow)
-  const getFilter = (brightness, glowIntensity = 0) => {
-    if (!glowEnabled) return undefined
-    const parts = []
-    if (brightness !== 1) {
-      parts.push(`brightness(${brightness})`)
-    }
-    if (glowIntensity > 0) {
-      // Use user-defined colors if available, otherwise fallback to played color
-      const color1 = glowColor1 || 'var(--lyric-played-color, white)'
-      const color2 = glowColor2 || color1
-
-      if (glowMode === 'gradient') {
-        parts.push(`drop-shadow(0 0 ${glowIntensity}px ${color1})`)
-        parts.push(`drop-shadow(0 0 ${glowIntensity * 2}px ${color2})`)
-      } else {
-        parts.push(`drop-shadow(0 0 ${glowIntensity}px ${color1})`)
-      }
-    }
-    return parts.length > 0 ? parts.join(' ') : undefined
-  }
-
   if (isVertical) {
     return [
       { backgroundSize: '100% 0' },
@@ -66,28 +39,21 @@ const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
     const midTransform = getTransform(-floatAmount / 2, scaleAmount)
     const endTransform = getTransform(0, 1)
 
-    const startFilter = getFilter(1, 0)
-    const midFilter = getFilter(1.3, 8)  // Glow: brightness boost + 8px drop-shadow at midpoint
-    const endFilter = getFilter(1, 0)
-
-    // Create keyframes with all effects
-    if (floatEnabled || isLongSyllable || glowEnabled) {
+    // Create keyframes with float and scale effects
+    if (floatEnabled || isLongSyllable) {
       return [
         {
           backgroundSize: '0 100%',
           ...(startTransform && { transform: startTransform }),
-          ...(startFilter && { filter: startFilter }),
         },
-        ...(isLongSyllable || glowEnabled ? [{
+        ...(isLongSyllable ? [{
           backgroundSize: '50% 100%',
           offset: 0.5,
           ...(midTransform && { transform: midTransform }),
-          ...(midFilter && { filter: midFilter }),
         }] : []),
         {
           backgroundSize: '100% 100%',
           ...(endTransform && { transform: endTransform }),
-          ...(endFilter && { filter: endFilter }),
         },
       ]
     } else {
@@ -98,6 +64,7 @@ const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
     }
   }
 }
+
 
 
 // https://jsfiddle.net/ceqpnbky/

@@ -18,10 +18,6 @@ export const init = () => {
       scaleEnabled: setting['desktopLyric.effect.enable'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
-      glowAnimateEnabled: setting['desktopLyric.effect.enable'],
-      glowMode: setting['desktopLyric.style.lyricGlowMode'],
-      glowColor1: setting['desktopLyric.style.lyricGlowColor1'],
-      glowColor2: setting['desktopLyric.style.lyricGlowColor1'],
     } as any,
     onPlay(line, text) {
       setText(text, Math.max(line, 0))
@@ -46,10 +42,6 @@ export const init = () => {
     () => setting['desktopLyric.effect.scaleEnabled'],
     () => setting['desktopLyric.effect.scaleAmount'],
     () => setting['desktopLyric.effect.scaleLongSyllableDuration'],
-    () => setting['desktopLyric.effect.glowAnimateEnabled'],
-    () => setting['desktopLyric.style.lyricGlowMode'],
-    () => setting['desktopLyric.style.lyricGlowColor1'],
-    () => setting['desktopLyric.style.lyricGlowColor2'],
   ], () => {
     setEffectSettings({
       enable: setting['desktopLyric.effect.enable'],
@@ -58,10 +50,6 @@ export const init = () => {
       scaleEnabled: setting['desktopLyric.effect.scaleEnabled'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
-      glowAnimateEnabled: setting['desktopLyric.effect.glowAnimateEnabled'],
-      glowMode: setting['desktopLyric.style.lyricGlowMode'],
-      glowColor1: setting['desktopLyric.style.lyricGlowColor1'],
-      glowColor2: setting['desktopLyric.style.lyricGlowColor1'],
     })
   })
 }
@@ -106,7 +94,7 @@ export const setVertical = (isVertical: boolean) => {
 }
 
 export const setEffectSettings = (settings: LX.DesktopLyric.EffectSettings) => {
-  const { enable, floatAmount, scaleAmount, scaleLongSyllableDuration, glowMode, glowColor1, glowColor2 } = settings
+  const { enable, floatAmount, scaleAmount, scaleLongSyllableDuration } = settings
   // When main enable toggle is on, enable all effects automatically
   lrc.setEffectSettings({
     floatEnabled: enable,
@@ -114,9 +102,5 @@ export const setEffectSettings = (settings: LX.DesktopLyric.EffectSettings) => {
     scaleEnabled: enable,
     scaleAmount,
     scaleLongSyllableDuration,
-    glowAnimateEnabled: enable,
-    glowMode,
-    glowColor1,
-    glowColor2: glowColor1,
   })
 }

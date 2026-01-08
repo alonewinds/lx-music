@@ -70,10 +70,6 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.style.fontSize': 140,
   'playDetail.style.align': 'center',
   'playDetail.isDelayScroll': true,
-  'playDetail.style.lyricGlowMode': 'none', // 歌词辉光效果: none, soft, breathing, gradient, sweep
-  'playDetail.style.lyricGlowColor1': 'rgba(7, 197, 86, 1)', // 默认绿色
-  'playDetail.style.lyricGlowColor2': 'rgba(7, 197, 86, 1)', // 默认绿色
-  'playDetail.style.lyricGlowIntensity': 2, // 辉光强度 0-1
   // 播放详情页歌词动态特效
   'playDetail.effect.enable': false, // 歌词动画特效总开关
   'playDetail.effect.floatEnabled': false, // 字符浮动动画
@@ -81,7 +77,6 @@ const defaultSetting: LX.AppSetting = {
   'playDetail.effect.scaleEnabled': false, // 缩放呼吸动画
   'playDetail.effect.scaleAmount': 1.15, // 缩放倍率
   'playDetail.effect.scaleLongSyllableDuration': 700, // 长音节阈值（ms）
-  'playDetail.effect.glowAnimateEnabled': false, // 动态发光（随播放进度变化）
 
   'desktopLyric.enable': false,
   'desktopLyric.isLock': false,
@@ -114,10 +109,6 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.style.isFontWeightFont': true,
   'desktopLyric.style.isFontWeightLine': true,
   'desktopLyric.style.isFontWeightExtended': true,
-  'desktopLyric.style.lyricGlowMode': 'none',
-  'desktopLyric.style.lyricGlowColor1': 'rgba(7, 197, 86, 1)',
-  'desktopLyric.style.lyricGlowColor2': 'rgba(7, 197, 86, 1)',
-  'desktopLyric.style.lyricGlowIntensity': 2,
   // 桌面歌词动态特效
   'desktopLyric.effect.enable': false, // 歌词动画特效总开关
   'desktopLyric.effect.floatEnabled': false, // 字符浮动动画
@@ -125,7 +116,6 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.effect.scaleEnabled': false, // 缩放呼吸动画
   'desktopLyric.effect.scaleAmount': 1.15, // 缩放倍率
   'desktopLyric.effect.scaleLongSyllableDuration': 700, // 长音节阈值（ms）
-  'desktopLyric.effect.glowAnimateEnabled': false, // 动态发光
 
   'list.isClickPlayList': false,
   'list.isShowSource': true,

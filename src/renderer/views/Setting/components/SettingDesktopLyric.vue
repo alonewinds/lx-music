@@ -84,17 +84,6 @@ dd
       base-btn.btn(min @click="resetColor") {{ $t('setting__desktop_lyric_color_reset') }}
 
 dd
-  h3#desktop_lyric_glow_effect {{ $t('lyric_menu__glow_effect') }}
-  div
-    .gap-top
-      base-checkbox.gap-left(v-for="item in glowModeList" :key="item.id" :id="'setting_desktop_lyric_glow_mode_' + item.id" :model-value="appSetting['desktopLyric.style.lyricGlowMode']" :value="item.id" :label="item.name" @update:model-value="setDesktopLyricGlowMode($event || 'none')")
-    .p.gap-top
-      div(:class="$style.groupContent")
-        div(:class="$style.item")
-          div(ref="glow_color1_ref" :class="$style.color")
-          div(:class="$style.label") {{ $t('lyric_menu__glow_color') }}
-
-dd
   h3#desktop_lyric_font {{ $t('setting__desktop_lyric_font') }}
   div
     base-selection.gap-left(:list="fontList" :model-value="appSetting['desktopLyric.style.font']" item-key="id" item-name="label" @update:model-value="updateSetting({ 'desktopLyric.style.font': $event })")
@@ -114,8 +103,6 @@ import { isLinux } from '@common/utils'
 import {
   appSetting,
   updateSetting,
-  setDesktopLyricGlowMode,
-  setDesktopLyricGlowColor1,
 } from '@renderer/store/setting'
 import { useI18n } from '@renderer/plugins/i18n'
 import { pickrTools } from '@renderer/utils/pickrTools'
@@ -200,29 +187,6 @@ const useLyricColor = () => {
   }
 }
 
-const useGlowColor = () => {
-  const glow_color1_ref = ref(null)
-  let tools1
-
-  const initColors = () => {
-    if (glow_color1_ref.value) {
-      tools1 = pickrTools.create(glow_color1_ref.value, appSetting['desktopLyric.style.lyricGlowColor1'], defaultPlayedColors, (color) => {
-        updateSetting({ 'desktopLyric.style.lyricGlowColor1': color })
-      })
-    }
-  }
-
-  const destroyColors = () => {
-    tools1?.destroy()
-  }
-
-  onMounted(initColors)
-  onBeforeUnmount(destroyColors)
-
-  return {
-    glow_color1_ref,
-  }
-}
 
 export default {
   name: 'SettingDesktopLyric',
@@ -241,19 +205,9 @@ export default {
       resetColor,
     } = useLyricColor()
 
-    const {
-      glow_color1_ref,
-    } = useGlowColor()
-
     const systemFontList = ref([])
     const fontList = computed(() => {
       return [{ id: '', label: t('setting__desktop_lyric_font_default') }, ...systemFontList.value]
-    })
-    const glowModeList = computed(() => {
-      return [
-        { id: 'soft', name: t('lyric_menu__glow_soft') },
-        { id: 'gradient', name: t('lyric_menu__glow_gradient') },
-      ]
     })
     void getSystemFonts().then(fonts => {
       if (fonts) systemFontList.value = fonts.map(f => ({ id: f, label: f.replace(/(^"|"$)/g, '') }))
@@ -279,9 +233,6 @@ export default {
       resetWindowSetting,
       fontList,
       isLinux,
-      glowModeList,
-      setDesktopLyricGlowMode,
-      glow_color1_ref,
     }
   },
 }

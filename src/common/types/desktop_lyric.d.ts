@@ -31,17 +31,12 @@ declare namespace LX {
       'desktopLyric.style.isFontWeightLine': LX.AppSetting['desktopLyric.style.isFontWeightLine']
       'desktopLyric.style.isFontWeightExtended': LX.AppSetting['desktopLyric.style.isFontWeightExtended']
       'desktopLyric.style.isZoomActiveLrc': LX.AppSetting['desktopLyric.style.isZoomActiveLrc']
-      'desktopLyric.style.lyricGlowMode': LX.AppSetting['desktopLyric.style.lyricGlowMode']
-      'desktopLyric.style.lyricGlowColor1': LX.AppSetting['desktopLyric.style.lyricGlowColor1']
-      'desktopLyric.style.lyricGlowColor2': LX.AppSetting['desktopLyric.style.lyricGlowColor2']
-      'desktopLyric.style.lyricGlowIntensity': LX.AppSetting['desktopLyric.style.lyricGlowIntensity']
       'desktopLyric.effect.enable': LX.AppSetting['desktopLyric.effect.enable']
       'desktopLyric.effect.floatEnabled': LX.AppSetting['desktopLyric.effect.floatEnabled']
       'desktopLyric.effect.floatAmount': LX.AppSetting['desktopLyric.effect.floatAmount']
       'desktopLyric.effect.scaleEnabled': LX.AppSetting['desktopLyric.effect.scaleEnabled']
       'desktopLyric.effect.scaleAmount': LX.AppSetting['desktopLyric.effect.scaleAmount']
       'desktopLyric.effect.scaleLongSyllableDuration': LX.AppSetting['desktopLyric.effect.scaleLongSyllableDuration']
-      'desktopLyric.effect.glowAnimateEnabled': LX.AppSetting['desktopLyric.effect.glowAnimateEnabled']
       'common.langId': LX.AppSetting['common.langId']
       'player.isShowLyricTranslation': LX.AppSetting['player.isShowLyricTranslation']
       'player.isShowLyricRoma': LX.AppSetting['player.isShowLyricRoma']
@@ -67,10 +62,6 @@ declare namespace LX {
       scaleEnabled: boolean
       scaleAmount: number
       scaleLongSyllableDuration: number
-      glowAnimateEnabled: boolean
-      glowMode: string
-      glowColor1: string
-      glowColor2: string
     }
 
     type LyricActions = LyricAction<'set_info', {

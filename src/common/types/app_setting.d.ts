@@ -315,26 +315,6 @@ declare global {
       'playDetail.isDelayScroll': boolean
 
       /**
-       * 播放详情页-歌词辉光效果
-       */
-      'playDetail.style.lyricGlowMode': 'none' | 'soft' | 'breathing' | 'gradient' | 'sweep'
-
-      /**
-       * 播放详情页-歌词辉光颜色1
-       */
-      'playDetail.style.lyricGlowColor1': string
-
-      /**
-       * 播放详情页-歌词辉光颜色2
-       */
-      'playDetail.style.lyricGlowColor2': string
-
-      /**
-       * 播放详情页-歌词辉光强度
-       */
-      'playDetail.style.lyricGlowIntensity': number
-
-      /**
        * 播放详情页-是否启用歌词动画特效总开关
        */
       'playDetail.effect.enable': boolean
@@ -363,11 +343,6 @@ declare global {
        * 播放详情页-长音节判定时长阈值（ms）
        */
       'playDetail.effect.scaleLongSyllableDuration': number
-
-      /**
-       * 播放详情页-是否启用动态发光（随播放进度变化）
-       */
-      'playDetail.effect.glowAnimateEnabled': boolean
 
 
       /**
@@ -526,26 +501,6 @@ declare global {
       'desktopLyric.style.isFontWeightExtended': boolean
 
       /**
-       * 桌面歌词-辉光效果
-       */
-      'desktopLyric.style.lyricGlowMode': 'none' | 'soft' | 'breathing' | 'gradient' | 'sweep'
-
-      /**
-       * 桌面歌词-辉光颜色1
-       */
-      'desktopLyric.style.lyricGlowColor1': string
-
-      /**
-       * 桌面歌词-辉光颜色2
-       */
-      'desktopLyric.style.lyricGlowColor2': string
-
-      /**
-       * 桌面歌词-辉光强度
-       */
-      'desktopLyric.style.lyricGlowIntensity': number
-
-      /**
        * 桌面歌词-是否启用歌词动画特效总开关
        */
       'desktopLyric.effect.enable': boolean
@@ -574,11 +529,6 @@ declare global {
        * 桌面歌词-长音节判定时长阈值（ms）
        */
       'desktopLyric.effect.scaleLongSyllableDuration': number
-
-      /**
-       * 桌面歌词-是否启用动态发光（随播放进度变化）
-       */
-      'desktopLyric.effect.glowAnimateEnabled': boolean
 
       /**
        * 是否启用双击列表里的歌曲时自动切换到当前列表播放（仅对歌单、排行榜有效）

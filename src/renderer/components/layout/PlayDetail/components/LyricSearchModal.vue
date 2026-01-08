@@ -6,6 +6,8 @@ teleport(to="#root")
     @click.self="handleClose"
   )
     div(:class="$style.modal")
+      DynamicBackground(:class="$style.dynamicBg")
+      div(:class="$style.mask")
       //- 标题栏
       div(:class="$style.header")
         h3(:class="$style.title") {{ $t('lyric_search__title') }}
@@ -92,9 +94,13 @@ teleport(to="#root")
 import { ref, watch, nextTick, computed } from '@common/utils/vueTools'
 import { searchAllSources, getLyricByInfo, sourceNames } from '@renderer/utils/lyricSearch'
 import { formatDuration } from '@renderer/utils/lyricSearch/utils'
+import DynamicBackground from './DynamicBackground.vue'
 
 export default {
   name: 'LyricSearchModal',
+  components: {
+    DynamicBackground,
+  },
   props: {
     visible: {
       type: Boolean,
@@ -259,14 +265,39 @@ export default {
 .modal {
   width: 900px;
   max-width: 90vw;
+  height: 85vh; // 固定高度，防止初始渲染时窗口尺寸不稳定
   max-height: 85vh;
-  background: var(--color-content-background);
+  // background: var(--color-content-background);
+  background: transparent;
   border-radius: @radius-border;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
+
+.dynamicBg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 1;
+}
+
+.mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-color: var(--color-content-background);
+  opacity: 0.5;
+}
+
 
 .header {
   display: flex;

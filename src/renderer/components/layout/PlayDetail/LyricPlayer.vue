@@ -340,6 +340,13 @@ export default {
       // transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); // 移除: 由 useAmllLyric.js 接管
       // transition-property: transform; 
 
+      // 配合动态字体缩放：限制 .line 最大宽度
+      :global(.line) {
+        display: block !important;
+        max-width: 100%;
+        margin: 0 auto;
+      }
+
       .extended {
         font-size: 0.8em;
         margin-top: 5px;

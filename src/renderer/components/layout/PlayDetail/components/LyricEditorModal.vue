@@ -5,6 +5,8 @@ teleport(to="#root")
     :class="$style.overlay"
   )
     div(:class="$style.modal")
+      DynamicBackground(:class="$style.dynamicBg")
+      div(:class="$style.mask")
       //- 标题栏
       div(:class="$style.header")
         h3(:class="$style.title") {{ $t('lyric_editor__title') }}
@@ -43,6 +45,7 @@ teleport(to="#root")
             :class="$style.textarea"
             :placeholder="$t('lyric_editor__input_placeholder')"
             @input="handleTextInput"
+            @dblclick="handleTextareaDblClick"
           )
           //- 带时间轴显示模式（只读）
           textarea(
@@ -51,6 +54,7 @@ teleport(to="#root")
             :value="formattedLyricText"
             :class="[$style.textarea, $style.readonlyTextarea]"
             readonly
+            @dblclick="handleTextareaDblClick"
           )
 
         //- 右侧：打轴区
@@ -106,22 +110,6 @@ teleport(to="#root")
             div(:class="$style.wordLineInfo")
               span(:class="$style.wordLineLabel") {{ $t('lyric_editor__current_line') }}:
               span(:class="$style.wordLineText") {{ currentLineText }}
-              base-btn(
-                v-if="linesData.length > 0"
-                :class="$style.changeLineBtn"
-                @click="showLineSelector = !showLineSelector"
-              ) {{ $t('lyric_editor__change_line') }}
-
-            //- 行选择器
-            div(v-if="showLineSelector" :class="$style.lineSelector")
-              div(
-                v-for="(line, index) in linesData"
-                :key="index"
-                :class="[$style.lineSelectorItem, { [$style.active]: index === currentLineIndex }]"
-                @click="selectLine(index)"
-              )
-                span(:class="$style.lineSelectorTime") {{ line.lineTime >= 0 ? formatTimeDisplay(line.lineTime) : '--:--.--' }}
-                span(:class="$style.lineSelectorText") {{ line.text }}
 
             //- 字符打轴区
             div(ref="wordsContainerRef" :class="$style.wordsContainer")
@@ -164,7 +152,6 @@ teleport(to="#root")
         base-btn(
           :class="$style.footerBtn"
           color="primary"
-          :disabled="linesData.length === 0"
           @click="handleSave"
         ) {{ $t('btn_save') }}
 </template>
@@ -185,9 +172,13 @@ import {
   isPerCharTimestampFormat,
   isLrcFormat,
 } from '@renderer/utils/lyricEditor'
+import DynamicBackground from './DynamicBackground.vue'
 
 export default {
   name: 'LyricEditorModal',
+  components: {
+    DynamicBackground,
+  },
   props: {
     visible: {
       type: Boolean,
@@ -213,7 +204,6 @@ export default {
     const currentWordIndex = ref(0)
     const currentTime = ref(0)
     const editMode = ref('line') // 'line' | 'word'
-    const showLineSelector = ref(false)
     const showTimestampView = ref(false) // 是否显示带时间轴的歌词格式
     let animationFrameId = null
     let lastWordStampTime = -1 // 记录上一个字的打轴时间
@@ -400,7 +390,6 @@ export default {
     const switchMode = (mode) => {
       if (mode === editMode.value) return
       editMode.value = mode
-      showLineSelector.value = false
       
       if (mode === 'word') {
         currentWordIndex.value = 0
@@ -614,16 +603,34 @@ export default {
       currentWordIndex.value = index
     }
 
-    // 选择行（逐字模式）
-    const selectLine = (index) => {
-      currentLineIndex.value = index
-      currentWordIndex.value = 0
-      showLineSelector.value = false
-      lastWordStampTime = -1
+    // 获取 textarea 中光标所在行号
+    const getLineIndexFromCursor = (textarea) => {
+      const cursorPos = textarea.selectionStart
+      const text = textarea.value
+      const textBeforeCursor = text.substring(0, cursorPos)
+      const lineIndex = textBeforeCursor.split('\n').length - 1
+      return lineIndex
+    }
+
+    // 双击 textarea 跳转到该行打轴
+    const handleTextareaDblClick = (e) => {
+      const textarea = e.target
+      const lineIndex = getLineIndexFromCursor(textarea)
       
-      // 找到第一个未打轴的字
-      const firstUnstamped = currentWords.value.findIndex(w => w.offset < 0)
-      currentWordIndex.value = firstUnstamped >= 0 ? firstUnstamped : currentWords.value.length
+      if (lineIndex >= 0 && lineIndex < linesData.value.length) {
+        currentLineIndex.value = lineIndex
+        
+        if (editMode.value === 'word') {
+          // 逐字模式：找到第一个未打轴的字
+          const words = linesData.value[lineIndex].words
+          const firstUnstamped = words.findIndex(w => w.offset < 0)
+          currentWordIndex.value = firstUnstamped >= 0 ? firstUnstamped : 0
+          lastWordStampTime = -1
+          scrollToCurrentWord()
+        } else {
+          scrollToCurrentLine()
+        }
+      }
     }
 
     // 滚动到当前行
@@ -717,7 +724,6 @@ export default {
 
         editMode.value = 'line'
         currentWordIndex.value = 0
-        showLineSelector.value = false
         lastWordStampTime = -1
 
         // 开始监听播放时间
@@ -756,7 +762,6 @@ export default {
       durationDisplay,
       isPlaying,
       editMode,
-      showLineSelector,
       lineTimestampedCount,
       currentWords,
       currentLineText,
@@ -778,7 +783,7 @@ export default {
       handleLineClick,
       handleLineDoubleClick,
       handleWordClick,
-      selectLine,
+      handleTextareaDblClick,
       handleSave,
       handleCopy,
       handleCancel,
@@ -810,12 +815,35 @@ export default {
   width: 850px;
   max-width: 90vw;
   max-height: 85vh;
-  background: var(--color-content-background);
+  // background: var(--color-content-background);
+  background: transparent;
   border-radius: @radius-border;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+}
+
+.dynamicBg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 1;
+}
+
+.mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-color: var(--color-content-background);
+  opacity: 0.5;
 }
 
 .header {
@@ -1080,53 +1108,6 @@ export default {
 .wordLineText {
   flex: 1;
   font-size: 14px;
-  color: var(--color-font);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.changeLineBtn {
-  flex-shrink: 0;
-  font-size: 12px;
-  padding: 4px 10px;
-}
-
-.lineSelector {
-  max-height: 150px;
-  overflow-y: auto;
-  border: 1px solid var(--color-primary-background-hover);
-  border-radius: @radius-border;
-  background: var(--color-primary-background);
-  margin-bottom: 10px;
-}
-
-.lineSelectorItem {
-  display: flex;
-  align-items: center;
-  padding: 6px 10px;
-  cursor: pointer;
-  gap: 8px;
-
-  &:hover {
-    background: var(--color-primary-background-hover);
-  }
-
-  &.active {
-    background: var(--color-primary-background-active);
-  }
-}
-
-.lineSelectorTime {
-  font-size: 11px;
-  font-family: monospace;
-  color: var(--color-font-label);
-  width: 70px;
-  flex-shrink: 0;
-}
-
-.lineSelectorText {
-  font-size: 13px;
   color: var(--color-font);
   overflow: hidden;
   text-overflow: ellipsis;

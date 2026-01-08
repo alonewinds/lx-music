@@ -5,6 +5,8 @@ material-modal(
   @close="handleClose"
 )
   main(:class="$style.main" style="width: 420px; height: 520px;")
+    DynamicBackground(:class="$style.bg")
+    div(:class="$style.mask")
     h2(:class="$style.title") {{ $t('play_queue__title') }}
     
     div(v-if="!hasContent" :class="$style.empty")
@@ -73,6 +75,7 @@ import {
   clearTempPlayeList,
   setPlayMusicInfo,
 } from '@renderer/store/player/action'
+import DynamicBackground from '../PlayDetail/components/DynamicBackground.vue'
 
 export default {
   name: 'PlayQueueModal',
@@ -158,6 +161,9 @@ export default {
       handlePlayRemainingItem,
     }
   },
+  components: {
+    DynamicBackground,
+  },
 }
 </script>
 
@@ -167,20 +173,44 @@ export default {
 :global {
   .play-queue-modal {
     // 覆盖 material-modal 的默认背景
-    background-color: fade(@white, 85%) !important;
-    backdrop-filter: blur(12px);
+    background-color: transparent !important;
+    // backdrop-filter: blur(12px); // 动态背景组件自带模糊或不需要额外叠加
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
 
     // 针对暗色主题的适配
     [data-theme='dark'] & {
-      background-color: fade(@black, 60%) !important;
+      background-color: transparent !important;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
   }
 }
 
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  border-radius: inherit; /* 继承父级圆角，如果有的话 */
+  opacity: 1;
+}
+
+.mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-color: var(--color-content-background);
+  opacity: 0.5;
+  border-radius: inherit;
+}
+
 .main {
+  position: relative; /* 确保 bg 绝对定位相对于 main */
   display: flex;
   flex-direction: column;
   height: 100%;

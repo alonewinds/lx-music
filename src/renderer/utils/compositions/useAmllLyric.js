@@ -188,6 +188,24 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         dom_lyric_text.value.appendChild(dom_line_content)
         nextTick(() => {
             dom_lines = dom_lyric.value.querySelectorAll('.line-content')
+
+            // 动态字体缩放：当歌词行过长时自动缩小字体
+            const containerWidth = dom_lyric.value.clientWidth - 40 // 留出边距
+            dom_lines.forEach(lineEl => {
+                const lineDiv = lineEl.querySelector('.line')
+                if (!lineDiv) return
+
+                // 重置字体大小以获取原始宽度
+                lineDiv.style.fontSize = ''
+
+                const textWidth = lineDiv.scrollWidth
+                if (textWidth > containerWidth && containerWidth > 0) {
+                    // 计算缩放比例，最小缩放到 60%
+                    const scale = Math.max(0.6, containerWidth / textWidth)
+                    lineDiv.style.fontSize = `${scale}em`
+                }
+            })
+
             handleScrollLrc()
         })
     }

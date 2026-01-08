@@ -174,26 +174,33 @@ export const setPlaybackRate = (rate: number) => {
 
 export const setLyric = () => {
   if (!musicInfo.id) return
+
+  // 处理歌词（包括空歌词的情况）
+  const extendedLyrics = []
   if (musicInfo.lrc) {
-    const extendedLyrics = []
     if (appSetting['player.isShowLyricRoma'] && musicInfo.rlrc) extendedLyrics.push(musicInfo.rlrc)
     if (appSetting['player.isShowLyricTranslation'] && musicInfo.tlrc) extendedLyrics.push(musicInfo.tlrc)
     if (appSetting['player.isSwapLyricTranslationAndRoma']) extendedLyrics.reverse()
-
-    lrc.setLyric(
-      appSetting['player.isPlayLxlrc'] && musicInfo.lxlrc ? musicInfo.lxlrc : musicInfo.lrc,
-      extendedLyrics,
-    )
-    sendDesktopLyricInfo({
-      action: 'set_lyric',
-      data: {
-        lrc: musicInfo.lrc,
-        tlrc: musicInfo.tlrc,
-        rlrc: musicInfo.rlrc,
-        lxlrc: musicInfo.lxlrc,
-      },
-    })
   }
+
+  // 设置歌词（空字符串会清空歌词显示）
+  lrc.setLyric(
+    musicInfo.lrc
+      ? (appSetting['player.isPlayLxlrc'] && musicInfo.lxlrc ? musicInfo.lxlrc : musicInfo.lrc)
+      : '',
+    extendedLyrics,
+  )
+
+  // 同步到桌面歌词
+  sendDesktopLyricInfo({
+    action: 'set_lyric',
+    data: {
+      lrc: musicInfo.lrc || '',
+      tlrc: musicInfo.tlrc || '',
+      rlrc: musicInfo.rlrc || '',
+      lxlrc: musicInfo.lxlrc || '',
+    },
+  })
 
   if (isPlay.value) {
     setTimeout(() => {

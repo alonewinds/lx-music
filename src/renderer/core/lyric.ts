@@ -255,11 +255,26 @@ export const setDisableAutoPauseBySource = (disabled: boolean, source: string) =
 }
 
 
-export const play = () => {
+export const play = (time?: number) => {
   // if (!musicInfo.lrc) return
-  const currentTime = getCurrentTime()
+  const currentTime = time ?? getCurrentTime()
   lrc.play(currentTime)
-  sendDesktopLyricInfo({ action: 'set_play', data: currentTime })
+
+  // 如果是系统触发的续播（time 为空），或者当前正在播放，则发送播放指令
+  if (time === undefined || isPlay.value) {
+    sendDesktopLyricInfo({ action: 'set_play', data: currentTime })
+  } else {
+    // 只有在暂停状态下的跳转（time 不为空），才执行跳转后立即暂停
+    lrc.pause()
+    sendDesktopLyricInfo({
+      action: 'set_status',
+      data: {
+        isPlay: false,
+        line: lyric.line,
+        played_time: currentTime,
+      },
+    })
+  }
 }
 
 export const pause = () => {

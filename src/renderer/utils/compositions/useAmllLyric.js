@@ -1,5 +1,5 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from '@common/utils/vueTools'
-import { throttle, formatPlayTime2 } from '@common/utils/common'
+import { formatPlayTime2 } from '@common/utils/common'
 import { play } from '@renderer/core/player/action'
 import { appSetting } from '@renderer/store/setting'
 import { Spring } from '@renderer/utils/amll/spring'
@@ -24,13 +24,14 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
     const scrollSpring = new Spring(0)
     scrollSpring.updateParams({ mass: 1, damping: 20, stiffness: 100 })
 
+    let isUnmounted = false
     let animationFrameId = null
 
     // Store current scale for each line for smooth interpolation
     let currentScales = []
 
     const applyEffects = () => {
-        if (!dom_lyric.value || !dom_lines.length) return
+        if (isUnmounted || !dom_lyric.value || !dom_lines?.length) return
 
         // Initialize scales array if size mismatch
         if (currentScales.length !== dom_lines.length) {
@@ -38,9 +39,10 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         }
 
         const currentScrollY = scrollSpring.getCurrentPosition()
-        dom_lyric.value.scrollTop = currentScrollY
+        if (dom_lyric.value) dom_lyric.value.scrollTop = currentScrollY
 
-        const containerHeight = dom_lyric.value.clientHeight
+        const containerHeight = dom_lyric.value?.clientHeight ?? 0
+        if (containerHeight <= 0) return
         const centerLineY = currentScrollY + containerHeight * 0.38
 
         let minDistance = Infinity
@@ -180,17 +182,21 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
     }
 
     const setLyric = (lines) => {
+        if (isUnmounted || !dom_lyric_text.value) return
         const dom_line_content = document.createDocumentFragment()
         lines.forEach(line => {
-            dom_line_content.appendChild(line.dom_line)
+            if (line.dom_line) dom_line_content.appendChild(line.dom_line)
         })
         dom_lyric_text.value.textContent = ''
         dom_lyric_text.value.appendChild(dom_line_content)
         nextTick(() => {
+            if (isUnmounted || !dom_lyric.value) return
             dom_lines = dom_lyric.value.querySelectorAll('.line-content')
 
             // 动态字体缩放：当歌词行过长时自动缩小字体
             const containerWidth = dom_lyric.value.clientWidth - 40 // 留出边距
+            if (containerWidth <= 0) return
+
             dom_lines.forEach(lineEl => {
                 const lineDiv = lineEl.querySelector('.line')
                 if (!lineDiv) return
@@ -199,7 +205,7 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
                 lineDiv.style.fontSize = ''
 
                 const textWidth = lineDiv.scrollWidth
-                if (textWidth > containerWidth && containerWidth > 0) {
+                if (textWidth > containerWidth) {
                     // 计算缩放比例，最小缩放到 60%
                     const scale = Math.max(0.6, containerWidth / textWidth)
                     lineDiv.style.fontSize = `${scale}em`
@@ -211,10 +217,12 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
     }
 
     watch(() => lyric.lines, (lines) => {
+        if (isUnmounted) return
         setLyric(lines)
     })
 
     watch(() => lyric.line, () => {
+        if (isUnmounted) return
         handleScrollLrc()
     })
 
@@ -234,13 +242,20 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
     })
 
     onBeforeUnmount(() => {
+        isUnmounted = true
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseMsUp)
         document.removeEventListener('touchmove', handleTouchMoveBound)
         document.removeEventListener('touchend', handleMouseMsUp)
 
-        if (animationFrameId) cancelAnimationFrame(animationFrameId)
-        if (timeout) clearTimeout(timeout)
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId)
+            animationFrameId = null
+        }
+        if (timeout) {
+            clearTimeout(timeout)
+            timeout = null
+        }
     })
 
 

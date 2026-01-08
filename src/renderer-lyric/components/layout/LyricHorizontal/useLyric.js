@@ -70,9 +70,9 @@ export default (isComputeHeight) => {
 
   const handleLyricDown = (target, x, y) => {
     if (target.classList.contains('font-lrc') ||
-        target.parentNode.classList.contains('font-lrc') ||
-        target.classList.contains('extended') ||
-        target.parentNode.classList.contains('extended')
+      target.parentNode.classList.contains('font-lrc') ||
+      target.classList.contains('extended') ||
+      target.parentNode.classList.contains('extended')
     ) {
       if (delayScrollTimeout) {
         clearTimeout(delayScrollTimeout)
@@ -187,14 +187,20 @@ export default (isComputeHeight) => {
 
   let delayScrollTimeout
   const scrollLine = (line, oldLine) => {
-    setImmediate(() => {
-      prevActiveLine = line
-    })
+    prevActiveLine = line
     if (line < 0 || !lyric.lines.length) return
     if (line == 0 && isSetedLines) return isSetedLines = false
     isSetedLines &&= false
-    if (oldLine == null || line - oldLine != 1) return handleScrollLrc()
 
+    // 判断是否为非连续跳转（通常是跳进度或第一行加载）
+    const isJump = oldLine == null || Math.abs(line - oldLine) !== 1
+
+    if (isJump) {
+      // 只要是跳切，且跨度大于2行，直接无动画跳转，否则使用极短动画
+      return handleScrollLrc(Math.abs(line - (oldLine ?? 0)) > 2 ? 0 : 100)
+    }
+
+    // 正常连续播放逻辑
     if (setting['desktopLyric.isDelayScroll']) {
       delayScrollTimeout = setTimeout(() => {
         delayScrollTimeout = null

@@ -187,6 +187,7 @@ export default {
     }
 
     const handleSaveLyric = async({ lyric: lrcText }) => {
+      if (!playMusicInfo.musicInfo) return
       const musicInfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
       
       const lyricInfoToSave = {
@@ -224,6 +225,7 @@ export default {
     }
 
     const handleApplySearchLyric = async(lyricContent) => {
+      if (!playMusicInfo.musicInfo) return
       const musicInfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
       
       const lyricInfoToSave = {

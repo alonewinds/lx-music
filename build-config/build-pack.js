@@ -20,18 +20,16 @@ const options = {
     ],
   },
   directories: {
-    buildResources: './resources',
-    output: './build',
+    buildResources: 'resources',
+    output: 'build',
   },
+  icon: 'resources/icons/icon.ico',
   files: [
     '!node_modules/**/*',
-    'node_modules/font-list',
+    'node_modules/font-list/**/*',
     'node_modules/better-sqlite3/lib',
     'node_modules/better-sqlite3/package.json',
     'node_modules/better-sqlite3/build/Release/better_sqlite3.node',
-    'node_modules/electron-font-manager/index.js',
-    'node_modules/electron-font-manager/package.json',
-    'node_modules/electron-font-manager/build/Release/font_manager.node',
     'node_modules/node-gyp-build',
     'node_modules/bufferutil',
     'node_modules/utf-8-validate',
@@ -41,6 +39,9 @@ const options = {
   asar: {
     smartUnpack: false,
   },
+  asarUnpack: [
+    'node_modules/font-list/**/*',
+  ],
   extraResources: [
     './licenses',
   ],
@@ -60,7 +61,7 @@ const path = require('path')
  */
 const winOptions = {
   win: {
-    icon: path.join(__dirname, '../resources/icons/icon.ico'),
+    icon: 'resources/icons/icon.ico',
     legalTrademarks: 'lyswhut',
     // artifactName: '${productName}-v${version}-${env.ARCH}-${env.TARGET}.${ext}',
   },
@@ -71,8 +72,12 @@ const winOptions = {
     // differentialPackage: true,
     license: './licenses/license.rtf',
     shortcutName: 'LX Music',
+    installerIcon: 'resources/icons/icon.ico',
+    uninstallerIcon: 'resources/icons/icon.ico',
+    installerHeaderIcon: 'resources/icons/icon.ico',
   },
 }
+
 /**
  * @type {import('electron-builder').Configuration}
  * @see https://www.electron.build/configuration/configuration
@@ -81,7 +86,7 @@ const linuxOptions = {
   linux: {
     maintainer: 'lyswhut <lyswhut@qq.com>',
     // artifactName: '${productName}-${version}.${env.ARCH}.${ext}',
-    icon: './resources/icons',
+    icon: 'resources/icons',
     category: 'Utility;AudioVideo;Audio;Player;Music;',
     desktop: {
       // https://www.electron.build/app-builder-lib.interface.linuxdesktopfile
@@ -109,7 +114,7 @@ const linuxOptions = {
  */
 const macOptions = {
   mac: {
-    icon: './resources/icons/icon.icns',
+    icon: 'resources/icons/icon.icns',
     category: 'public.app-category.music',
     // artifactName: '${productName}-${version}.${ext}',
   },

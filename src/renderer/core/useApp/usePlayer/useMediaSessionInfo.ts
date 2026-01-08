@@ -11,10 +11,10 @@ export default () => {
   emptyAudio.src = require('@renderer/assets/medias/Silence02s.mp3')
   emptyAudio.controls = false
   emptyAudio.preload = 'auto'
-  emptyAudio.onplaying = () => {
-    emptyAudio.pause()
-  }
-  void emptyAudio.play()
+  emptyAudio.muted = true
+  emptyAudio.volume = 0
+  // 仅加载，不播放，避免产生任何声音
+  emptyAudio.load()
   let prevPicUrl = ''
 
   const updateMediaSessionInfo = () => {
@@ -81,14 +81,15 @@ export default () => {
     navigator.mediaSession.playbackState = 'none'
   }
   const handleSetPlayInfo = () => {
-    void emptyAudio.play().finally(() => {
-      updateMediaSessionInfo()
-      updatePositionState({
-        position: playProgress.nowPlayTime,
-        duration: playProgress.maxPlayTime,
-      })
-      handlePause()
+    // 仅加载空音频以更新 Media Session，不实际播放
+    emptyAudio.currentTime = 0
+    emptyAudio.load()
+    updateMediaSessionInfo()
+    updatePositionState({
+      position: playProgress.nowPlayTime,
+      duration: playProgress.maxPlayTime,
     })
+    handlePause()
   }
 
   // const registerMediaSessionHandler = () => {

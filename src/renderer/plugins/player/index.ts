@@ -57,11 +57,6 @@ let pitchShifterNodeTempValue = 1
 let defaultChannelCount = 2
 export const soundR = 0.5
 
-// 淡入淡出相关变量
-let fadeAnimationId: number | null = null
-let fadeState: 'none' | 'fading-in' | 'fading-out' = 'none'
-const FADE_DURATION = 1500 // 淡入淡出持续时间（毫秒）
-
 // 音效功能状态追踪
 let soundEffectsEnabled = false
 let basicAudioContextInited = false
@@ -438,103 +433,6 @@ export const setResource = (src: string) => {
   if (audio) audio.src = src
 }
 
-/**
- * 取消当前的淡入淡出动画
- */
-const cancelFade = () => {
-  if (fadeAnimationId !== null) {
-    cancelAnimationFrame(fadeAnimationId)
-    fadeAnimationId = null
-  }
-  fadeState = 'none'
-}
-
-/**
- * 淡入效果：音量从0逐渐增加到1
- */
-const fadeIn = () => {
-  if (!audio || !gainNode) return
-
-  cancelFade()
-  fadeState = 'fading-in'
-
-  // 立即触发play事件，让UI立即响应
-  // 与fadeOut保持一致，确保UI状态同步
-  if (typeof window !== 'undefined' && window.app_event) {
-    window.app_event.play()
-  }
-
-  const startTime = performance.now()
-  const startGain = gainNode.gain.value
-  const targetGain = 1
-
-  // 先启动音频播放
-  void audio.play()
-
-  const animate = (currentTime: number) => {
-    if (fadeState !== 'fading-in' || !gainNode) return
-
-    const elapsed = currentTime - startTime
-    const progress = Math.min(elapsed / FADE_DURATION, 1)
-
-    // 使用线性插值
-    gainNode.gain.value = startGain + (targetGain - startGain) * progress
-
-    if (progress < 1) {
-      fadeAnimationId = requestAnimationFrame(animate)
-    } else {
-      fadeState = 'none'
-      fadeAnimationId = null
-    }
-  }
-
-  fadeAnimationId = requestAnimationFrame(animate)
-}
-
-/**
- * 淡出效果：音量从当前值逐渐减少到0，然后暂停播放
- */
-const fadeOut = () => {
-  if (!audio || !gainNode) {
-    audio?.pause()
-    return
-  }
-
-  cancelFade()
-  fadeState = 'fading-out'
-
-  // 立即触发pause事件，让UI立即响应
-  // 音频会在1.5秒内淡出，但UI会立即切换到暂停状态
-  if (typeof window !== 'undefined' && window.app_event) {
-    window.app_event.pause()
-  }
-
-  const startTime = performance.now()
-  const startGain = gainNode.gain.value
-  const targetGain = 0
-
-  const animate = (currentTime: number) => {
-    if (fadeState !== 'fading-out' || !gainNode) return
-
-    const elapsed = currentTime - startTime
-    const progress = Math.min(elapsed / FADE_DURATION, 1)
-
-    // 使用线性插值
-    gainNode.gain.value = startGain + (targetGain - startGain) * progress
-
-    if (progress < 1) {
-      fadeAnimationId = requestAnimationFrame(animate)
-    } else {
-      // 淡出完成后暂停播放
-      audio?.pause()
-      fadeState = 'none'
-      fadeAnimationId = null
-    }
-  }
-
-  fadeAnimationId = requestAnimationFrame(animate)
-}
-
 export const setPlay = () => {
   // 初始化基础 AudioContext（如果尚未初始化）
   // 使用轻量级初始化，不加载音效节点
@@ -542,28 +440,14 @@ export const setPlay = () => {
     initBasicAudioContext()
   }
 
-  // 如果有 gainNode，使用淡入效果；否则直接播放
-  if (gainNode) {
-    fadeIn()
-  } else {
-    void audio?.play()
-  }
+  void audio?.play()
 }
 
 export const setPause = () => {
-  // 如果有 gainNode，使用淡出效果；否则直接暂停
-  if (gainNode) {
-    fadeOut()
-  } else {
-    audio?.pause()
-  }
+  audio?.pause()
 }
 
 export const setStop = () => {
-  // 停止时取消淡入淡出并重置增益
-  cancelFade()
-  if (gainNode) gainNode.gain.value = 1
-
   if (audio) {
     audio.src = ''
     audio.removeAttribute('src')

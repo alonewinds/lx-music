@@ -16,12 +16,10 @@ const initAudio = () => {
   audio.crossOrigin = 'anonymous'
   audio.muted = true
   audio.volume = 0
-  audio.autoplay = true
-  audio.addEventListener('playing', () => {
-    audio.pause()
-  })
+  // 移除 autoplay，避免产生任何音频播放
+  audio.autoplay = false
 }
-const checkMusicUrl = async(url: string): Promise<boolean> => {
+const checkMusicUrl = async (url: string): Promise<boolean> => {
   initAudio()
   return new Promise((resolve) => {
     const clear = () => {
@@ -56,7 +54,7 @@ const resetPreloadInfo = () => {
   preloadMusicInfo.info = null
   preloadMusicInfo.isLoading = false
 }
-const preloadNextMusicUrl = async(curTime: number) => {
+const preloadNextMusicUrl = async (curTime: number) => {
   if (preloadMusicInfo.isLoading || curTime - preloadMusicInfo.preProgress < 3) return
   preloadMusicInfo.isLoading = true
   console.log('preload next music url')

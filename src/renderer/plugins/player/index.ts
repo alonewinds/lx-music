@@ -62,6 +62,10 @@ let fadeAnimationId: number | null = null
 let fadeState: 'none' | 'fading-in' | 'fading-out' = 'none'
 const FADE_DURATION = 1500 // 淡入淡出持续时间（毫秒）
 
+// 音效功能状态追踪
+let soundEffectsEnabled = false
+let basicAudioContextInited = false
+
 
 export const createAudio = () => {
   if (audio) return
@@ -114,19 +118,66 @@ const initGain = () => {
   gainNode.gain.value = 1 // 默认增益为1（不改变音量）
 }
 
-const initAdvancedAudioFeatures = () => {
-  if (audioContext) return
+/**
+ * 初始化基础音频上下文（仅用于普通播放，无音效处理）
+ * 这是一个轻量级初始化，不创建音效处理节点
+ */
+const initBasicAudioContext = () => {
+  if (basicAudioContextInited) return
   if (!audio) throw new Error('audio not defined')
-  audioContext = new window.AudioContext({ latencyHint: 'playback' })
-  defaultChannelCount = audioContext.destination.channelCount
 
-  initAnalyser()
-  initBiquadFilter()
-  initConvolver()
-  initPanner()
-  initGain()
+  basicAudioContextInited = true
+
+  // 仅在需要时创建 AudioContext
+  if (!audioContext) {
+    audioContext = new window.AudioContext({ latencyHint: 'playback' })
+    defaultChannelCount = audioContext.destination.channelCount
+  }
+
+  // 创建基础节点
+  if (!gainNode) {
+    initGain()
+  }
+
+  // 基础路径: source -> gain -> destination
+  if (!mediaSource) {
+    mediaSource = audioContext.createMediaElementSource(audio)
+  }
+
+  // 默认简单连接（无音效时使用）
+  if (!soundEffectsEnabled) {
+    mediaSource.disconnect()
+    mediaSource.connect(gainNode)
+    gainNode.disconnect()
+    gainNode.connect(audioContext.destination)
+  }
+}
+
+/**
+ * 初始化高级音频功能（均衡器、混响、环绕等）
+ * 仅在用户启用音效功能时调用
+ */
+const initAdvancedAudioFeatures = () => {
+  // 确保基础上下文已初始化
+  initBasicAudioContext()
+
+  // 如果音效已启用，跳过
+  if (soundEffectsEnabled) return
+
+  console.log('[AudioOptimization] Enabling advanced audio features...')
+  soundEffectsEnabled = true
+
+  // 初始化音效节点
+  if (!analyser) initAnalyser()
+  if (!biquads) initBiquadFilter()
+  if (!convolver) initConvolver()
+  if (!panner) initPanner()
+
+  // 重新连接完整音频链路
   // source -> analyser -> biquadFilter -> pitchShifter -> [(convolver & convolverSource)->convolverDynamicsCompressor] -> panner -> gain
-  mediaSource = audioContext.createMediaElementSource(audio)
+  mediaSource.disconnect()
+  gainNode.disconnect()
+
   mediaSource.connect(analyser)
   analyser.connect(biquads.get(`hz${freqs[0]}`)!)
   const lastBiquadFilter = (biquads.get(`hz${freqs.at(-1)!}`)!)
@@ -138,12 +189,6 @@ const initAdvancedAudioFeatures = () => {
 
   // 音频输出设备改变时刷新 audio node 连接
   window.app_event.on('playerDeviceChanged', handleMediaListChange)
-
-  // audio.addEventListener('playing', connectAudioNode)
-  // audio.addEventListener('pause', disconnectAudioNode)
-  // audio.addEventListener('waiting', disconnectAudioNode)
-  // audio.addEventListener('emptied', disconnectAudioNode)
-  // if (!audio.paused) connectAudioNode()
 }
 
 const handleMediaListChange = () => {
@@ -491,9 +536,10 @@ const fadeOut = () => {
 }
 
 export const setPlay = () => {
-  // 初始化 AudioContext（如果尚未初始化）
-  if (!audioContext && audio) {
-    initAdvancedAudioFeatures()
+  // 初始化基础 AudioContext（如果尚未初始化）
+  // 使用轻量级初始化，不加载音效节点
+  if (!basicAudioContextInited && audio) {
+    initBasicAudioContext()
   }
 
   // 如果有 gainNode，使用淡入效果；否则直接播放

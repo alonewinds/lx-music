@@ -231,13 +231,13 @@ export default {
 .lrcActiveZoom {
   :global {
     .line-content {
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
       &.active {
         .extended {
           font-size: .94em;
         }
-        .line {
-          font-size: 1.2em;
-        }
+        transform: scale(1.25);
       }
     }
   }

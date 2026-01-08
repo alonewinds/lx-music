@@ -26,8 +26,16 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
 
     let animationFrameId = null
 
+    // Store current scale for each line for smooth interpolation
+    let currentScales = []
+
     const applyEffects = () => {
         if (!dom_lyric.value || !dom_lines.length) return
+
+        // Initialize scales array if size mismatch
+        if (currentScales.length !== dom_lines.length) {
+            currentScales = new Array(dom_lines.length).fill(1.0)
+        }
 
         const currentScrollY = scrollSpring.getCurrentPosition()
         dom_lyric.value.scrollTop = currentScrollY
@@ -35,35 +43,62 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         const containerHeight = dom_lyric.value.clientHeight
         const centerLineY = currentScrollY + containerHeight * 0.38
 
+        let minDistance = Infinity
+        let closestLine = null
+
         dom_lines.forEach((dom, index) => {
             const lineOffsetTop = dom.offsetTop
             const distance = Math.abs(lineOffsetTop - centerLineY)
-            const maxDistance = containerHeight * 0.5 // 使用容器高度的一半作为参考
+            const maxDistance = containerHeight * 0.5
 
-            // Scale effect (current line is slightly larger for emphasis)
-            const isActive = index === lyric.line
-            const scale = isActive ? 1.05 : 1.0
+            if (distance < minDistance) {
+                minDistance = distance
+                closestLine = dom
+            }
 
-            // Blur and Opacity effects based on distance
+            // Target Scale Calculation
+            let isActive = index === lyric.line
+            // Special handling for last line: shrink when song is nearly done (last 1s)
+            if (isActive && index === dom_lines.length - 1) {
+                if (playProgress.maxPlayTime && (playProgress.nowPlayTime > playProgress.maxPlayTime - 1)) {
+                    isActive = false
+                }
+            }
+
+            const targetScale = isActive ? 1.3 : 1.0
+
+            // Smooth Interpolation (Lerp)
+            // Use a factor like 0.1 for smooth transition
+            const currentScale = currentScales[index]
+            const newScale = currentScale + (targetScale - currentScale) * 0.1
+            currentScales[index] = newScale
+
+            // Blur and Opacity effects
             let blur = 0
             let opacity = 1
 
             if (!isActive) {
-                // 非线性模糊算法：距离中心越远模糊程度增长越快
-                // 使用 (distance / maxDistance)^1.5 来增强衰减感
                 const factor = Math.min(1.2, Math.pow(distance / maxDistance, 1.5))
-                blur = factor * 8 // 最大模糊增强到 8px
+                blur = factor * 8
                 opacity = Math.max(0.15, 1 - factor * 0.8)
             }
 
-            dom.style.transform = `scale(${scale})`
+            dom.style.transform = `scale(${newScale.toFixed(3)})`
             dom.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none'
+            // dom.style.opacity = opacity.toString() // Conflict with font-player? font-player controls opacity inside line?
+            // Wait, in previous code we set opacity on dom (line-content).
             dom.style.opacity = opacity.toString()
-            dom.style.fontWeight = isActive ? '700' : '500' // JS 强制加粗状态
+
+            dom.style.fontWeight = isActive ? '700' : '500'
             dom.style.willChange = 'transform, filter, opacity'
-            // 移除 style.transition，因为我们每帧通过 Spring 动画更新，transition 会造成冲突延迟
         })
+
+        if (isStopScroll.value && closestLine) {
+            time = closestLine.time
+            timeStr.value = formatPlayTime2(time / 1000)
+        }
     }
+
 
     const onTick = (now) => {
         const delta = 16.7 / 1000 // Fixed delta for simplicity, or calculate from 'now'
@@ -85,7 +120,7 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
     const handleSkipPlay = () => {
         if (time == -1) return
         isStopScroll.value = false
-        window.app_event.setProgress(time)
+        window.app_event.setProgress(time / 1000)
         if (!isPlay.value) play()
     }
 

@@ -212,11 +212,11 @@ export const setEffectSettings = () => {
   const enable = appSetting['playDetail.effect.enable']
   // When main enable toggle is on, enable all effects automatically
   const effectSettings = {
-    floatEnabled: enable,
+    floatEnabled: false, // Disable float for Impact Scale effect
     floatAmount: appSetting['playDetail.effect.floatAmount'],
     scaleEnabled: enable,
-    scaleAmount: appSetting['playDetail.effect.scaleAmount'],
-    scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
+    scaleAmount: appSetting['playDetail.effect.scaleAmount'] > 1 ? appSetting['playDetail.effect.scaleAmount'] : 1.2, // Ensure scale > 1
+    scaleLongSyllableDuration: 0, // Apply to all syllables
   }
   lrc.setEffectSettings(effectSettings)
 }

@@ -95,7 +95,7 @@ export const createWindow = () => {
       nodeIntegration: true,
       sandbox: false,
       enableWebSQL: false,
-      webgl: false,
+      webgl: true, // 启用WebGL以支持动态背景效果
       spellcheck: false, // 禁用拼写检查器
     },
   }
@@ -153,7 +153,7 @@ export const sendEvent = <T = any>(name: string, params?: T) => {
   mainSend(browserWindow, name, params)
 }
 
-export const showSelectDialog = async(options: Electron.OpenDialogOptions) => {
+export const showSelectDialog = async (options: Electron.OpenDialogOptions) => {
   if (!browserWindow) throw new Error('main window is undefined')
   return dialog.showOpenDialog(browserWindow, options)
 }
@@ -165,7 +165,7 @@ export const showDialog = ({ type, message, detail }: Electron.MessageBoxSyncOpt
     detail,
   })
 }
-export const showSaveDialog = async(options: Electron.SaveDialogOptions) => {
+export const showSaveDialog = async (options: Electron.SaveDialogOptions) => {
   if (!browserWindow) throw new Error('main window is undefined')
   return dialog.showSaveDialog(browserWindow, options)
 }
@@ -267,12 +267,12 @@ export const setThumbnailClip = (region: Electron.Rectangle) => {
 }
 
 
-export const clearCache = async() => {
+export const clearCache = async () => {
   if (!browserWindow) throw new Error('main window is undefined')
   await browserWindow.webContents.session.clearCache()
 }
 
-export const getCacheSize = async() => {
+export const getCacheSize = async () => {
   if (!browserWindow) throw new Error('main window is undefined')
   return browserWindow.webContents.session.getCacheSize()
 }

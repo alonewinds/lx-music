@@ -1,9 +1,8 @@
 <template lang="pug">
 transition(enter-active-class="animated slideInRight" leave-active-class="animated slideOutDown" @after-enter="handleAfterEnter" @after-leave="handleAfterLeave")
   div(v-if="isShowPlayerDetail" :class="[$style.container, { fullscreen: isFullscreen }]" @contextmenu="handleContextMenu")
-    div(:class="$style.bg")
-    //- div(:class="$style.bg" :style="bgStyle")
-    //- div(:class="$style.bg2")
+    DynamicBackground
+
     ControlBtnsLeftHeader(v-if="appSetting['common.controlBtnPosition'] == 'left'")
     ControlBtnsRightHeader(v-else)
     div(:class="[$style.main, {[$style.showComment]: isShowPlayComment}]")
@@ -45,6 +44,7 @@ import PlayBar from './PlayBar.vue'
 import MusicComment from './components/MusicComment/index.vue'
 import ControlBtnsLeftHeader from './ControlBtnsLeftHeader.vue'
 import ControlBtnsRightHeader from './ControlBtnsRightHeader.vue'
+import DynamicBackground from './components/DynamicBackground.vue'
 import { registerAutoHideMounse, unregisterAutoHideMounse } from './autoHideMounse'
 import { appSetting } from '@renderer/store/setting'
 import { closeWindow, maxWindow, minWindow, setFullScreen } from '@renderer/utils/ipc'
@@ -57,6 +57,7 @@ export default {
     LyricPlayer,
     PlayBar,
     MusicComment,
+    DynamicBackground,
   },
   setup() {
     const visibled = ref(false)
@@ -161,34 +162,7 @@ export default {
   }
 }
 .bg {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: var(--background-image) var(--background-image-position) no-repeat;
-  background-size: var(--background-image-size);
-  // background-size: 110% 110%;
-  // filter: blur(60px);
-  opacity: .7;
-  z-index: -1;
-  &:before {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-app-background);
-  }
-  &:after {
-    position: absolute;
-    left: 0;
-    top: 0;
-    content: '';
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-main-background);
-  }
+  display: none;
 }
 // .bg2 {
 //   position: absolute;
@@ -207,6 +181,7 @@ export default {
   display: flex;
   margin: 0 30px;
   position: relative;
+  z-index: 1;
 
   &.showComment {
     :global {

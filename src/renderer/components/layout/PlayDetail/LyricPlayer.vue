@@ -68,7 +68,7 @@ import {
   setMusicInfo,
 } from '@renderer/store/player/action'
 import { onMounted, onBeforeUnmount, computed, reactive, ref, nextTick, watch } from '@common/utils/vueTools'
-import useLyric from '@renderer/utils/compositions/useLyric'
+import useAmllLyric from '@renderer/utils/compositions/useAmllLyric'
 import LyricMenu from './components/LyricMenu.vue'
 import LyricEditorModal from './components/LyricEditorModal.vue'
 import LyricSearchModal from './components/LyricSearchModal.vue'
@@ -100,13 +100,13 @@ export default {
       handleSkipPlay,
       handleSkipMouseEnter,
       handleSkipMouseLeave,
-      handleScrollLrc,
-    } = useLyric({ isPlay, lyric, playProgress, isShowLyricProgressSetting })
+    } = useAmllLyric({ isPlay, lyric, playProgress, isShowLyricProgressSetting })
+
 
     const dom_lrc_select_content = useSelectAllLrc()
 
     watch([isFullscreen, isShowPlayComment], () => {
-      setTimeout(handleScrollLrc, 400)
+      // scroll position will be updated by spring in focus loop
     })
 
     const lyricMenuVisible = ref(false)

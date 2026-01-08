@@ -99,6 +99,7 @@ const fullscreenExit = () => {
   -webkit-app-region: drag;
   width: 100%;
   align-self: flex-start;
+  z-index: 1;
 
   .controBtn {
     position: absolute;

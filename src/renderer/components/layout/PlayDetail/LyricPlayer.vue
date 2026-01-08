@@ -337,8 +337,8 @@ export default {
       // AMLL 风格：非当前行半透明白色
       color: rgba(255, 255, 255, 0.4);
       font-weight: 500;
-      transition: @transition-normal;
-      transition-property: padding, color, font-weight, opacity;
+      // transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); // 移除: 由 useAmllLyric.js 接管
+      // transition-property: transform; 
 
       .extended {
         font-size: 0.8em;
@@ -351,8 +351,8 @@ export default {
           transition-property: font-size, color, font-weight;
         }
       }
-      // AMLL 风格：当前行白色粗体（包含逐行和逐字模式的 active 状态）
-      &.active .font-lrc, &.font-mode.played .font-lrc {
+      // AMLL 风格：当前行白色粗体
+      &.active .font-lrc {
         color: rgba(255, 255, 255, 1);
         font-weight: 700;
       }

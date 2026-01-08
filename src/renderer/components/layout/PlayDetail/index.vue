@@ -2,6 +2,7 @@
 transition(enter-active-class="animated slideInRight" leave-active-class="animated slideOutDown" @after-enter="handleAfterEnter" @after-leave="handleAfterLeave")
   div(v-if="isShowPlayerDetail" :class="[$style.container, { fullscreen: isFullscreen }]" @contextmenu="handleContextMenu")
     DynamicBackground
+    div(:class="$style.gradientOverlay")
 
     ControlBtnsLeftHeader(v-if="appSetting['common.controlBtnPosition'] == 'left'")
     ControlBtnsRightHeader(v-else)
@@ -174,6 +175,18 @@ export default {
 //   background-color: rgba(255, 255, 255, .8);
 // }
 
+
+.gradientOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+  z-index: 0;
+}
+
 .main {
   flex: auto;
   min-height: 0;
@@ -238,6 +251,7 @@ export default {
     line-height: 1.5;
     font-size: 14px;
     overflow-wrap: break-word;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   }
 }
 

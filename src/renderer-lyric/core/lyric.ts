@@ -13,11 +13,11 @@ export const init = () => {
     isVertical: setting['desktopLyric.direction'] == 'vertical',
     effectSettings: {
       enable: setting['desktopLyric.effect.enable'],
-      floatEnabled: setting['desktopLyric.effect.enable'],
+      floatEnabled: false, // Sync logic: Always disable float for AMLL feel
       floatAmount: setting['desktopLyric.effect.floatAmount'],
-      scaleEnabled: setting['desktopLyric.effect.enable'],
-      scaleAmount: setting['desktopLyric.effect.scaleAmount'],
-      scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
+      scaleEnabled: setting['desktopLyric.style.isZoomActiveLrc'], // Local control
+      scaleAmount: setting['desktopLyric.effect.scaleAmount'] > 1 ? setting['desktopLyric.effect.scaleAmount'] : 1.2,
+      scaleLongSyllableDuration: 0,
     } as any,
     onPlay(line, text) {
       setText(text, Math.max(line, 0))
@@ -42,12 +42,13 @@ export const init = () => {
     () => setting['desktopLyric.effect.scaleEnabled'],
     () => setting['desktopLyric.effect.scaleAmount'],
     () => setting['desktopLyric.effect.scaleLongSyllableDuration'],
+    () => setting['desktopLyric.style.isZoomActiveLrc'],
   ], () => {
     setEffectSettings({
       enable: setting['desktopLyric.effect.enable'],
       floatEnabled: setting['desktopLyric.effect.floatEnabled'],
       floatAmount: setting['desktopLyric.effect.floatAmount'],
-      scaleEnabled: setting['desktopLyric.effect.scaleEnabled'],
+      scaleEnabled: setting['desktopLyric.style.isZoomActiveLrc'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
     })
@@ -94,13 +95,13 @@ export const setVertical = (isVertical: boolean) => {
 }
 
 export const setEffectSettings = (settings: LX.DesktopLyric.EffectSettings) => {
-  const { enable, floatAmount, scaleAmount, scaleLongSyllableDuration } = settings
-  // When main enable toggle is on, enable all effects automatically
+  const { floatAmount, scaleAmount, scaleEnabled } = settings
+  // Sync logic with play detail: Disable float, scale controlled by local zoom toggle
   lrc.setEffectSettings({
-    floatEnabled: enable,
+    floatEnabled: false,
     floatAmount,
-    scaleEnabled: enable,
-    scaleAmount,
-    scaleLongSyllableDuration,
+    scaleEnabled: !!scaleEnabled,
+    scaleAmount: scaleAmount > 1 ? scaleAmount : 1.2,
+    scaleLongSyllableDuration: 0,
   })
 }

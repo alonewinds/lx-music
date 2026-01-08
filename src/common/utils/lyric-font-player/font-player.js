@@ -22,7 +22,7 @@ const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
     if (floatEnabled && floatOffset !== 0) {
       parts.push(`translateY(${floatOffset}px)`)
     }
-    if (isLongSyllable && scaleValue !== 1) {
+    if (scaleEnabled && scaleValue !== 1) {
       parts.push(`scale(${scaleValue})`)
     }
     return parts.length > 0 ? parts.join(' ') : undefined
@@ -35,22 +35,29 @@ const getAnimationKeyframes = (duration, isVertical, effectSettings) => {
     ]
   } else {
     // Horizontal mode with combined effects
-    const startTransform = getTransform(-floatAmount, 1)
-    const midTransform = getTransform(-floatAmount / 2, scaleAmount)
+    // Modified logic: Pulse Scale (Normal -> Peak -> Normal)
+
+    // Start: Scale = 1, Float = -floatAmount (if enabled)
+    const startTransform = getTransform(floatEnabled ? -floatAmount : 0, 1)
+
+    // Peak: Scale = scaleAmount, Float = -floatAmount / 2
+    const midTransform = getTransform(floatEnabled ? -floatAmount / 2 : 0, scaleEnabled ? scaleAmount : 1)
+
+    // End: Scale = 1, Float = 0
     const endTransform = getTransform(0, 1)
 
-    // Create keyframes with float and scale effects
-    if (floatEnabled || isLongSyllable) {
+    // Create keyframes
+    if (floatEnabled || scaleEnabled) {
       return [
         {
           backgroundSize: '0 100%',
           ...(startTransform && { transform: startTransform }),
         },
-        ...(isLongSyllable ? [{
+        {
           backgroundSize: '50% 100%',
           offset: 0.5,
           ...(midTransform && { transform: midTransform }),
-        }] : []),
+        },
         {
           backgroundSize: '100% 100%',
           ...(endTransform && { transform: endTransform }),

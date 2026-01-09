@@ -1,6 +1,6 @@
 import { incrementPlayCount } from '@renderer/store/playCount'
 import { onTimeupdate, setCurrentTime as setPlayerCurrentTime, getCurrentTime, getDuration } from '@renderer/plugins/player'
-import { playMusicInfo } from '@renderer/store/player/state'
+import { playMusicInfo, resetNaturalPlayState, updateNaturalPlayTime, markForwardSeek, naturalPlayState } from '@renderer/store/player/state'
 
 /**
  * 播放次数跟踪状态
@@ -40,6 +40,8 @@ export const resetPlayCountTracking = (musicId?: string) => {
     trackingState.hasReached80Percent = false
     trackingState.isManualSeek = false
     trackingState.lastTime = 0
+    // 同步重置自然播放状态
+    resetNaturalPlayState(musicId)
 }
 
 /**
@@ -69,7 +71,10 @@ const handleTimeUpdate = () => {
         resetPlayCountTracking(musicId)
     }
 
-    // 如果已经达到80%或者是手动操作，不再处理
+    // 始终更新自然播放状态追踪（不受 playCount 跟踪状态影响）
+    updateNaturalPlayTime(currentTime)
+
+    // 如果已经达到80%或者是手动操作，不再处理播放次数统计
     if (trackingState.hasReached80Percent || trackingState.isManualSeek) {
         trackingState.lastTime = currentTime
         return
@@ -116,7 +121,27 @@ export const initPlayCountTracking = () => {
 }
 
 // 导出原始的 setCurrentTime，并包装一个会标记手动操作的版本
+// 这个函数用于用户主动拖动进度条的场景
 export const setCurrentTime = (time: number) => {
-    markManualSeek()
+    const currentTime = getCurrentTime()
+    // 只有向前跳转才标记为手动操作，破坏自然播放
+    if (time > currentTime) {
+        markManualSeek()
+        markForwardSeek()
+    }
+    // 设置 isSeeking 标志，让 updateNaturalPlayTime 跳过下一次的时间差检测
+    // 这避免了播放器跳转过程中的竞态条件导致误判
+    naturalPlayState.isSeeking = true
+    setPlayerCurrentTime(time)
+}
+
+/**
+ * 设置播放时间但不进行跳转检测
+ * 用于自动恢复播放位置、缓冲恢复等非用户操作场景
+ * 不会触发向前跳转检测，不会破坏自然播放状态
+ */
+export const setCurrentTimeWithoutTracking = (time: number) => {
+    // 设置 isSeeking 标志避免 updateNaturalPlayTime 误判
+    naturalPlayState.isSeeking = true
     setPlayerCurrentTime(time)
 }

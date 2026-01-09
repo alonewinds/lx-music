@@ -158,7 +158,8 @@ teleport(to="#root")
 
 <script>
 import { ref, computed, watch, onBeforeUnmount, nextTick } from '@common/utils/vueTools'
-import { getCurrentTime as getPlayerCurrentTime, getDuration as getPlayerDuration, setCurrentTime, setPause, setPlay } from '@renderer/plugins/player'
+import { getCurrentTime as getPlayerCurrentTime, getDuration as getPlayerDuration, setPause, setPlay } from '@renderer/plugins/player'
+import { setCurrentTime } from '@renderer/core/player/playCountTracking'
 import { isPlay } from '@renderer/store/player/state'
 import {
   splitLyricText,

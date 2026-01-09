@@ -2,7 +2,8 @@ import { onBeforeUnmount, watch } from '@common/utils/vueTools'
 import { formatPlayTime2, getRandom } from '@common/utils/common'
 import { throttle } from '@common/utils'
 import { savePlayInfo } from '@renderer/utils/ipc'
-import { onTimeupdate, getCurrentTime, getDuration, setCurrentTime, onVisibilityChange } from '@renderer/plugins/player'
+import { onTimeupdate, getCurrentTime, getDuration, onVisibilityChange } from '@renderer/plugins/player'
+import { setCurrentTime, setCurrentTimeWithoutTracking } from '@renderer/core/player/playCountTracking'
 import { playProgress, setNowPlayTime, setMaxplayTime } from '@renderer/store/player/playProgress'
 import { musicInfo, playMusicInfo, playInfo } from '@renderer/store/player/state'
 // import { getList } from '@renderer/store/utils'
@@ -44,7 +45,7 @@ export default () => {
         return
       }
       startBuffering()
-      setCurrentTime(skipTime)
+      setCurrentTimeWithoutTracking(skipTime)
       console.log(mediaBuffer.playTime)
       console.log(currentTime)
     }, 3000)
@@ -111,9 +112,11 @@ export default () => {
     if (mediaBuffer.playTime) {
       let playTime = mediaBuffer.playTime
       mediaBuffer.playTime = 0
-      setCurrentTime(playTime)
+      // 使用不追踪的版本，避免缓冲恢复被误判为向前跳转
+      setCurrentTimeWithoutTracking(playTime)
     } else if (restorePlayTime) {
-      setCurrentTime(restorePlayTime)
+      // 使用不追踪的版本，避免播放位置恢复被误判为向前跳转
+      setCurrentTimeWithoutTracking(restorePlayTime)
       restorePlayTime = 0
     }
   }
@@ -128,7 +131,8 @@ export default () => {
 
   const handleSetPlayInfo = () => {
     // restorePlayTime = playProgress.nowPlayTime
-    setCurrentTime(restorePlayTime = playProgress.nowPlayTime)
+    // 使用不追踪的版本，避免自动恢复被误判为向前跳转
+    setCurrentTimeWithoutTracking(restorePlayTime = playProgress.nowPlayTime)
     // setMaxplayTime(playProgress.maxPlayTime)
     handlePause()
     if (!playMusicInfo.isTempPlay && playMusicInfo.listId) {

@@ -34,8 +34,7 @@ export default ({ selectedList, props, removeAllSelect, emit }: {
       // 第一首歌直接播放，剩余歌曲添加到稍后播放队列
       const [firstSong, ...restSongs] = songsToPlay
 
-      // 将歌曲添加到试听列表（DEFAULT列表），以便用户后续查看
-      await addListMusics(defaultList.id, songsToPlay)
+      // 不立即添加到试听列表，等待自然播放完成后通过 handleAutoAddToDefaultList 添加
 
       // 如果有多首歌，剩余的添加到稍后播放列表
       if (restSongs.length > 0) {
@@ -54,18 +53,18 @@ export default ({ selectedList, props, removeAllSelect, emit }: {
         removeAllSelect()
       }
     } else {
-      // 没有播放列表或正在播放 DEFAULT 列表，使用原来的逻辑
-      const defaultListMusics = await getListMusics(defaultList.id)
-      await addListMusics(defaultList.id, songsToPlay)
+      // 没有播放列表或正在播放 DEFAULT 列表，使用 TEMP 列表播放
+      // 不立即添加到试听列表，等待自然播放完成后通过 handleAutoAddToDefaultList 添加
+      const { setTempList } = await import('@renderer/store/list/action')
+      const tempListId = `online_${Date.now()}`
+      await setTempList(tempListId, [...songsToPlay])
 
       if (selectedList.value.length && !single) {
         removeAllSelect()
       }
 
-      const targetIndex = defaultListMusics.findIndex(s => s.id === targetSong.id)
-      if (targetIndex > -1) {
-        playList(defaultList.id, targetIndex)
-      }
+      // 播放 TEMP 列表中的第一首歌
+      playList(LIST_IDS.TEMP, 0)
     }
   }
 
@@ -88,6 +87,7 @@ export default ({ selectedList, props, removeAllSelect, emit }: {
       return
     }
     if (appSetting['list.isClickPlayList']) {
+      // 不立即添加到试听列表，等待自然播放完成后通过 handleAutoAddToDefaultList 添加
       emit('play-list', index)
     } else {
       void handlePlayMusic(index, true)

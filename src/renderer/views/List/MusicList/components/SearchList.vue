@@ -1,5 +1,8 @@
 <template>
   <teleport to="#view">
+    <!-- 透明遮罩层，用于捕获点击外部事件 -->
+    <div v-show="isShow" :class="$style.overlay" @mousedown="handleHide" />
+    <!-- 搜索框容器 -->
     <div v-show="isShow" ref="dom_container" :class="$style.container">
       <transition enter-active-class="animated-fast zoomIn" leave-active-class="animated zoomOut" @after-leave="handleAnimated">
         <div v-show="visible" :class="$style.search">
@@ -208,7 +211,11 @@ export default {
       this.handleDelaySearch()
     },
     visible(n) {
-      if (!n) return
+      if (!n) {
+        this.text = ''
+        this.resultList = []
+        return
+      }
       this.isShow = true
       this.init()
     },
@@ -403,6 +410,16 @@ export default {
 
 <style lang="less" module>
 @import '@renderer/assets/styles/layout.less';
+
+// 透明遮罩层，覆盖整个视口用于捕获点击外部事件
+.overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 98;
+}
 
 .container {
   position: absolute;

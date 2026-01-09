@@ -4,14 +4,14 @@ import { getFonts } from '@main/utils/fontManage'
 
 // 公共操作事件（公共，只注册一次）
 export default () => {
-  mainHandle<LX.AppSetting>(CMMON_EVENT_NAME.get_app_setting, async() => {
+  mainHandle<LX.AppSetting>(CMMON_EVENT_NAME.get_app_setting, async () => {
     return global.lx.appSetting
   })
-  mainHandle<Partial<LX.AppSetting>>(CMMON_EVENT_NAME.set_app_setting, async({ params: config }) => {
+  mainHandle<Partial<LX.AppSetting>>(CMMON_EVENT_NAME.set_app_setting, async ({ params: config }) => {
     global.lx.event_app.update_config(config)
   })
 
-  mainHandle<LX.EnvParams>(CMMON_EVENT_NAME.get_env_params, async() => {
+  mainHandle<LX.EnvParams>(CMMON_EVENT_NAME.get_env_params, async () => {
     return global.envParams
   })
 
@@ -19,8 +19,9 @@ export default () => {
     global.envParams.deeplink = null
   })
 
-  mainHandle<string[]>(CMMON_EVENT_NAME.get_system_fonts, async() => {
-    return getFonts()
+  mainHandle<string[]>(CMMON_EVENT_NAME.get_system_fonts, async () => {
+    const fonts = await getFonts()
+    return fonts
   })
 }
 

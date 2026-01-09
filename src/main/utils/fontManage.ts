@@ -1,20 +1,17 @@
-// const { getAvailableFontFamilies } = require('electron-font-manager')
+import { getFonts as getSystemFonts } from 'font-list'
+import { log } from '@common/utils'
 
-
-// exports.getAvailableFontFamilies = getAvailableFontFamilies
-
-import { getFonts } from 'font-list'
-// import { getAvailableFontFamilies } from 'electron-font-manager'
-
-
-// const getFonts = async() => {
-//   switch (process.platform) {
-//     case 'win32':
-//     case 'darwin':
-//       return getAvailableFontFamilies()
-//     default: return getFontsByCommand()
-//   }
-// }
+const getFonts = async () => {
+  log.info('Getting system fonts...')
+  try {
+    const fonts = await getSystemFonts()
+    log.info(`Found ${fonts.length} fonts.`)
+    return fonts
+  } catch (err: any) {
+    log.error('Get system fonts error: ' + err.message)
+    return []
+  }
+}
 
 export {
   getFonts,

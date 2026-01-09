@@ -197,7 +197,9 @@ export default class FontPlayer {
       const dom = document.createElement('span')
       dom.textContent = text
       // Make span inline-block so transform works (transform doesn't work on inline elements)
+      // Use white-space: pre to preserve spaces between words (important for all languages)
       dom.style.display = 'inline-block'
+      dom.style.whiteSpace = 'pre'
 
       // Add will-change to optimize rendering for effects
       if (this.effectSettings?.enable) {

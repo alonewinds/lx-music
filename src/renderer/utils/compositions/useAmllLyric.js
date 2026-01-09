@@ -199,12 +199,21 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
 
             dom_lines.forEach(lineEl => {
                 const lineDiv = lineEl.querySelector('.line')
-                if (!lineDiv) return
+                const fontLrc = lineEl.querySelector('.font-lrc')
+                if (!lineDiv || !fontLrc) return
 
                 // 重置字体大小以获取原始宽度
                 lineDiv.style.fontSize = ''
 
-                const textWidth = lineDiv.scrollWidth
+                // 临时设置 nowrap 以获取真实的文本宽度
+                const originalWhiteSpace = fontLrc.style.whiteSpace
+                fontLrc.style.whiteSpace = 'nowrap'
+
+                const textWidth = fontLrc.scrollWidth
+
+                // 恢复原始样式
+                fontLrc.style.whiteSpace = originalWhiteSpace
+
                 if (textWidth > containerWidth) {
                     // 计算缩放比例，最小缩放到 60%
                     const scale = Math.max(0.6, containerWidth / textWidth)

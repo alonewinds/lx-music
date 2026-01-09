@@ -164,6 +164,35 @@ export default (isComputeWidth) => {
     nextTick(() => {
       dom_lines = dom_lyric.value.querySelectorAll('.line-content')
       line_widths = Array.from(dom_lines).map(l => l.clientWidth)
+
+      // 动态字体缩放：当歌词行过长时自动缩小字体 (垂直模式测量高度)
+      const containerHeight = dom_lyric.value.clientHeight - 40 // 留出边距
+      if (containerHeight > 0) {
+        dom_lines.forEach(lineEl => {
+          const lineDiv = lineEl.querySelector('.line')
+          const fontLrc = lineEl.querySelector('.font-lrc')
+          if (!lineDiv || !fontLrc) return
+
+          // 重置字体大小以获取原始高度
+          lineDiv.style.fontSize = ''
+
+          // 临时设置 nowrap 以获取真实的文本高度
+          const originalWhiteSpace = fontLrc.style.whiteSpace
+          fontLrc.style.whiteSpace = 'nowrap'
+
+          const textHeight = fontLrc.scrollHeight
+
+          // 恢复原始样式
+          fontLrc.style.whiteSpace = originalWhiteSpace
+
+          if (textHeight > containerHeight) {
+            // 计算缩放比例，最小缩放到 60%
+            const scale = Math.max(0.6, containerHeight / textHeight)
+            lineDiv.style.fontSize = `${scale}em`
+          }
+        })
+      }
+
       handleScrollLrc()
     })
   }

@@ -97,10 +97,7 @@
     "electron-app",
     "vuejs3"
   ],
-  "author": {
-    "name": "lyswhut",
-    "email": "lyswhut@qq.com"
-  },
+  "author": "lyswhut",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/lyswhut/lx-music-desktop/issues"

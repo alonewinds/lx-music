@@ -23,7 +23,7 @@ const options = {
     buildResources: 'resources',
     output: 'build',
   },
-  icon: 'resources/icons/icon.ico',
+  icon: 'resources/icons/icon.png',
   files: [
     '!node_modules/**/*',
     'node_modules/font-list/**/*',
@@ -61,9 +61,7 @@ const path = require('path')
  */
 const winOptions = {
   win: {
-    icon: 'resources/icons/icon.ico',
-    legalTrademarks: 'lyswhut',
-    // artifactName: '${productName}-v${version}-${env.ARCH}-${env.TARGET}.${ext}',
+    icon: 'resources/icons/icon.png',
   },
   nsis: {
     oneClick: false,
@@ -73,8 +71,8 @@ const winOptions = {
     license: './licenses/license.rtf',
     shortcutName: 'LX Music',
     installerIcon: 'resources/icons/icon.ico',
-    uninstallerIcon: 'resources/icons/icon.ico',
-    installerHeaderIcon: 'resources/icons/icon.ico',
+    uninstallerIcon: 'resources/icons/icon.png',
+    installerHeaderIcon: 'resources/icons/icon.png',
   },
 }
 

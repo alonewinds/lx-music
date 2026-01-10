@@ -53,10 +53,10 @@ const handleDesktopLyricMessage = (action: LX.DesktopLyric.WinMainActions) => {
           singer: musicInfo.singer,
           name: musicInfo.name,
           album: musicInfo.album,
-          lrc: musicInfo.lrc,
-          tlrc: musicInfo.tlrc,
-          rlrc: musicInfo.rlrc,
-          lxlrc: musicInfo.lxlrc,
+          lrc: filterEmptyLines(musicInfo.lrc || ''),
+          tlrc: filterEmptyLines(musicInfo.tlrc || ''),
+          rlrc: filterEmptyLines(musicInfo.rlrc || ''),
+          lxlrc: filterEmptyLines(musicInfo.lxlrc || ''),
           // pic: musicInfo.pic,
           isPlay: isPlay.value,
           line: lyric.line,
@@ -172,22 +172,36 @@ export const setPlaybackRate = (rate: number) => {
   }
 }
 
+const filterEmptyLines = (lrc: string) => {
+  if (!lrc) return ''
+  return lrc.split(/\r\n|\r|\n/).filter(line => {
+    const text = line.replace(/\[[\d:.]+\]/g, '').replace(/<\d+,\d+>/g, '').trim()
+    return text.length > 0 && text !== '//'
+  }).join('\n')
+}
+
 export const setLyric = () => {
   if (!musicInfo.id) return
 
   // 处理歌词（包括空歌词的情况）
   const extendedLyrics = []
   if (musicInfo.lrc) {
-    if (appSetting['player.isShowLyricRoma'] && musicInfo.rlrc) extendedLyrics.push(musicInfo.rlrc)
-    if (appSetting['player.isShowLyricTranslation'] && musicInfo.tlrc) extendedLyrics.push(musicInfo.tlrc)
+    if (appSetting['player.isShowLyricRoma'] && musicInfo.rlrc) {
+      extendedLyrics.push(filterEmptyLines(musicInfo.rlrc))
+    }
+    if (appSetting['player.isShowLyricTranslation'] && musicInfo.tlrc) {
+      extendedLyrics.push(filterEmptyLines(musicInfo.tlrc))
+    }
     if (appSetting['player.isSwapLyricTranslationAndRoma']) extendedLyrics.reverse()
   }
 
   // 设置歌词（空字符串会清空歌词显示）
+  const mainLrc = musicInfo.lrc
+    ? (appSetting['player.isPlayLxlrc'] && musicInfo.lxlrc ? musicInfo.lxlrc : musicInfo.lrc)
+    : ''
+
   lrc.setLyric(
-    musicInfo.lrc
-      ? (appSetting['player.isPlayLxlrc'] && musicInfo.lxlrc ? musicInfo.lxlrc : musicInfo.lrc)
-      : '',
+    filterEmptyLines(mainLrc),
     extendedLyrics,
   )
 
@@ -195,10 +209,10 @@ export const setLyric = () => {
   sendDesktopLyricInfo({
     action: 'set_lyric',
     data: {
-      lrc: musicInfo.lrc || '',
-      tlrc: musicInfo.tlrc || '',
-      rlrc: musicInfo.rlrc || '',
-      lxlrc: musicInfo.lxlrc || '',
+      lrc: filterEmptyLines(musicInfo.lrc || ''),
+      tlrc: filterEmptyLines(musicInfo.tlrc || ''),
+      rlrc: filterEmptyLines(musicInfo.rlrc || ''),
+      lxlrc: filterEmptyLines(musicInfo.lxlrc || ''),
     },
   })
 
@@ -297,10 +311,10 @@ export const sendInfo = () => {
       singer: musicInfo.singer,
       name: musicInfo.name,
       album: musicInfo.album,
-      lrc: musicInfo.lrc,
-      tlrc: musicInfo.tlrc,
-      rlrc: musicInfo.rlrc,
-      lxlrc: musicInfo.lxlrc,
+      lrc: filterEmptyLines(musicInfo.lrc || ''),
+      tlrc: filterEmptyLines(musicInfo.tlrc || ''),
+      rlrc: filterEmptyLines(musicInfo.rlrc || ''),
+      lxlrc: filterEmptyLines(musicInfo.lxlrc || ''),
       // pic: musicInfo.pic,
       isPlay: isPlay.value,
       line: lyric.line,

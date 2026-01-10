@@ -97,18 +97,31 @@ export default {
       color: transparent;
       // margin-left: -0.14em;
     }
-    .line-content {
+    :global(.line-content) {
       line-height: 1.2;
       margin: 0 var(--line-gap);
       overflow-wrap: break-word;
 
-      .font-lrc {
+      :global(.line), :global(.extended) {
+        display: block !important;
+      }
+      
+      br {
+        display: none;
+      }
+    }
+
+    .line-content {
+      :global(.font-lrc):not(:global(.extended-font-lrc)) {
         cursor: grab;
+        font-size: 1.25em !important;
       }
 
       .extended {
-        font-size: 0.8em;
         margin-right: var(--line-extended-gap);
+        :global(.extended-font-lrc) {
+          font-size: 0.85em !important;
+        }
       }
       &.line-mode {
         letter-spacing: 5px;
@@ -230,13 +243,16 @@ export default {
 .lrcActiveZoom {
   :global {
     .line-content {
-      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-      will-change: transform;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), margin 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, margin;
       &.active {
         .extended {
           font-size: .94em;
+          margin-right: 2px !important; // 垂直模式下让翻译更靠近原文
         }
         transform: scale(1.25);
+        margin-left: calc(var(--line-gap) * 3.0); 
+        margin-right: calc(var(--line-gap) * 3.8);
       }
     }
   }

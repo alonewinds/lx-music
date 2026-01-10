@@ -154,6 +154,54 @@ export default (isComputeHeight) => {
     startLyricScrollTimeout()
   }
 
+  const handleResize = () => {
+    if (!dom_lyric.value || !dom_lines?.length) return
+
+    window.requestAnimationFrame(() => {
+      if (!dom_lyric.value) return
+      // 动态字体缩放：当歌词行过长时自动缩小字体
+      const ellipsis = setting['desktopLyric.style.ellipsis']
+      const isZoomActiveLrc = setting['desktopLyric.style.isZoomActiveLrc']
+
+      if (!ellipsis) {
+        dom_lines.forEach(lineEl => {
+          const lineDiv = lineEl.querySelector('.line')
+          if (lineDiv) lineDiv.style.fontSize = ''
+        })
+      } else {
+        const containerWidth = dom_lyric.value.clientWidth - 40 // 留出边距
+        if (containerWidth > 0) {
+          dom_lines.forEach(lineEl => {
+            const lineDiv = lineEl.querySelector('.line')
+            const fontLrc = lineEl.querySelector('.font-lrc')
+            if (!lineDiv || !fontLrc) return
+
+            // 重置字体大小以获取原始宽度
+            lineDiv.style.fontSize = ''
+
+            // 临时设置 nowrap 以获取真实的文本宽度
+            const originalWhiteSpace = fontLrc.style.whiteSpace
+            fontLrc.style.whiteSpace = 'nowrap'
+
+            let textWidth = fontLrc.scrollWidth
+
+            // 考虑放大效果：如果启用了放大显示，则基准宽度需要乘以放大系数 (桌面水平模式放大系数为 1.45)
+            if (isZoomActiveLrc) textWidth *= 1.45
+
+            // 恢复原始样式
+            fontLrc.style.whiteSpace = originalWhiteSpace
+
+            if (textWidth > containerWidth) {
+              // 计算缩放比例，最小缩放到 60%
+              const scale = Math.max(0.6, containerWidth / textWidth)
+              lineDiv.style.fontSize = `${scale}em`
+            }
+          })
+        }
+      }
+    })
+  }
+
   const setLyric = (lines) => {
     const dom_line_content = document.createDocumentFragment()
     for (const line of lines) {
@@ -165,34 +213,7 @@ export default (isComputeHeight) => {
       dom_lines = dom_lyric.value.querySelectorAll('.line-content')
       line_heights = Array.from(dom_lines).map(l => l.clientHeight)
 
-      // 动态字体缩放：当歌词行过长时自动缩小字体
-      const containerWidth = dom_lyric.value.clientWidth - 40 // 留出边距
-      if (containerWidth > 0) {
-        dom_lines.forEach(lineEl => {
-          const lineDiv = lineEl.querySelector('.line')
-          const fontLrc = lineEl.querySelector('.font-lrc')
-          if (!lineDiv || !fontLrc) return
-
-          // 重置字体大小以获取原始宽度
-          lineDiv.style.fontSize = ''
-
-          // 临时设置 nowrap 以获取真实的文本宽度
-          const originalWhiteSpace = fontLrc.style.whiteSpace
-          fontLrc.style.whiteSpace = 'nowrap'
-
-          const textWidth = fontLrc.scrollWidth
-
-          // 恢复原始样式
-          fontLrc.style.whiteSpace = originalWhiteSpace
-
-          if (textWidth > containerWidth) {
-            // 计算缩放比例，最小缩放到 60%
-            const scale = Math.max(0.6, containerWidth / textWidth)
-            lineDiv.style.fontSize = `${scale}em`
-          }
-        })
-      }
-
+      handleResize()
       handleScrollLrc()
     })
   }
@@ -243,16 +264,28 @@ export default (isComputeHeight) => {
   watch(() => lyric.lines, initLrc)
   watch(() => lyric.line, scrollLine)
 
+  let resizeObserver = null
   onMounted(() => {
     document.addEventListener('mousemove', handleMouseMsMove)
     document.addEventListener('mouseup', handleMouseMsUp)
     document.addEventListener('touchmove', handleTouchMove)
     document.addEventListener('touchend', handleMouseMsUp)
 
-    initLrc(lyric.lines, null)
+    if (lyric.lines.length) setLyric(lyric.lines)
+
+    if (window.ResizeObserver && dom_lyric.value) {
+      resizeObserver = new ResizeObserver(() => {
+        handleResize()
+      })
+      resizeObserver.observe(dom_lyric.value)
+    }
   })
 
   onBeforeUnmount(() => {
+    if (resizeObserver) {
+      resizeObserver.disconnect()
+      resizeObserver = null
+    }
     document.removeEventListener('mousemove', handleMouseMsMove)
     document.removeEventListener('mouseup', handleMouseMsUp)
     document.removeEventListener('touchmove', handleTouchMove)

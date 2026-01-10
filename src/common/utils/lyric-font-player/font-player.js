@@ -170,7 +170,7 @@ export default class FontPlayer {
       // }
 
       const lineContent = document.createElement('div')
-      lineContent.className = this.fontLrcClassName
+      lineContent.className = `${this.fontLrcClassName} extended-font-lrc`
       lineContent.textContent = lrc.replace(timeRxpAll, '')
       extendedLrcContent.appendChild(lineContent)
     }
@@ -189,7 +189,7 @@ export default class FontPlayer {
     for (const font of fonts) {
       const match = font.match(timeRxp)
       if (!match) return this._handleLineParse()
-      text = font.replace(timeRxp, '')
+      text = font.replace(timeRxp, '').replace(/\s+/g, ' ')
       const startTime = parseInt(match[1])
       const time = parseInt(match[2])
       const animDuration = time / this._rate
@@ -256,11 +256,12 @@ export default class FontPlayer {
   _handleLineParse() {
     this.isLineMode = true
     this.lineContent.classList.add(this.lineModeClassName)
-    this.lrcContent.textContent = this.lyric
+    const lyric = this.lyric.replace(/\s+/g, ' ')
+    this.lrcContent.textContent = lyric
 
     // if (this.shadowContent) this.lrcShadowContent.textContent = this.lyric
     this.fonts.push({
-      text: this.lyric,
+      text: lyric,
     })
   }
 

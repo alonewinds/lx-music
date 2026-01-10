@@ -64,14 +64,29 @@ export const setPlaybackRate = (rate: number) => {
   lrc.setPlaybackRate(rate)
 }
 
+const filterEmptyLines = (lrc: string) => {
+  if (!lrc) return ''
+  return lrc.split(/\r\n|\r|\n/).filter(line => {
+    const text = line.replace(/\[[\d:.]+\]/g, '').replace(/<\d+,\d+>/g, '').trim()
+    return text.length > 0 && text !== '//'
+  }).join('\n')
+}
+
 export const setLyric = () => {
   if (!musicInfo.id) return
   const extendedLyrics = []
-  if (setting['player.isShowLyricRoma'] && lyrics.rlyric) extendedLyrics.push(lyrics.rlyric)
-  if (setting['player.isShowLyricTranslation'] && lyrics.tlyric) extendedLyrics.push(lyrics.tlyric)
+  if (setting['player.isShowLyricRoma'] && lyrics.rlyric) {
+    extendedLyrics.push(filterEmptyLines(lyrics.rlyric))
+  }
+  if (setting['player.isShowLyricTranslation'] && lyrics.tlyric) {
+    extendedLyrics.push(filterEmptyLines(lyrics.tlyric))
+  }
   if (setting['player.isSwapLyricTranslationAndRoma']) extendedLyrics.reverse()
+
+  const mainLrc = setting['player.isPlayLxlrc'] && lyrics.lxlyric ? lyrics.lxlyric : lyrics.lyric
+
   lrc.setLyric(
-    setting['player.isPlayLxlrc'] && lyrics.lxlyric ? lyrics.lxlyric : lyrics.lyric,
+    filterEmptyLines(mainLrc),
     extendedLyrics,
   )
 }

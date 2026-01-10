@@ -94,18 +94,31 @@ export default {
       color: transparent;
       // margin-left: -0.14em;
     }
-    .line-content {
+    :global(.line-content) {
       line-height: 1.2;
       margin: var(--line-gap) 0;
       overflow-wrap: break-word;
 
-      .font-lrc {
+      :global(.line), :global(.extended) {
+        display: block !important;
+      }
+      
+      br {
+        display: none;
+      }
+    }
+
+    .line-content {
+      :global(.font-lrc):not(:global(.extended-font-lrc)) {
         cursor: grab;
+        font-size: 1.25em !important;
       }
 
       .extended {
-        font-size: 0.8em;
-        margin-top: var(--line-extended-gap);
+        margin-top: calc(var(--line-extended-gap) / 3);
+        :global(.extended-font-lrc) {
+          font-size: 0.85em !important;
+        }
       }
       &.line-mode {
         .font-lrc {
@@ -138,8 +151,8 @@ export default {
           padding-left: 0.12em;
           padding-right: 0.12em;
           padding-bottom: 0.12em;
-          margin-left: -0.11em;
-          margin-right: -0.11em;
+          margin-left: -0.20em;
+          margin-right: -0.20em;
           margin-bottom: -0.12em;
         }
       }
@@ -231,13 +244,16 @@ export default {
 .lrcActiveZoom {
   :global {
     .line-content {
-      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-      will-change: transform;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), margin 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, margin;
       &.active {
         .extended {
           font-size: .94em;
+          margin-top: 0px !important; // 强制缩小激活行内部翻译与原文的距离
         }
         transform: scale(1.45);
+        margin-top: calc(var(--line-gap) * 5.5); // 加大“推开”上一行的距离
+        margin-bottom: calc(var(--line-gap) * 5.8); // 加大“推开”下一行的距离
       }
     }
   }

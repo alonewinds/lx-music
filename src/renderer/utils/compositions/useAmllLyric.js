@@ -67,7 +67,8 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
                 }
             }
 
-            const targetScale = isActive ? 1.3 : 1.0
+            const isZoomActiveLrc = appSetting['playDetail.isZoomActiveLrc']
+            const targetScale = (isActive && isZoomActiveLrc) ? 1.3 : 1.0
 
             // Smooth Interpolation (Lerp)
             // Use a factor like 0.1 for smooth transition
@@ -86,6 +87,17 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
             }
 
             dom.style.transform = `scale(${newScale.toFixed(3)})`
+
+            // 动态调整间距：弥补 scale 带来的视觉重叠
+            // 默认 transform-origin 是中心(50% 50%)，放大 newScale 倍意味着上下各多出 (newScale-1)/2 的高度
+            if (isZoomActiveLrc && newScale > 1) {
+                const extraSpace = (newScale - 1) * dom.clientHeight * 0.6 // 恢复基础系数到 1.0，推得更明显
+                dom.style.marginBottom = `${extraSpace + 7}px` // 额外增加 12px 的纯空隙，显著推开下一行
+                dom.style.marginTop = `${extraSpace * 0.4}px`   // 上边距减小补偿比例(0.4)，重心偏下，防止顶到上一行
+            } else {
+                dom.style.marginBottom = ''
+                dom.style.marginTop = ''
+            }
             dom.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none'
             // dom.style.opacity = opacity.toString() // Conflict with font-player? font-player controls opacity inside line?
             // Wait, in previous code we set opacity on dom (line-content).
@@ -181,6 +193,42 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         startLyricScrollTimeout()
     }
 
+    const handleResize = () => {
+        if (isUnmounted || !dom_lyric.value || !dom_lines?.length) return
+
+        window.requestAnimationFrame(() => {
+            if (isUnmounted || !dom_lyric.value) return
+            const ellipsis = appSetting['desktopLyric.style.ellipsis']
+            const isZoomActiveLrc = appSetting['playDetail.isZoomActiveLrc']
+
+            if (!ellipsis) {
+                dom_lines.forEach(lineEl => {
+                    const lineDiv = lineEl.querySelector('.line')
+                    if (lineDiv) lineDiv.style.fontSize = ''
+                })
+            } else {
+                const containerWidth = dom_lyric.value.clientWidth - 40
+                if (containerWidth > 0) {
+                    dom_lines.forEach(lineEl => {
+                        const lineDiv = lineEl.querySelector('.line')
+                        const fontLrc = lineEl.querySelector('.font-lrc')
+                        if (!lineDiv || !fontLrc) return
+                        lineDiv.style.fontSize = ''
+                        const originalWhiteSpace = fontLrc.style.whiteSpace
+                        fontLrc.style.whiteSpace = 'nowrap'
+                        let textWidth = fontLrc.scrollWidth
+                        if (isZoomActiveLrc) textWidth *= 1.3
+                        fontLrc.style.whiteSpace = originalWhiteSpace
+                        if (textWidth > containerWidth) {
+                            const scale = Math.max(0.6, containerWidth / textWidth)
+                            lineDiv.style.fontSize = `${scale}em`
+                        }
+                    })
+                }
+            }
+        })
+    }
+
     const setLyric = (lines) => {
         if (isUnmounted || !dom_lyric_text.value) return
         const dom_line_content = document.createDocumentFragment()
@@ -192,35 +240,7 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         nextTick(() => {
             if (isUnmounted || !dom_lyric.value) return
             dom_lines = dom_lyric.value.querySelectorAll('.line-content')
-
-            // 动态字体缩放：当歌词行过长时自动缩小字体
-            const containerWidth = dom_lyric.value.clientWidth - 40 // 留出边距
-            if (containerWidth <= 0) return
-
-            dom_lines.forEach(lineEl => {
-                const lineDiv = lineEl.querySelector('.line')
-                const fontLrc = lineEl.querySelector('.font-lrc')
-                if (!lineDiv || !fontLrc) return
-
-                // 重置字体大小以获取原始宽度
-                lineDiv.style.fontSize = ''
-
-                // 临时设置 nowrap 以获取真实的文本宽度
-                const originalWhiteSpace = fontLrc.style.whiteSpace
-                fontLrc.style.whiteSpace = 'nowrap'
-
-                const textWidth = fontLrc.scrollWidth
-
-                // 恢复原始样式
-                fontLrc.style.whiteSpace = originalWhiteSpace
-
-                if (textWidth > containerWidth) {
-                    // 计算缩放比例，最小缩放到 60%
-                    const scale = Math.max(0.6, containerWidth / textWidth)
-                    lineDiv.style.fontSize = `${scale}em`
-                }
-            })
-
+            handleResize()
             handleScrollLrc()
         })
     }
@@ -240,6 +260,8 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         if (e.changedTouches.length) handleMove(e.changedTouches[0].clientY)
     }
 
+    let resizeObserver = null
+
     onMounted(() => {
         document.addEventListener('mousemove', handleMouseMove)
         document.addEventListener('mouseup', handleMouseMsUp)
@@ -248,10 +270,21 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
 
         if (lyric.lines.length) setLyric(lyric.lines)
         animationFrameId = requestAnimationFrame(onTick)
+
+        if (window.ResizeObserver && dom_lyric.value) {
+            resizeObserver = new ResizeObserver(() => {
+                handleResize()
+            })
+            resizeObserver.observe(dom_lyric.value)
+        }
     })
 
     onBeforeUnmount(() => {
         isUnmounted = true
+        if (resizeObserver) {
+            resizeObserver.disconnect()
+            resizeObserver = null
+        }
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseMsUp)
         document.removeEventListener('touchmove', handleTouchMoveBound)

@@ -327,45 +327,58 @@ export default {
   }
   :global {
     .font-lrc {
-      // AMLL 风格：非当前行半透明白色
       color: rgba(255, 255, 255, 0.4);
       font-weight: 500;
       transition: color 0.25s, font-weight 0.25s, opacity 0.25s;
     }
+
     .line-content {
       line-height: 1.2;
       padding: calc(var(--playDetail-lrc-font-size, 16px) / 2) 1px;
       overflow-wrap: break-word;
-      // AMLL 风格：非当前行半透明白色
       color: rgba(255, 255, 255, 0.4);
       font-weight: 500;
-      // transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); // 移除: 由 useAmllLyric.js 接管
-      // transition-property: transform; 
 
-      // 配合动态字体缩放：限制 .line 最大宽度
-      :global(.line) {
+      .line {
         display: block !important;
         max-width: 100%;
         margin: 0 auto;
       }
 
       .extended {
-        font-size: 0.8em;
-        margin-top: 5px;
-        opacity: 0.6;
+        display: block !important;
       }
+    }
+
+    br {
+      display: none;
+    }
+
+    // 原文主歌词：排除翻译行，确保字号不被继承
+    .font-lrc:not(.extended-font-lrc) {
+      font-size: 1.4em !important;
+    }
+
+    .extended {
+      margin-top: 2px;
+      opacity: 0.6;
+      // 翻译行：强制使用更小的字号
+      .extended-font-lrc {
+        font-size: 0.8em !important;
+      }
+    }
+
+    .line-content {
       &.line-mode {
         .font-lrc {
           transition: @transition-fast;
           transition-property: font-size, color, font-weight;
         }
       }
-      // AMLL 风格：当前行白色粗体
       &.active .font-lrc {
         color: rgba(255, 255, 255, 1);
         font-weight: 700;
       }
-      // 当前行内容也应用白色
       &.active {
         color: rgba(255, 255, 255, 1);
         font-weight: 700;
@@ -373,9 +386,8 @@ export default {
 
       &.font-mode > .line > .font-lrc {
         > span {
-          // 移除 transition，交由 JS 动力学控制以避免冲突
           font-size: 1em;
-          font-weight: inherit; // 明确继承父级加粗状态
+          font-weight: inherit;
           background-repeat: no-repeat;
           background-color: rgba(255, 255, 255, 0.4);
           background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 1));
@@ -393,9 +405,6 @@ export default {
       &.active {
         .extended {
           font-size: .94em;
-        }
-        .line {
-          font-size: 1.1em;
         }
       }
     }

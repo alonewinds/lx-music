@@ -22,20 +22,21 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
 
     // AMLL Spring Animation
     const scrollSpring = new Spring(0)
-    scrollSpring.updateParams({ mass: 1, damping: 20, stiffness: 100 })
+    scrollSpring.updateParams({ mass: 1, damping: 22, stiffness: 90 }) // 调整为更有"重量感"的参数
 
     let isUnmounted = false
     let animationFrameId = null
 
-    // Store current scale for each line for smooth interpolation
+    // Store current scale/blur for smooth interpolation
     let currentScales = []
+    let currentBlurs = []
 
     const applyEffects = () => {
         if (isUnmounted || !dom_lyric.value || !dom_lines?.length) return
 
-        // Initialize scales array if size mismatch
         if (currentScales.length !== dom_lines.length) {
             currentScales = new Array(dom_lines.length).fill(1.0)
+            currentBlurs = new Array(dom_lines.length).fill(0)
         }
 
         const currentScrollY = scrollSpring.getCurrentPosition()
@@ -45,65 +46,73 @@ export default ({ isPlay, lyric, playProgress, isShowLyricProgressSetting }) => 
         if (containerHeight <= 0) return
         const centerLineY = currentScrollY + containerHeight * 0.38
 
-        let minDistance = Infinity
         let closestLine = null
+        let minDist = Infinity
 
         dom_lines.forEach((dom, index) => {
             const lineOffsetTop = dom.offsetTop
             const distance = Math.abs(lineOffsetTop - centerLineY)
             const maxDistance = containerHeight * 0.5
 
-            if (distance < minDistance) {
-                minDistance = distance
+            if (distance < minDist) {
+                minDist = distance
                 closestLine = dom
             }
 
-            // Target Scale Calculation
+            // --- 电影级视觉计算 (Cinematic Visual Calculation) ---
             let isActive = index === lyric.line
-            // Special handling for last line: shrink when song is nearly done (last 1s)
+            // Special handling for last line shrinking
             if (isActive && index === dom_lines.length - 1) {
                 if (playProgress.maxPlayTime && (playProgress.nowPlayTime > playProgress.maxPlayTime - 1)) {
                     isActive = false
                 }
             }
-
             const isZoomActiveLrc = appSetting['playDetail.isZoomActiveLrc']
-            const targetScale = (isActive && isZoomActiveLrc) ? 1.3 : 1.0
 
-            // Smooth Interpolation (Lerp)
-            // Use a factor like 0.1 for smooth transition
-            const currentScale = currentScales[index]
-            const newScale = currentScale + (targetScale - currentScale) * 0.1
-            currentScales[index] = newScale
+            // 1. Scale Target
+            // 激活行放大到 1.35 (更显著)，非激活行稍微缩小到 0.95 以制造景深差
+            let targetScale = isActive && isZoomActiveLrc ? 1.35 : 0.95
+            if (!isZoomActiveLrc) targetScale = 1.0
 
-            // Blur and Opacity effects
-            let blur = 0
+            // 2. Blur Target
+            // 激活行无模糊，非激活行根据距离增加模糊 (最大 3px)
+            let targetBlur = isActive ? 0 : Math.min(4, Math.pow(distance / (maxDistance * 0.6), 1.2) * 2.5)
+
+            // linear interpolation for smoothness
+            const lerpFactor = 0.1
+            currentScales[index] = currentScales[index] + (targetScale - currentScales[index]) * lerpFactor
+            currentBlurs[index] = currentBlurs[index] + (targetBlur - currentBlurs[index]) * lerpFactor
+
+            const scale = currentScales[index]
+            const blur = currentBlurs[index]
+
+            // 3. Opacity
+            // 激活行不透明(1)，非激活行快速变暗 (0.6 -> 0.2)
             let opacity = 1
-
             if (!isActive) {
-                const factor = Math.min(1.2, Math.pow(distance / maxDistance, 1.5))
-                blur = factor * 8
-                opacity = Math.max(0.15, 1 - factor * 0.8)
+                const distRatio = Math.min(1, distance / maxDistance)
+                opacity = Math.max(0.15, 0.65 - distRatio * 0.5)
             }
 
-            dom.style.transform = `scale(${newScale.toFixed(3)})`
-
-            // 动态调整间距：弥补 scale 带来的视觉重叠
-            // 默认 transform-origin 是中心(50% 50%)，放大 newScale 倍意味着上下各多出 (newScale-1)/2 的高度
-            if (isZoomActiveLrc && newScale > 1) {
-                const extraSpace = (newScale - 1) * dom.clientHeight * 0.6 // 恢复基础系数到 1.0，推得更明显
-                dom.style.marginBottom = `${extraSpace + 7}px` // 额外增加 12px 的纯空隙，显著推开下一行
-                dom.style.marginTop = `${extraSpace * 0.4}px`   // 上边距减小补偿比例(0.4)，重心偏下，防止顶到上一行
+            // 4. CSS Application
+            dom.style.transform = `scale(${scale.toFixed(3)})`
+            // 动态间距调整防止重叠 (Dynamic Spacing)
+            if (isZoomActiveLrc && scale > 1) {
+                const extraSpace = (scale - 1) * dom.clientHeight * 0.8
+                dom.style.marginBottom = `${extraSpace + 10}px`
+                dom.style.marginTop = `${extraSpace * 0.5}px`
             } else {
                 dom.style.marginBottom = ''
                 dom.style.marginTop = ''
             }
-            dom.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none'
-            // dom.style.opacity = opacity.toString() // Conflict with font-player? font-player controls opacity inside line?
-            // Wait, in previous code we set opacity on dom (line-content).
-            dom.style.opacity = opacity.toString()
 
-            dom.style.fontWeight = isActive ? '700' : '500'
+            dom.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none'
+            dom.style.opacity = opacity.toFixed(2)
+
+            // 激活行加重字重和发光
+            dom.style.fontWeight = isActive ? '800' : '500' // 更粗的字体
+            // dom.style.textShadow = isActive ? '0 0 16px rgba(255, 255, 255, 0.4)' : 'none' // 环境光晕
+
             dom.style.willChange = 'transform, filter, opacity'
         })
 

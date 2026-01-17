@@ -327,17 +327,18 @@ export default {
   }
   :global {
     .font-lrc {
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 1); // JS控制opactiy，这里设为白色
       font-weight: 500;
-      transition: color 0.25s, font-weight 0.25s, opacity 0.25s;
+      // transition: ... // Removed transition to let JS drive it entirely for performance
     }
 
     .line-content {
       line-height: 1.2;
       padding: calc(var(--playDetail-lrc-font-size, 16px) / 2) 1px;
       overflow-wrap: break-word;
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 1);
       font-weight: 500;
+      transform-origin: center center; // Ensure scale works from center
 
       .line {
         display: block !important;
@@ -354,34 +355,28 @@ export default {
       display: none;
     }
 
-    // 原文主歌词：排除翻译行，确保字号不被继承
+    // 原文主歌词
     .font-lrc:not(.extended-font-lrc) {
       font-size: 1.4em !important;
     }
 
     .extended {
-      margin-top: 2px;
-      opacity: 0.6;
-      // 翻译行：强制使用更小的字号
+      margin-top: 4px;
+      opacity: 0.8; // Relative opacity to the parent line
+      // 翻译行
       .extended-font-lrc {
         font-size: 0.8em !important;
       }
     }
 
     .line-content {
-      &.line-mode {
-        .font-lrc {
-          transition: @transition-fast;
-          transition-property: font-size, color, font-weight;
-        }
-      }
+      // 激活状态样式增强
       &.active .font-lrc {
-        color: rgba(255, 255, 255, 1);
-        font-weight: 700;
+        // text-shadow: 0 0 12px rgba(255,255,255,0.6); // 静态高亮，JS也会辅助
+        font-weight: 800;
       }
       &.active {
-        color: rgba(255, 255, 255, 1);
-        font-weight: 700;
+         text-shadow: 0 0 16px rgba(255, 255, 255, 0.4); // 给整个块加光晕
       }
 
       &.font-mode > .line > .font-lrc {
@@ -389,7 +384,7 @@ export default {
           font-size: 1em;
           font-weight: inherit;
           background-repeat: no-repeat;
-          background-color: rgba(255, 255, 255, 0.4);
+           background-color: rgba(255, 255, 255, 1);
           background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 1));
           -webkit-text-fill-color: transparent;
           -webkit-background-clip: text;

@@ -19,6 +19,7 @@ export default ({
   handleCopyName,
   handleDislikeMusic,
   handleRemoveMusic,
+  handleEditRemark,
 }) => {
   const itemMenuControl = reactive({
     play: true,
@@ -33,6 +34,7 @@ export default ({
     dislike: true,
     remove: true,
     sourceDetail: true,
+    editRemark: true,
   })
   const t = useI18n()
   const menuLocation = shallowReactive({ x: 0, y: 0 })
@@ -100,6 +102,11 @@ export default ({
         action: 'remove',
         disabled: !itemMenuControl.remove,
       },
+      {
+        name: t('list__edit_remark'),
+        action: 'editRemark',
+        disabled: !itemMenuControl.editRemark,
+      },
     ]
   })
 
@@ -166,6 +173,10 @@ export default ({
         break
       case 'sourceDetail':
         handleOpenMusicDetail(index)
+        break
+      case 'editRemark':
+        handleEditRemark(index)
+        break
     }
   }
 

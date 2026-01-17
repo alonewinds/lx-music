@@ -810,5 +810,8 @@
   "play_queue__clear": "清空",
   "play_queue__empty": "队列为空",
   "play_queue__remove": "移除",
-  "list_update_modal__auto_update": "自动更新"
+  "list_update_modal__auto_update": "自动更新",
+  "list__edit_remark": "备注",
+  "music_alias_title": "备注: {name}",
+  "music_alias_placeholder": "请输入备注名"
 }

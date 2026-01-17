@@ -23,6 +23,15 @@ export default ({ props }) => {
     })
   }
 
+  const handleSearchSinger = singer => {
+    router.push({
+      path: '/search',
+      query: {
+        text: singer,
+      },
+    })
+  }
+
   const handleOpenMusicDetail = index => {
     const minfo = props.list[index]
     const url = musicSdk[minfo.source]?.getMusicDetailPageUrl?.(toOldMusicInfo(minfo))
@@ -30,7 +39,7 @@ export default ({ props }) => {
     openUrl(url)
   }
 
-  const handleDislikeMusic = async(index) => {
+  const handleDislikeMusic = async (index) => {
     const minfo = props.list[index]
     const confirm = await dialog.confirm({
       message: minfo.singer ? t('lists__dislike_music_singer_tip', { name: minfo.name, singer: minfo.singer }) : t('lists__dislike_music_tip', { name: minfo.name }),
@@ -47,6 +56,7 @@ export default ({ props }) => {
 
   return {
     handleSearch,
+    handleSearchSinger,
     handleOpenMusicDetail,
     handleDislikeMusic,
   }

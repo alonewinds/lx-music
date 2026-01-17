@@ -39,7 +39,12 @@
                   <span v-else-if="item.meta._qualitys['320k']" class="no-select badge badge-theme-secondary">{{ $t('tag__high_quality') }}</span>
                   <span v-if="sourceTag" class="no-select badge badge-theme-tertiary">{{ item.source }}</span>
                 </div>
-                <div class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
+                <div class="list-item-cell" style="flex: 0 0 22%;">
+                   <template v-for="(part, i) in formatSinger(item.singer)" :key="i">
+                    <span v-if="part.isLink" class="select" :class="$style.singer" :aria-label="part.text" @click.stop="handleSearchSinger(part.text)">{{ part.text }}</span>
+                    <span v-else class="select" :class="$style.singerSplit">{{ part.text }}</span>
+                   </template>
+                </div>
                 <div class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
                 <div class="list-item-cell" style="flex: 0 0 9%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
                 <div class="list-item-cell" style="flex: 0 0 16%; padding-left: 0; padding-right: 0;">
@@ -67,7 +72,12 @@
                   <span v-else-if="item.meta._qualitys['320k']" class="no-select badge badge-theme-secondary">{{ $t('tag__high_quality') }}</span>
                   <span v-if="sourceTag" class="no-select badge badge-theme-tertiary">{{ item.source }}</span>
                 </div>
-                <div class="list-item-cell" style="flex: 0 0 24%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
+                <div class="list-item-cell" style="flex: 0 0 24%;">
+                   <template v-for="(part, i) in formatSinger(item.singer)" :key="i">
+                    <span v-if="part.isLink" class="select" :class="$style.singer" :aria-label="part.text" @click.stop="handleSearchSinger(part.text)">{{ part.text }}</span>
+                    <span v-else class="select" :class="$style.singerSplit">{{ part.text }}</span>
+                   </template>
+                </div>
                 <div class="list-item-cell" style="flex: 0 0 27%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
                 <div class="list-item-cell" style="flex: 0 0 10%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
               </div>
@@ -193,6 +203,7 @@ export default {
 
     const {
       handleSearch,
+      handleSearchSinger,
       handleOpenMusicDetail,
       handleDislikeMusic,
     } = useMusicActions({ props })
@@ -298,6 +309,16 @@ export default {
       handleDuplicateConfirm,
       handleDuplicateCancel,
 
+      handleSearchSinger,
+      formatSinger: (singer) => {
+        if (!singer) return []
+        return singer.split(/([,、/&;，])/).map(part => {
+          return {
+            text: part,
+            isLink: !/[,、/&;，]/.test(part) && part.trim().length > 0,
+          }
+        })
+      },
       scrollToTop,
       actionButtonsVisible,
     }
@@ -358,4 +379,14 @@ export default {
   }
 }
 
+.singer {
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.singerSplit {
+  opacity: 0.6;
+}
 </style>

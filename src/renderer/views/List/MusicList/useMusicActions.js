@@ -37,7 +37,7 @@ export default ({ props, list, selectedList, removeAllSelect }) => {
     clipboardWriteText(appSetting['download.fileName'].replace('歌名', minfo.name).replace('歌手', minfo.singer))
   }
 
-  const handleDislikeMusic = async(index) => {
+  const handleDislikeMusic = async (index) => {
     const minfo = list.value[index]
     const confirm = await dialog.confirm({
       message: minfo.singer ? t('lists__dislike_music_singer_tip', { name: minfo.name, singer: minfo.singer }) : t('lists__dislike_music_tip', { name: minfo.name }),
@@ -51,7 +51,7 @@ export default ({ props, list, selectedList, removeAllSelect }) => {
     }
   }
 
-  const handleRemoveMusic = async(index, single) => {
+  const handleRemoveMusic = async (index, single) => {
     if (selectedList.value.length && !single) {
       const confirm = await (selectedList.value.length > 1
         ? dialog.confirm({
@@ -68,11 +68,40 @@ export default ({ props, list, selectedList, removeAllSelect }) => {
     }
   }
 
+  const handleSearchSinger = indexOrName => {
+    let text = indexOrName
+    if (typeof indexOrName === 'number') {
+      text = list.value[indexOrName].singer
+    }
+    router.push({
+      path: '/search',
+      query: {
+        text,
+      },
+    })
+  }
+
+  const handleEditRemark = async index => {
+    const minfo = list.value[index]
+    const alias = await dialog.prompt({
+      message: t('music_alias_title', { name: minfo.name }), // Need to add translation or use hardcoded for now
+      defaultValue: minfo.meta?.alias || '',
+      placeholder: t('music_alias_placeholder'),
+      confirmButtonText: t('confirm_button_text'),
+      cancelButtonText: t('cancel_button_text'),
+    })
+    if (alias === false || alias === minfo.meta?.alias) return
+    const { updateSongAlias } = await import('@renderer/store/list/action')
+    updateSongAlias(props.listId, minfo.id, alias)
+  }
+
   return {
     handleSearch,
+    handleSearchSinger,
     handleOpenMusicDetail,
     handleCopyName,
     handleDislikeMusic,
     handleRemoveMusic,
+    handleEditRemark,
   }
 }

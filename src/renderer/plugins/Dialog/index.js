@@ -11,8 +11,8 @@ const defaultOptions = {
   selection: false,
 }
 
-export const dialog = function(options) {
-  const { message, showCancel, cancelButtonText, confirmButtonText, teleport, selection } =
+export const dialog = function (options) {
+  const { message, showCancel, cancelButtonText, confirmButtonText, teleport, selection, showInput, defaultValue, placeholder } =
     Object.assign({}, defaultOptions, typeof options == 'string' ? { message: options } : options || {})
   return new Promise((resolve, reject) => {
     let app = createApp(Dialog, {
@@ -32,6 +32,9 @@ export const dialog = function(options) {
     instance.confirmButtonText = confirmButtonText
     instance.teleport = teleport
     instance.selection = selection
+    instance.showInput = showInput
+    instance.inputValue = defaultValue || ''
+    instance.inputPlaceholder = placeholder || ''
 
     // 挂载
     document.getElementById('container').appendChild(instance.$el)
@@ -43,7 +46,7 @@ export const dialog = function(options) {
 
     instance.handleComfirm = () => {
       instance.visible = false
-      resolve(true)
+      resolve(instance.showInput ? instance.inputValue : true)
     }
   })
 }
@@ -53,6 +56,8 @@ dialog.confirm = options => dialog(
     ? { message: options, showCancel: true }
     : { ...options, showCancel: true },
 )
+
+dialog.prompt = (options) => dialog({ ...options, showCancel: true, showInput: true })
 
 const dialogPlugin = {
   install(Vue, options) {

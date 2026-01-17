@@ -8,8 +8,8 @@
     :disabled="disabled"
     tabindex="0"
     @input="handleInput"
-    @change="$emit('change', $event.target.value.trim())"
-    @keyup.enter="$emit('submit', $event.target.value.trim())"
+    @change="handleChange"
+    @keyup.enter="handleEnter"
     @contextmenu="handleContextMenu"
   >
 </template>
@@ -55,12 +55,25 @@ export default {
   emits: ['update:modelValue', 'submit', 'change'],
   methods: {
     handleInput(event) {
+      this.$emit('update:modelValue', event.target.value)
+    },
+    handleChange(event) {
       let value = event.target.value
       if (this.trim) {
         value = value.trim()
         event.target.value = value
+        this.$emit('update:modelValue', value)
       }
-      this.$emit('update:modelValue', value)
+      this.$emit('change', value)
+    },
+    handleEnter(event) {
+      let value = event.target.value
+      if (this.trim) {
+        value = value.trim()
+        event.target.value = value
+        this.$emit('update:modelValue', value)
+      }
+      this.$emit('submit', value)
     },
     focus() {
       this.$refs.dom_input.focus()

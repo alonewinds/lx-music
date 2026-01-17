@@ -1,6 +1,9 @@
 <template>
   <Modal :show="visible" :close-btn="false" :teleport="teleport" @close="handleCancel" @after-leave="afterLeave">
-    <main class="scroll" :class="[$style.main, { 'select': selection }]">{{ message }}</main>
+    <main class="scroll" :class="[$style.main, { 'select': selection }]">
+      {{ message }}
+      <Input v-if="showInput" v-model="inputValue" :class="$style.input" :placeholder="inputPlaceholder" @submit="handleComfirm" />
+    </main>
     <footer :class="$style.footer">
       <Btn v-if="showCancel" :class="$style.btn" @click="handleCancel">{{ cancelBtnText }}</Btn>
       <Btn :class="$style.btn" @click="handleComfirm">{{ confirmBtnText }}</Btn>
@@ -11,12 +14,14 @@
 <script>
 import Modal from '@renderer/components/material/Modal.vue'
 import Btn from '@renderer/components/base/Btn.vue'
+import Input from '@renderer/components/base/Input.vue'
 import { useI18n } from '@renderer/plugins/i18n'
 import { computed } from '@common/utils/vueTools'
 export default {
   components: {
     Modal,
     Btn,
+    Input,
   },
   props: {
     afterLeave: {
@@ -47,6 +52,9 @@ export default {
       confirmButtonText: '',
       teleport: '#root',
       selection: false,
+      showInput: false,
+      inputValue: '',
+      inputPlaceholder: '',
     }
   },
   computed: {
@@ -81,6 +89,11 @@ export default {
   min-width: 220px;
   line-height: 1.5;
   white-space: pre-line;
+}
+
+.input {
+  width: 100%;
+  margin-top: 10px;
 }
 
 .footer {

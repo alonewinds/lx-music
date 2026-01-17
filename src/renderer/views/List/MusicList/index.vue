@@ -43,10 +43,18 @@
             </transition>
           </div>
           <div class="list-item-cell auto name" :aria-label="item.name">
-            <span class="select name">{{ item.name }}</span>
-            <span v-if="isShowSource" class="no-select label-source">{{ item.source }}</span>
+            <div class="name-container">
+              <span class="select name">{{ item.name }}</span>
+              <span v-if="isShowSource" class="no-select label-source">{{ item.source }}</span>
+            </div>
+            <span v-if="item.meta.alias" class="no-select" :class="$style.alias">{{ item.meta.alias }}</span>
           </div>
-          <div class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
+          <div class="list-item-cell" style="flex: 0 0 22%;">
+            <template v-for="(part, i) in formatSinger(item.singer)" :key="i">
+              <span v-if="part.isLink" class="select" :class="$style.singer" :aria-label="part.text" @click.stop="handleSearchSinger(part.text)">{{ part.text }}</span>
+              <span v-else class="select" :class="$style.singerSplit">{{ part.text }}</span>
+            </template>
+          </div>
           <div class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 9%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 16%; padding-left: 0; padding-right: 0;">
@@ -75,11 +83,19 @@
               <div v-else class="num">{{ index + 1 }}</div>
             </transition>
           </div>
-          <div class="list-item-cell auto name">
-            <span class="select name" :aria-label="item.name">{{ item.name }}</span>
-            <span v-if="isShowSource" class="no-select label-source">{{ item.source }}</span>
+          <div class="list-item-cell auto name" :aria-label="item.name">
+            <div class="name-container">
+              <span class="select name">{{ item.name }}</span>
+              <span v-if="isShowSource" class="no-select label-source">{{ item.source }}</span>
+            </div>
+            <span v-if="item.meta.alias" class="no-select" :class="$style.alias">{{ item.meta.alias }}</span>
           </div>
-          <div class="list-item-cell" style="flex: 0 0 25%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
+          <div class="list-item-cell" style="flex: 0 0 25%;">
+             <template v-for="(part, i) in formatSinger(item.singer)" :key="i">
+              <span v-if="part.isLink" class="select" :class="$style.singer" :aria-label="part.text" @click.stop="handleSearchSinger(part.text)">{{ part.text }}</span>
+              <span v-else class="select" :class="$style.singerSplit">{{ part.text }}</span>
+             </template>
+          </div>
           <div class="list-item-cell" style="flex: 0 0 28%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 10%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
         </div>
@@ -224,6 +240,8 @@ export default {
       handleCopyName,
       handleDislikeMusic,
       handleRemoveMusic,
+      handleSearchSinger,
+      handleEditRemark,
     } = useMusicActions({ props, list, removeAllSelect, selectedList })
 
     const {
@@ -248,6 +266,7 @@ export default {
       handleCopyName,
       handleDislikeMusic,
       handleRemoveMusic,
+      handleEditRemark,
     })
 
     const {
@@ -397,6 +416,7 @@ export default {
 
       list,
       playerInfo,
+      handleSearchSinger,
 
       saveListPosition,
       isShowSource,
@@ -410,6 +430,16 @@ export default {
       loadAllLists,
       
       startDrag,
+
+      formatSinger: (singer) => {
+        if (!singer) return []
+        return singer.split(/([,、/&;，])/).map(part => {
+          return {
+            text: part,
+            isLink: !/[,、/&;，]/.test(part) && part.trim().length > 0,
+          }
+        })
+      },
     }
   },
 }
@@ -528,6 +558,49 @@ export default {
     display: flex !important;
     align-items: center !important;
   }
+}
+
+
+
+  .list-item-cell.name {
+    flex-direction: column !important;
+    justify-content: center;
+    align-items: flex-start;
+    line-height: 1.2;
+    padding-top: 4px;
+    padding-bottom: 4px;
+
+    .name-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+.alias {
+  font-size: 11px;
+  color: var(--color-primary-alpha-200);
+  margin-top: 2px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.singer {
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.singerSplit {
+  opacity: 0.6;
 }
 
 </style>

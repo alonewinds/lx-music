@@ -62,6 +62,9 @@ const {
   overflow: hidden;
   display: flex;
   align-items: center;
+  backdrop-filter: blur(12px) saturate(120%);
+  background-color: rgba(255, 255, 255, 0.1); // 轻微的白色叠加，增强玻璃质感
+  border-top: 1px solid rgba(255, 255, 255, 0.1); // 顶部高光边框
 }
 .footerLeft {
   flex: auto;

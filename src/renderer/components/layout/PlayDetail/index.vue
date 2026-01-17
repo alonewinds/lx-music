@@ -147,6 +147,8 @@ export default {
   top: 0;
   left: 0;
   background-color: var(--color-content-background);
+  background-color: transparent; // 覆盖默认背景，使用透明以配合 backdrop-filter
+  backdrop-filter: blur(24px) saturate(120%); // 核心磨砂玻璃效果
   z-index: 10;
   // -webkit-app-region: drag;
   overflow: hidden;
@@ -183,7 +185,7 @@ export default {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.4) 100%); // 减淡遮罩，让动效更透亮
   z-index: 0;
 }
 

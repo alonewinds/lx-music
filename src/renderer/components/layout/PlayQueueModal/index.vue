@@ -20,6 +20,7 @@ material-modal(
         div(:class="[$style.musicItem, $style.currentItem]")
           div(:class="$style.musicInfo")
             span(:class="$style.musicName") {{ currentMusic.name }}
+            span(v-if="currentMusic.alias" :class="$style.musicAlias") {{ currentMusic.alias }}
             span(:class="$style.musicSinger") {{ currentMusic.singer }}
           div(:class="$style.playingIndicator")
             svg(version="1.1" xmlns="http://www.w3.org/2000/svg" height="14" viewBox="0 0 24 24")
@@ -39,6 +40,7 @@ material-modal(
           )
             div(:class="$style.musicInfo")
               span(:class="$style.musicName") {{ item.musicInfo.name }}
+              span(v-if="item.musicInfo.meta && item.musicInfo.meta.alias" :class="$style.musicAlias") {{ item.musicInfo.meta.alias }}
               span(:class="$style.musicSinger") {{ item.musicInfo.singer }}
             button(:class="$style.removeBtn" @click.stop="handleRemoveTempItem(index)")
               svg(version="1.1" xmlns="http://www.w3.org/2000/svg" height="12" viewBox="0 0 24 24")
@@ -57,6 +59,7 @@ material-modal(
           )
             div(:class="$style.musicInfo")
               span(:class="$style.musicName") {{ item.name }}
+              span(v-if="item.alias" :class="$style.musicAlias") {{ item.alias }}
               span(:class="$style.musicSinger") {{ item.singer }}
 </template>
 
@@ -90,6 +93,7 @@ export default {
         id: mInfo.id,
         name: mInfo.name,
         singer: mInfo.singer,
+        alias: mInfo.meta?.alias,
       }
     })
 
@@ -109,6 +113,7 @@ export default {
           id: mInfo.id,
           name: mInfo.name,
           singer: mInfo.singer,
+          alias: mInfo.meta?.alias,
           _raw: item,
         }
       })
@@ -402,6 +407,16 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   opacity: 0.8;
+}
+
+.musicAlias {
+  font-size: 11px;
+  color: var(--color-primary-alpha-200);
+  margin-top: 1px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .playingIndicator {

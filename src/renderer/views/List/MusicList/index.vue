@@ -562,22 +562,30 @@ export default {
 
 
 
-  .list-item-cell.name {
-    flex-direction: column !important;
-    justify-content: center;
-    align-items: flex-start;
-    line-height: 1.2;
-    padding-top: 4px;
-    padding-bottom: 4px;
+  :global {
+    .list-item-cell.name {
+      flex-direction: column !important;
+      justify-content: center;
+      align-items: flex-start;
+      line-height: 1.3; // 稍微增加行高
+      padding-top: 4px;
+      padding-bottom: 4px;
 
-    .name-container {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      .name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+      .name-container {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        .name {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .label-source {
+          margin-left: 4px;
+          flex: 0 0 auto;
+        }
       }
     }
   }

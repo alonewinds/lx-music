@@ -1,16 +1,10 @@
-/**
- * useMusicListViewModel
- * 
- * 中间层 ViewModel，封装所有 MusicList 相关的 Composables，
- * 将复杂的连线逻辑从 setup() 中剥离，提供更清晰的接口。
- */
-
 import { clipboardWriteText } from '@common/utils/electron'
 import { assertApiSupport } from '@renderer/store/utils'
 import { appSetting } from '@renderer/store/setting'
 import { loveList, userLists } from '@renderer/store/list/state'
 import { getListMusics, updateListMusicsPosition } from '@renderer/store/list/action'
 import { LIST_IDS } from '@common/constants'
+import { ref } from '@common/utils/vueTools'
 
 import useListInfo from './useListInfo'
 import useList from './useList'
@@ -29,16 +23,27 @@ export default function useMusicListViewModel(props, emit) {
   // ========== 设置 ==========
   const actionButtonsVisible = appSetting['list.actionButtonsVisible']
 
-  // ========== 滚动恢复 ==========
-  let scrollIndex = null
-  let isAnimation = false
+  // ========== 滚动恢复状态 (使用 ref 避免闭包问题) ==========
+  const scrollState = ref({
+    index: null,
+    isAnimation: false,
+  })
+
+  // 延迟初始化的 scroll 引用
+  let scrollRef = null
+
   const handleRestoreScroll = (_scrollIndex, _isAnimation) => {
-    scrollIndex = _scrollIndex
-    isAnimation = _isAnimation
-    if (isAnimation) void scroll.restoreScroll(scrollIndex, isAnimation)
+    scrollState.value.index = _scrollIndex
+    scrollState.value.isAnimation = _isAnimation
+    if (_isAnimation && scrollRef) {
+      void scrollRef.restoreScroll(_scrollIndex, _isAnimation)
+    }
   }
+
   const onLoadedList = (index) => {
-    void scroll.restoreScroll(index ?? scrollIndex, isAnimation)
+    if (scrollRef) {
+      void scrollRef.restoreScroll(index ?? scrollState.value.index, scrollState.value.isAnimation)
+    }
   }
 
   // ========== 核心列表信息 ==========
@@ -107,7 +112,7 @@ export default function useMusicListViewModel(props, emit) {
     handleShowDownloadModal: download.handleShowDownloadModal,
   })
 
-  // ========== 滚动 ==========
+  // ========== 滚动 (在所有依赖项之后初始化) ==========
   const scroll = useListScroll({
     props,
     listRef: listInfo.listRef,
@@ -115,6 +120,8 @@ export default function useMusicListViewModel(props, emit) {
     handleRestoreScroll,
     dom_listContent: listInfo.dom_listContent,
   })
+  // 设置延迟引用
+  scrollRef = scroll
 
   // ========== 拖拽排序 ==========
   const drag = useMusicListDrag({
@@ -132,7 +139,7 @@ export default function useMusicListViewModel(props, emit) {
   })
 
   // ========== 加载所有歌单 ==========
-  const loadAllLists = async() => {
+  const loadAllLists = async () => {
     const lists = []
     if (loveList.id !== LIST_IDS.TEMP) {
       lists.push({

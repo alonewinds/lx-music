@@ -114,7 +114,6 @@ export default {
           name: mInfo.name,
           singer: mInfo.singer,
           alias: mInfo.meta?.alias,
-          _raw: item,
         }
       })
     })

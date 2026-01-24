@@ -4,7 +4,7 @@ material-modal(
   :bg-close="true"
   @close="handleClose"
 )
-  main(:class="$style.main" style="width: 420px; height: 520px;")
+  main(:class="$style.main")
     DynamicBackground(:class="$style.bg")
     div(:class="$style.mask")
     h2(:class="$style.title") {{ $t('play_queue__title') }}
@@ -218,7 +218,10 @@ export default {
   position: relative; /* 确保 bg 绝对定位相对于 main */
   display: flex;
   flex-direction: column;
-  height: 100%;
+  width: 420px;
+  height: 520px;
+  max-width: 90vw;  /* 响应式适配 */
+  max-height: 80vh;
   overflow: hidden;
   color: var(--color-font);
 }

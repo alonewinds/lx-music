@@ -48,8 +48,8 @@ const options = {
   publish: [
     {
       provider: 'github',
-      owner: 'lyswhut',
-      repo: 'lx-music-desktop',
+      owner: 'alonewinds',
+      repo: 'music',
     },
   ],
 }
@@ -82,7 +82,7 @@ const winOptions = {
  */
 const linuxOptions = {
   linux: {
-    maintainer: 'lyswhut <lyswhut@qq.com>',
+    maintainer: 'alonewinds',
     // artifactName: '${productName}-${version}.${env.ARCH}.${ext}',
     icon: 'resources/icons',
     category: 'Utility;AudioVideo;Audio;Player;Music;',

@@ -90,19 +90,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lyswhut/lx-music-desktop.git"
+    "url": "git+https://github.com/alonewinds/music.git"
   },
   "keywords": [
     "music-player",
     "electron-app",
     "vuejs3"
   ],
-  "author": "lyswhut",
+  "author": "alonewinds",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/lyswhut/lx-music-desktop/issues"
+    "url": "https://github.com/alonewinds/music/issues"
   },
-  "homepage": "https://github.com/lyswhut/lx-music-desktop#readme",
+  "homepage": "https://github.com/alonewinds/music#readme",
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/eslint-parser": "^7.28.5",

@@ -73,6 +73,7 @@
   "download_status_start": "開始下載",
   "download_status_url_getting": "音樂連結獲取中...",
   "download_status_write_queue": "資料寫入中（{num}）",
+  "drag_drop__tip": "拖放以播放",
   "duplicate_list_tip": "你之前已收藏過清單「{name}」，是否需要更新裡面的歌曲？",
   "export": "匯出",
   "fullscreen_exit": "退出全螢幕",

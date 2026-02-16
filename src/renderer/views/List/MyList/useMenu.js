@@ -16,6 +16,7 @@ export default ({
   handleUpdateSourceList,
   handleRemove,
   handleClearPlaylist,
+  handleDownloadAll,
 }) => {
   const menuControl = reactive({
     rename: true,
@@ -28,6 +29,7 @@ export default ({
     sync: false,
     remove: true,
     clear: false,
+    download_all: true,
   })
   const t = useI18n()
   const menuLocation = reactive({ x: 0, y: 0 })
@@ -79,6 +81,11 @@ export default ({
         name: '清空播放列表',
         action: 'clear',
         disabled: !menuControl.clear,
+      },
+      {
+        name: t('lists__download_all'),
+        action: 'download_all',
+        disabled: !menuControl.download_all,
       },
       {
         name: t('lists__remove'),
@@ -192,6 +199,9 @@ export default ({
         break
       case 'clear':
         handleClearPlaylist(listInfo)
+        break
+      case 'download_all':
+        handleDownloadAll(listInfo)
         break
       case 'remove':
         handleRemove(listInfo)

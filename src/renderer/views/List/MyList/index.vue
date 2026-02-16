@@ -81,6 +81,7 @@
     <CrossListDuplicateMusicModal v-model:visible="isShowCrossListDuplicateModal" @goto-list="handleGotoList" />
     <ListSortModal v-model:visible="isShowListSortModal" :list-info="sortListInfo" />
     <ListUpdateModal v-model:visible="isShowListUpdateModal" />
+    <DownloadMultipleModal v-model:show="isShowDownloadAll" :list="downloadAllList" :list-id="downloadAllListId" />
   </div>
 </template>
 
@@ -92,9 +93,10 @@ import DuplicateMusicModal from './components/DuplicateMusicModal.vue'
 import CrossListDuplicateMusicModal from './components/CrossListDuplicateMusicModal.vue'
 import ListSortModal from './components/ListSortModal.vue'
 import ListUpdateModal from './components/ListUpdateModal.vue'
+import DownloadMultipleModal from '@renderer/components/common/DownloadMultipleModal.vue'
 
 import { defaultList, loveList, userLists, fetchingListStatus } from '@renderer/store/list/state'
-import { removeUserList, clearListMusics } from '@renderer/store/list/action'
+import { removeUserList, clearListMusics, getListMusics } from '@renderer/store/list/action'
 
 import { ref, watch } from '@common/utils/vueTools'
 import { useRouter } from '@common/utils/vueRouter'
@@ -124,6 +126,7 @@ export default {
     CrossListDuplicateMusicModal,
     ListSortModal,
     ListUpdateModal,
+    DownloadMultipleModal,
   },
   props: {
     listId: {
@@ -183,6 +186,19 @@ export default {
       void clearListMusics([listInfo.id])
     }
 
+    const isShowDownloadAll = ref(false)
+    const downloadAllList = ref([])
+    const downloadAllListId = ref('')
+
+    const handleDownloadAll = async(listInfo) => {
+      const musics = await getListMusics(listInfo.id)
+      const onlineMusics = musics.filter(m => m.source !== 'local')
+      if (!onlineMusics.length) return
+      downloadAllList.value = onlineMusics
+      downloadAllListId.value = listInfo.id
+      isShowDownloadAll.value = true
+    }
+
     const {
       menus,
       menuLocation,
@@ -201,6 +217,7 @@ export default {
       handleRename,
       handleRemove,
       handleClearPlaylist,
+      handleDownloadAll,
     })
 
     const handleListsItemRigthClick = (event, index) => {
@@ -274,6 +291,9 @@ export default {
       handleGotoList,
       isDragging,
       hideMenu: handleMenuClick,
+      isShowDownloadAll,
+      downloadAllList,
+      downloadAllListId,
     }
   },
 }

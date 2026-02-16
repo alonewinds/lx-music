@@ -150,6 +150,7 @@
   "lists__dislike_music_singer_tip": "Do you really dislike {singer}'s \"{name}\"?",
   "lists__dislike_music_tip": "Do you really dislike \"{name}\"?",
   "lists__duplicate": "Duplicate Songs",
+  "lists__download_all": "Download All",
   "lists__export": "Export",
   "lists__export_part_desc": "Choose where to save the list file",
   "lists__import": "Import",

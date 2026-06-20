@@ -66,6 +66,7 @@ import {
 } from '@renderer/store/player/state'
 import {
   setMusicInfo,
+  setAllStatus,
 } from '@renderer/store/player/action'
 import { onMounted, onBeforeUnmount, computed, reactive, ref, nextTick, watch } from '@common/utils/vueTools'
 import useAmllLyric from '@renderer/utils/compositions/useAmllLyric'
@@ -190,8 +191,10 @@ export default {
       if (!playMusicInfo.musicInfo) return
       const musicInfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
       
+      const isWordLrc = /<\d+,\d+>/.test(lrcText)
       const lyricInfoToSave = {
-        lyric: lrcText,
+        lyric: isWordLrc ? lrcText.replace(/<\d+,\d+>/g, '') : lrcText,
+        lxlyric: isWordLrc ? lrcText : '',
       }
 
       // 保存到数据库（作为编辑过的歌词）
@@ -199,8 +202,12 @@ export default {
 
       // 更新当前播放状态
       setMusicInfo({
-        lrc: lrcText,
+        lrc: lyricInfoToSave.lyric,
+        lxlrc: lyricInfoToSave.lxlyric,
       })
+
+      // 清除播放状态字（如“歌词加载错误”等）
+      setAllStatus('')
 
       // 刷新歌词显示
       refreshLyric()
@@ -245,6 +252,9 @@ export default {
         rlrc: lyricContent.rlyric,
         lxlrc: lyricContent.lxlyric,
       })
+
+      // 清除播放状态字
+      setAllStatus('')
 
       // 刷新歌词显示
       refreshLyric()

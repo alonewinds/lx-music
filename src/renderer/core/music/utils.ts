@@ -125,14 +125,15 @@ export const buildLyricInfo = async (lyricInfo: MakeOptional<LX.Player.LyricInfo
 export const getCachedLyricInfo = async (musicInfo: LX.Music.MusicInfo): Promise<LX.Player.LyricInfo | null> => {
   let lrcInfo = await getStoreLyric(musicInfo)
   // lrcInfo = {} as unknown as LX.Player.LyricInfo
-  if (existTimeExp.test(lrcInfo.lyric)) {
-    // 如果是编辑过的歌词，直接返回
-    // 通过比较当前歌词与原始歌词是否一致来判断
-    // 注意：lrcInfo.rawlrcInfo 总是存在（由 dbService 保证）
-    if (lrcInfo.lyric !== lrcInfo.rawlrcInfo.lyric || lrcInfo.lxlyric !== lrcInfo.rawlrcInfo.lxlyric) {
-      return lrcInfo
-    }
 
+  // 如果是编辑过的歌词（无论是否带有时间轴标签），直接返回
+  // 通过比较当前歌词与原始歌词是否一致来判断
+  // 注意：lrcInfo.rawlrcInfo 总是存在（由 dbService 保证）
+  if (lrcInfo.lyric && (lrcInfo.lyric !== lrcInfo.rawlrcInfo.lyric || lrcInfo.lxlyric !== lrcInfo.rawlrcInfo.lxlyric)) {
+    return lrcInfo
+  }
+
+  if (existTimeExp.test(lrcInfo.lyric)) {
     // 如果歌词有时间标签，优先使用缓存的歌词（包括用户手动添加的歌词）
     // 只有在需要获取更完整的歌词信息（lxlyric/rlyric）时才尝试重新获取
     if (lrcInfo.tlyric != null) {

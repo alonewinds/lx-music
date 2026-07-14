@@ -69,6 +69,9 @@
               </li>
             </ul>
           </div>
+          <div v-if="text.length > 0 && resultList !== null && resultList.length === 0" :class="$style.emptyHint">
+            按 Enter 在歌曲市场中搜索「{{ text }}」
+          </div>
           <base-menu v-model="isShowItemMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
         </div>
       </transition>
@@ -272,7 +275,13 @@ export default {
       this.isShow = false
     },
     handleTemplistClick(index) {
-      if (index < 0) return
+      if (index < 0) {
+        // 有搜索词但结果为空时，按 Enter 跳转到歌曲市场搜索
+        if (this.text.length > 0 && this.resultList.length === 0) {
+          this.sendEvent('searchInMarket', { text: this.text })
+        }
+        return
+      }
       const item = this.resultList[index]
       
       if (this.isGlobal && item.listId) {
@@ -604,6 +613,16 @@ export default {
   &:active {
     background-color: var(--color-button-background-active);
   }
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: var(--color-button-font);
+  opacity: 0.65;
+  padding: 8px 10px 6px;
+  text-align: center;
+  cursor: default;
+  user-select: none;
 }
 
 </style>

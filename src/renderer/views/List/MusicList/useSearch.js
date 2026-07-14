@@ -38,6 +38,14 @@ export default ({ setSelectedIndex, handlePlayMusic, listRef, handleShowDownload
         // 点击关闭按钮 - 关闭搜索栏
         isShowSearchBar.value = false
         break
+      case 'searchInMarket':
+        // 有词无结果时按 Enter：关闭搜索栏并跳转歌曲市场
+        isShowSearchBar.value = false
+        router.push({
+          path: '/search',
+          query: { text: data.text },
+        })
+        break
       case 'listClick':
         // 点击歌曲跳转到所属歌单 - 需要关闭搜索栏
         isShowSearchBar.value = false

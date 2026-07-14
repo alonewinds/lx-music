@@ -69,7 +69,7 @@
               </li>
             </ul>
           </div>
-          <div v-if="text.length > 0 && resultList !== null && resultList.length === 0" :class="$style.emptyHint">
+          <div v-if="text.length > 0" :class="$style.emptyHint">
             按 Enter 在歌曲市场中搜索「{{ text }}」
           </div>
           <base-menu v-model="isShowItemMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
@@ -276,8 +276,9 @@ export default {
     },
     handleTemplistClick(index) {
       if (index < 0) {
-        // 有搜索词但结果为空时，按 Enter 跳转到歌曲市场搜索
-        if (this.text.length > 0 && this.resultList.length === 0) {
+        // 有搜索词且未通过方向键选中任何结果时，按 Enter 跳转到歌曲市场搜索
+        // 无论结果列表有无内容，只要没有手动选中就直接去市场搜索
+        if (this.text.length > 0) {
           this.sendEvent('searchInMarket', { text: this.text })
         }
         return

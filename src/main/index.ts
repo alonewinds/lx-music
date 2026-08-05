@@ -13,6 +13,9 @@ import { isLinux } from '@common/utils'
 import { initAppSetting } from '@main/app'
 import registerModules from '@main/modules'
 
+// 消除 DevTools "Request Autofill.enable failed" 警告
+app.commandLine.appendSwitch('disable-features', 'AutofillServerCommunication')
+
 // 初始化应用
 const init = () => {
   console.log('init')

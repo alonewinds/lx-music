@@ -70,7 +70,7 @@
             </ul>
           </div>
           <div v-if="text.length > 0" :class="$style.emptyHint">
-            按 Enter 在歌曲市场中搜索「{{ text }}」
+            按↑↓键选择歌曲，直接按 Enter 则跳转到歌曲市场中搜索「{{ text }}」
           </div>
           <base-menu v-model="isShowItemMenu" :menus="menus" :xy="menuLocation" item-name="name" @menu-click="handleMenuClick" />
         </div>

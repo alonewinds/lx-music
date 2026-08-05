@@ -105,6 +105,26 @@
 
 请参阅：<https://lyswhut.github.io/lx-music-doc/desktop/use-source-code>
 
+### 开发及构建
+
+```bash
+# 开发模式
+npm run dev
+
+# 构建免安装版
+npm run pack:dir
+
+# 构建安装包（Windows）
+npm run pack:win
+
+# 构建安装包（macOS）
+npm run pack:mac
+
+# 构建安装包（Linux）
+npm run pack:linux
+```
+
+
 ## 项目协议
 
 本项目基于 [Apache License 2.0](https://github.com/lyswhut/lx-music-desktop/blob/master/LICENSE) 许可证发行，以下协议是对于 Apache License 2.0 的补充，如有冲突，以以下协议为准。

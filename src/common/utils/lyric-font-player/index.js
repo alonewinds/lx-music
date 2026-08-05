@@ -157,6 +157,7 @@ export default class Lyric {
         this._lineFonts.push(fontPlayer)
         return {
           text: line.text,
+          rawText: line.text,
           time: line.time,
           extendedLyrics: line.extendedLyrics,
           dom_line: fontPlayer.lineContent,
@@ -184,6 +185,7 @@ export default class Lyric {
         this._lineFonts.push(fontPlayer)
         return {
           text: line.text.replace(fontTimeExp, ''),
+          rawText: line.text,
           time: line.time,
           extendedLyrics: line.extendedLyrics,
           dom_line: fontPlayer.lineContent,

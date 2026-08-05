@@ -30,6 +30,8 @@ declare namespace LX {
       playbackRate: number
       lyricLineText: string
       lyricLineAllText: string
+      lyricLineChars?: Array<{ char: string; startMs: number; durationMs: number }> | null
+      lyricLineStartMs?: number
       lyric: string
       tlyric: string
       rlyric: string

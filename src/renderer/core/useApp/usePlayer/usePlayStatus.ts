@@ -64,11 +64,32 @@ export default () => {
       picUrl: musicInfo.pic ?? '',
     })
   }
+  const fontTimeExp = /<(\d+),(\d+)>/g
   const handleSetLyricLine = (text: string, line: number) => {
     let curLine = lyric.lines[line]?.extendedLyrics.join('\n') ?? ''
+    
+    let lyricLineChars = null
+    const rawText = lyric.lines[line]?.rawText ?? ''
+    if (rawText.match(fontTimeExp)) {
+      lyricLineChars = []
+      const parts = rawText.split(fontTimeExp)
+      let i = 1
+      while (i < parts.length - 1) {
+        const startMs = parseInt(parts[i], 10)
+        const durationMs = parseInt(parts[i + 1], 10)
+        const char = parts[i + 2] || ''
+        if (char) {
+          lyricLineChars.push({ char, startMs, durationMs })
+        }
+        i += 3
+      }
+    }
+
     sendPlayerStatus({
       lyricLineText: text,
       lyricLineAllText: curLine ? text + '\n' + curLine : text,
+      lyricLineChars,
+      lyricLineStartMs: performance.now(),
     })
   }
   // const handleSetTaskbarThumbnailClip = (clip) => {

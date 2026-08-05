@@ -834,6 +834,17 @@ export const onNewDesktopLyricProcess = (listener: LX.IpcRendererEventListener):
   }
 }
 
+/**
+ * 任务栏歌词进程创建事件
+ * @param listener
+ * @returns
+ */
+export const onNewTaskbarLyricProcess = (listener: LX.IpcRendererEventListener): RemoveListener => {
+  rendererOn(WIN_MAIN_RENDERER_EVENT_NAME.process_new_taskbar_lyric_client, listener)
+  return () => {
+    rendererOff(WIN_MAIN_RENDERER_EVENT_NAME.process_new_taskbar_lyric_client, listener)
+  }
+}
 
 export const downloadTasksGet = async() => {
   return rendererInvoke<LX.Download.ListItem[]>(WIN_MAIN_RENDERER_EVENT_NAME.download_list_get)

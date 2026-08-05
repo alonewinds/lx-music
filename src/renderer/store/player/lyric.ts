@@ -2,6 +2,7 @@ import { reactive } from '@common/utils/vueTools'
 
 export interface Line {
   text: string
+  rawText: string
   time: number
   extendedLyrics: string[]
   dom_line: HTMLDivElement

@@ -118,6 +118,26 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.effect.scaleAmount': 1.15, // 缩放倍率
   'desktopLyric.effect.scaleLongSyllableDuration': 700, // 长音节阈值（ms）
 
+  'taskbarLyric.enable': false,
+  'taskbarLyric.locked': false,
+  'taskbarLyric.position': 'right',
+  'taskbarLyric.lyricAlign': 'center',
+  'taskbarLyric.width': 230,
+  'taskbarLyric.offsetX': 0,
+  'taskbarLyric.showCover': true,
+  'taskbarLyric.showSongInfo': true,
+  'taskbarLyric.showCurrentLine': true,
+  'taskbarLyric.swapTitleAndArtist': false,
+  'taskbarLyric.style.backgroundColorMode': 'theme',
+  'taskbarLyric.style.backgroundColor': 'rgba(15, 23, 42, 1)',
+  'taskbarLyric.style.backgroundOpacity': 72,
+  'taskbarLyric.style.songInfoFontColorMode': 'theme',
+  'taskbarLyric.style.songInfoFontColor': 'rgba(226, 232, 240, 1)',
+  'taskbarLyric.style.lyricFontColorMode': 'theme',
+  'taskbarLyric.style.lyricFontColor': 'rgba(248, 250, 252, 1)',
+  'taskbarLyric.style.songInfoFontSize': 11,
+  'taskbarLyric.style.lyricFontSize': 12,
+
   'list.isClickPlayList': false,
   'list.isShowSource': true,
   'list.isSaveScrollLocation': true,

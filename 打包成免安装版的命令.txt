@@ -1,1 +1,0 @@
-打包成免安装版命令：npm run pack:dir

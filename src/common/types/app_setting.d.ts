@@ -695,6 +695,26 @@ declare global {
        */
       'tray.enable': boolean
 
+      'taskbarLyric.enable': boolean
+      'taskbarLyric.locked': boolean
+      'taskbarLyric.position': 'right' | 'center'
+      'taskbarLyric.lyricAlign': 'left' | 'center' | 'right'
+      'taskbarLyric.width': number
+      'taskbarLyric.offsetX': number
+      'taskbarLyric.showCover': boolean
+      'taskbarLyric.showSongInfo': boolean
+      'taskbarLyric.showCurrentLine': boolean
+      'taskbarLyric.swapTitleAndArtist': boolean
+      'taskbarLyric.style.backgroundColorMode': 'theme' | 'custom'
+      'taskbarLyric.style.backgroundColor': string
+      'taskbarLyric.style.backgroundOpacity': number
+      'taskbarLyric.style.songInfoFontColorMode': 'theme' | 'custom'
+      'taskbarLyric.style.songInfoFontColor': string
+      'taskbarLyric.style.lyricFontColorMode': 'theme' | 'custom'
+      'taskbarLyric.style.lyricFontColor': string
+      'taskbarLyric.style.songInfoFontSize': number
+      'taskbarLyric.style.lyricFontSize': number
+
       /**
        * 是否关闭时是否最小化到托盘
        */

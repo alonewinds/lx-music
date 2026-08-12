@@ -110,6 +110,18 @@ dd
         span(:class="$style.sliderValue") {{ Math.round(appSetting['taskbarLyric.style.backgroundOpacity']) }}%
 
 dd
+  h3#taskbar_lyric_font {{ $t('setting__desktop_lyric_font') }}
+  div
+    base-selection.gap-left(
+      :list="fontList"
+      :model-value="appSetting['taskbarLyric.style.font']"
+      item-key="id"
+      item-name="label"
+      :disabled="!isWin"
+      @update:model-value="updateSetting({ 'taskbarLyric.style.font': $event })"
+    )
+
+dd
   h3#taskbar_lyric_font_color {{ $t('setting__taskbar_lyric_font_color') }}
   div(:class="$style.sectionFields")
     div(:class="$style.fieldRow")
@@ -147,27 +159,27 @@ dd
       div(:class="[$style.fieldControl, $style.sliderLine]")
         base-slider-bar(
           :class-name="$style.slider"
-          :value="appSetting['taskbarLyric.style.songInfoFontSize']"
+          :value="roundToTwo(appSetting['taskbarLyric.style.songInfoFontSize'])"
           :min="9"
           :max="18"
           :step="1"
           :disabled="!isWin"
-          @change="updateSetting({ 'taskbarLyric.style.songInfoFontSize': $event })"
+          @change="updateSetting({ 'taskbarLyric.style.songInfoFontSize': roundToTwo($event) })"
         )
-        span(:class="$style.sliderValue") {{ appSetting['taskbarLyric.style.songInfoFontSize'] }}px
+        span(:class="$style.sliderValue") {{ formatFontSize(appSetting['taskbarLyric.style.songInfoFontSize']) }}px
     div(:class="$style.fieldRow")
       span(:class="$style.fieldLabel") {{ $t('setting__taskbar_lyric_line_size') }}
       div(:class="[$style.fieldControl, $style.sliderLine]")
         base-slider-bar(
           :class-name="$style.slider"
-          :value="appSetting['taskbarLyric.style.lyricFontSize']"
+          :value="roundToTwo(appSetting['taskbarLyric.style.lyricFontSize'])"
           :min="10"
           :max="22"
           :step="1"
           :disabled="!isWin"
-          @change="updateSetting({ 'taskbarLyric.style.lyricFontSize': $event })"
+          @change="updateSetting({ 'taskbarLyric.style.lyricFontSize': roundToTwo($event) })"
         )
-        span(:class="$style.sliderValue") {{ appSetting['taskbarLyric.style.lyricFontSize'] }}px
+        span(:class="$style.sliderValue") {{ formatFontSize(appSetting['taskbarLyric.style.lyricFontSize']) }}px
 
 dd
   h3#taskbar_lyric_width {{ $t('setting__taskbar_lyric_width', { width: Math.round(appSetting['taskbarLyric.width']) }) }}
@@ -221,10 +233,12 @@ dd
 </template>
 
 <script>
-import { onMounted, onBeforeUnmount, ref, watch } from '@common/utils/vueTools'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from '@common/utils/vueTools'
 import { isWin } from '@common/utils'
 import { appSetting, updateSetting } from '@renderer/store/setting'
 import { pickrTools } from '@renderer/utils/pickrTools'
+import { getSystemFonts } from '@renderer/utils/ipc'
+import { useI18n } from '@renderer/plugins/i18n'
 
 const backgroundColorSwatches = [
   'rgba(15, 23, 42, 1)',
@@ -245,6 +259,7 @@ const fontColorSwatches = [
 export default {
   name: 'SettingTaskbarLyric',
   setup() {
+    const t = useI18n()
     const backgroundColorRef = ref(null)
     const songInfoFontColorRef = ref(null)
     const lyricFontColorRef = ref(null)
@@ -254,6 +269,13 @@ export default {
     let backgroundColorTools = null
     let songInfoFontColorTools = null
     let lyricFontColorTools = null
+    const systemFontList = ref([])
+    const fontList = computed(() => [{ id: '', label: t('setting__desktop_lyric_font_default') }, ...systemFontList.value])
+    const roundToTwo = value => Number(Number(value).toFixed(2))
+    const formatFontSize = value => roundToTwo(value).toFixed(2)
+    void getSystemFonts().then(fonts => {
+      if (fonts) systemFontList.value = fonts.map(font => ({ id: font, label: font.replace(/(^"|"$)/g, '') }))
+    })
     const initColorPickers = () => {
       if (backgroundColorRef.value) {
         backgroundColorTools = pickrTools.create(backgroundColorRef.value, appSetting['taskbarLyric.style.backgroundColor'], backgroundColorSwatches, color => {
@@ -343,6 +365,9 @@ export default {
       backgroundColorRef,
       songInfoFontColorRef,
       lyricFontColorRef,
+      fontList,
+      roundToTwo,
+      formatFontSize,
       handleCustomColorCardClick,
       isWin,
     }

@@ -40,6 +40,7 @@ export interface TaskbarLyricState {
   songInfoFontColor: LX.AppSetting['taskbarLyric.style.songInfoFontColor']
   lyricFontColorMode: LX.AppSetting['taskbarLyric.style.lyricFontColorMode']
   lyricFontColor: LX.AppSetting['taskbarLyric.style.lyricFontColor']
+  font: LX.AppSetting['taskbarLyric.style.font']
   songInfoFontSize: LX.AppSetting['taskbarLyric.style.songInfoFontSize']
   lyricFontSize: LX.AppSetting['taskbarLyric.style.lyricFontSize']
 }

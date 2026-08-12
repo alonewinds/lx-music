@@ -119,6 +119,7 @@ export const useTaskbarLyricShellStyle = () => {
       '--taskbar-lyric-drag-border': withAlpha(lyricText, 0.95),
       '--taskbar-lyric-text': toRgbString(lyricText),
       '--taskbar-lyric-text-secondary': toRgbString(songInfoText),
+      '--taskbar-lyric-font-family': lyricState.font || "'Segoe UI', 'Microsoft YaHei', sans-serif",
       '--taskbar-lyric-song-info-font-size': `${clamp(lyricState.songInfoFontSize ?? 11, 9, 18)}px`,
       '--taskbar-lyric-line-font-size': `${clamp(lyricState.lyricFontSize ?? 12, 10, 22)}px`,
     }

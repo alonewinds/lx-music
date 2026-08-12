@@ -22,6 +22,7 @@ interface TaskbarLyricViewState {
   songInfoFontColor: string
   lyricFontColorMode: 'theme' | 'custom'
   lyricFontColor: string
+  font: string
   songInfoFontSize: number
   lyricFontSize: number
   locked: boolean
@@ -52,6 +53,7 @@ export const state = shallowReactive<TaskbarLyricViewState>({
   songInfoFontColor: 'rgba(226, 232, 240, 1)',
   lyricFontColorMode: 'theme',
   lyricFontColor: 'rgba(248, 250, 252, 1)',
+  font: '',
   songInfoFontSize: 11,
   lyricFontSize: 12,
   locked: false,

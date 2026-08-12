@@ -62,6 +62,7 @@ const getStyleState = () => {
     songInfoFontColor: global.lx.appSetting['taskbarLyric.style.songInfoFontColor'],
     lyricFontColorMode: global.lx.appSetting['taskbarLyric.style.lyricFontColorMode'],
     lyricFontColor: global.lx.appSetting['taskbarLyric.style.lyricFontColor'],
+    font: global.lx.appSetting['taskbarLyric.style.font'],
     songInfoFontSize: global.lx.appSetting['taskbarLyric.style.songInfoFontSize'],
     lyricFontSize: global.lx.appSetting['taskbarLyric.style.lyricFontSize'],
   }
@@ -383,12 +384,19 @@ export const updatePlayerStatus = (status: Partial<LX.Player.Status>) => {
     nextState.albumCoverUrl = status.picUrl || null
     isChanged = true
   }
-  if (status.lyricLineText != null && nextState.lyricLine !== status.lyricLineText) {
-    nextState.lyricLine = status.lyricLineText
-    const extendedStatus = status as any
-    nextState.lyricLineChars = extendedStatus.lyricLineChars ?? null
-    nextState.lyricLineStartMs = extendedStatus.lyricLineStartMs ?? 0
-    isChanged = true
+  if (status.lyricLineText != null) {
+    const lyricLineChars = status.lyricLineChars ?? null
+    const lyricLineStartMs = status.lyricLineStartMs ?? 0
+    if (
+      nextState.lyricLine !== status.lyricLineText ||
+      nextState.lyricLineChars !== lyricLineChars ||
+      nextState.lyricLineStartMs !== lyricLineStartMs
+    ) {
+      nextState.lyricLine = status.lyricLineText
+      nextState.lyricLineChars = lyricLineChars
+      nextState.lyricLineStartMs = lyricLineStartMs
+      isChanged = true
+    }
   }
 
   if (!isChanged) return

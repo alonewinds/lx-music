@@ -696,6 +696,11 @@ declare global {
       'tray.enable': boolean
 
       'taskbarLyric.enable': boolean
+
+      /**
+       * 任务栏歌词字体，空字符串表示使用默认字体
+       */
+      'taskbarLyric.style.font': string
       'taskbarLyric.locked': boolean
       'taskbarLyric.position': 'right' | 'center'
       'taskbarLyric.lyricAlign': 'left' | 'center' | 'right'

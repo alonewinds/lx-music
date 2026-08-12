@@ -24,18 +24,13 @@
           :font-size="state.songInfoFontSize"
           :style="{ justifyContent: state.lyricAlign === 'left' ? 'flex-start' : state.lyricAlign === 'right' ? 'flex-end' : 'center' }"
         />
-        <TaskbarLyricWordLyric
-          v-if="state.showCurrentLine && state.lyricLineChars"
+        <TaskbarLyricLineTransition
+          v-if="state.showCurrentLine"
+          :text="displayLyricText"
           :chars="state.lyricLineChars"
           :start-ms="state.lyricLineStartMs"
           :font-size="state.lyricFontSize"
-          :style="{ textAlign: state.lyricAlign }"
-        />
-        <TaskbarLyricLyricLine
-          v-else-if="state.showCurrentLine"
-          :text="displayLyricText"
-          :font-size="state.lyricFontSize"
-          :style="{ textAlign: state.lyricAlign }"
+          :align="state.lyricAlign"
         />
       </template>
     </div>
@@ -45,9 +40,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount } from 'vue'
 import TaskbarLyricActionButtons from './components/TaskbarLyricActionButtons.vue'
-import TaskbarLyricLyricLine from './components/TaskbarLyricLyricLine.vue'
 import TaskbarLyricSongInfo from './components/TaskbarLyricSongInfo.vue'
-import TaskbarLyricWordLyric from './components/TaskbarLyricWordLyric.vue'
+import TaskbarLyricLineTransition from './components/TaskbarLyricLineTransition.vue'
 import { useTaskbarLyricShellStyle } from './composables/useTaskbarLyricShellStyle'
 import { useTaskbarLyricWindowDrag } from './composables/useTaskbarLyricWindowDrag'
 import { state } from './store/state'
@@ -94,7 +88,6 @@ body {
   overflow: hidden;
   user-select: none;
   color: var(--taskbar-lyric-text, rgb(248, 250, 252));
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
 
 * {
@@ -116,6 +109,7 @@ body {
   backdrop-filter: blur(10px);
   transition: opacity 0.2s ease, border-color 0.16s ease;
   cursor: grab;
+  font-family: var(--taskbar-lyric-font-family, 'Segoe UI', 'Microsoft YaHei', sans-serif);
 
   &.disabled {
     opacity: 0.78;

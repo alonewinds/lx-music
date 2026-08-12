@@ -135,6 +135,7 @@ const defaultSetting: LX.AppSetting = {
   'taskbarLyric.style.songInfoFontColor': 'rgba(226, 232, 240, 1)',
   'taskbarLyric.style.lyricFontColorMode': 'theme',
   'taskbarLyric.style.lyricFontColor': 'rgba(248, 250, 252, 1)',
+  'taskbarLyric.style.font': '',
   'taskbarLyric.style.songInfoFontSize': 11,
   'taskbarLyric.style.lyricFontSize': 12,
 

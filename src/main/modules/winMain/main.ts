@@ -97,6 +97,7 @@ export const createWindow = () => {
       enableWebSQL: false,
       webgl: true, // 启用WebGL以支持动态背景效果
       spellcheck: false, // 禁用拼写检查器
+      backgroundThrottling: false,
     },
   }
   if (global.envParams.cmdParams.dt) options.backgroundColor = theme.colors['--color-primary-light-1000']

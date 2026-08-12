@@ -46,7 +46,9 @@ const updateLockedState = (locked: boolean) => {
   if (!browserWindow || browserWindow.isDestroyed()) return
   if (locked) {
     browserWindow.setIgnoreMouseEvents(true, { forward: true })
+    browserWindow.setFocusable(false)
   } else {
+    browserWindow.setFocusable(true)
     browserWindow.setIgnoreMouseEvents(false)
   }
 }
@@ -315,7 +317,7 @@ export const showTaskbarLyricMenu = () => {
       }
       browserWindow.setSkipTaskbar(true)
       browserWindow.blur()
-      browserWindow.setFocusable(false)
+      updateLockedState(currentState?.locked ?? global.lx.appSetting['taskbarLyric.locked'])
       browserWindow.showInactive()
       refreshWindowZOrder()
       isMenuPopupVisible = false
@@ -332,6 +334,10 @@ export const refreshBounds = () => {
   }
   browserWindow.setBounds(bounds)
   refreshWindowZOrder()
+  setTimeout(() => {
+    updateLockedState(currentState?.locked ?? global.lx.appSetting['taskbarLyric.locked'])
+    sendStateToWindow()
+  }, 50)
 }
 
 export const updateWindowState = (state?: TaskbarLyricState) => {

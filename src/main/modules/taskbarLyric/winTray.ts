@@ -51,11 +51,11 @@ const CACHE_TTL_MS = 3000 // 缓存 3 秒
  * 查询并缓存 TrayNotifyWnd 的坐标，返回逻辑像素左边界。
  * 每次调用都是异步的，不会阻塞主进程。
  */
-export const refreshTrayNotifyRect = (): Promise<TrayNotifyRect | null> => {
+export const refreshTrayNotifyRect = (force = false): Promise<TrayNotifyRect | null> => {
   return new Promise((resolve) => {
     const now = Date.now()
-    // 缓存未过期时直接返回
-    if (_cachedRect && now - _lastQueryTime < CACHE_TTL_MS) {
+    // 缓存未过期时直接返回（非强制刷新模式）
+    if (!force && _cachedRect && now - _lastQueryTime < CACHE_TTL_MS) {
       resolve(_cachedRect)
       return
     }

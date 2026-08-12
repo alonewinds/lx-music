@@ -18,7 +18,7 @@ const startTrayPolling = () => {
   trayPollInterval = setInterval(async () => {
     if (!global.lx.appSetting['taskbarLyric.enable'] || !isExistWindow()) return
     const prevLeft = getCachedTrayNotifyRect()?.logicalLeft ?? null
-    await refreshTrayNotifyRect()
+    await refreshTrayNotifyRect(true)
     const nextLeft = getCachedTrayNotifyRect()?.logicalLeft ?? null
     // 托盘左边界发生变化（图标增减）→ 重新计算面板位置
     if (prevLeft !== nextLeft) {

@@ -89,7 +89,7 @@ export default () => {
       lyricLineText: text,
       lyricLineAllText: curLine ? text + '\n' + curLine : text,
       lyricLineChars,
-      lyricLineStartMs: performance.now(),
+      lyricLineStartMs: Date.now(),
     })
   }
   // const handleSetTaskbarThumbnailClip = (clip) => {

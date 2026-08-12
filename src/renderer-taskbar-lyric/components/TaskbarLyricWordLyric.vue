@@ -10,7 +10,7 @@
           v-for="(char, index) in chars"
           :key="index"
           class="word-char"
-          :style="getCharStyle(char)"
+          :style="charStyles[index]"
         >{{ char.char }}</span>
       </span>
       <span class="lyric-line-gap" aria-hidden="true"></span>
@@ -19,7 +19,7 @@
           v-for="(char, index) in chars"
           :key="index"
           class="word-char"
-          :style="getCharStyle(char)"
+          :style="charStyles[index]"
         >{{ char.char }}</span>
       </span>
     </div>
@@ -28,7 +28,7 @@
         v-for="(char, index) in chars"
         :key="index"
         class="word-char"
-        :style="getCharStyle(char)"
+        :style="charStyles[index]"
       >{{ char.char }}</span>
     </span>
     <span ref="measureRef" class="lyric-line-measure">{{ text }}</span>
@@ -56,17 +56,18 @@ const { containerRef, measureRef, shouldScroll, trackStyle } = useTaskbarLyricOv
   watchSources: [toRef(props, 'fontSize')],
 })
 
-const getCharStyle = (char: { startMs: number; durationMs: number }) => {
-  const now = performance.now()
-  const charAbsStartMs = props.startMs + char.startMs
-  const diffMs = charAbsStartMs - now
-  
-  return {
-    animationDuration: `${char.durationMs}ms`,
-    animationDelay: `${diffMs}ms`,
-    animationPlayState: 'running',
-  }
-}
+const charStyles = computed(() => {
+  const now = Date.now()
+  const lineLatency = Math.max(0, now - props.startMs)
+  return props.chars.map((char) => {
+    const effectiveDelay = char.startMs - lineLatency
+    return {
+      animationDuration: `${char.durationMs}ms`,
+      animationDelay: `${effectiveDelay}ms`,
+      animationPlayState: 'running',
+    }
+  })
+})
 </script>
 
 <style lang="less" scoped>

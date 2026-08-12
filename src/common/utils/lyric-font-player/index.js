@@ -132,7 +132,7 @@ export default class Lyric {
   _initLines = (lyricLines, offset, isUpdate) => {
     // console.log(lyricLines)
     // this._lines = lyricsLines
-    this.isLineMode = lyricLines.length && !/^<\d+,\d+>/.test(lyricLines[0].text)
+    this.isLineMode = !lyricLines.some(line => fontTimeExp.test(line.text))
 
     this._lineFonts = []
     if (this.isLineMode) {

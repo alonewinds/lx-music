@@ -2,6 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "isolatedModules": true,
+    // Vue 模板编译器生成的渲染函数（如 v-for 的 renderList 回调）在 ts-loader 全量类型检查时
+    // 会产生隐式 any 参数，这是 vue-loader 的生成代码行为，非我们的源码问题，故覆盖此项
+    "noImplicitAny": false,
     "paths": {                                           /* Specify a set of entries that re-map imports to additional lookup locations. */
       "@common/*": ["common/*"],
       "@renderer/*": ["renderer/*"],

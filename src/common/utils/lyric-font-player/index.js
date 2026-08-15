@@ -1,7 +1,7 @@
 import LinePlayer from './line-player'
 import FontPlayer from './font-player'
 
-const fontTimeExp = /<(\d+),(\d+)>/g
+const fontTimeExp = /<(\d+),(\d+)>/
 
 export default class Lyric {
   constructor({
@@ -184,7 +184,7 @@ export default class Lyric {
 
         this._lineFonts.push(fontPlayer)
         return {
-          text: line.text.replace(fontTimeExp, ''),
+          text: line.text.replace(/<(\d+),(\d+)>/g, ''),
           rawText: line.text,
           time: line.time,
           extendedLyrics: line.extendedLyrics,
@@ -203,7 +203,7 @@ export default class Lyric {
 
   _handleLinePlayerOnSetLyric = (lyricLines, offset) => {
     this._initLines(lyricLines, offset, false)
-    this.playingLineNum = 0
+    this.playingLineNum = -1
     this.initInfo.lines = lyricLines
     this.initInfo.offset = offset
   }

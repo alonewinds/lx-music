@@ -178,18 +178,34 @@ export default class FontPlayer {
   }
 
   _parseLyric() {
-    const fonts = this.lyric.split(fontSplitRxp)
-    // console.log(fonts)
+    const rawFonts = this.lyric.split(/(?=<[0-9]+,[0-9]+>)/)
+    const validFonts = rawFonts.filter(f => f.length > 0)
 
-    this.maxFontNum = fonts.length - 1
+    const hasWordTime = validFonts.some(f => timeRxp.test(f))
+    if (!hasWordTime) return this._handleLineParse()
+
     this.fonts = []
-    let text
-    // let lineText = ''
     let lrcShadowContent
-    for (const font of fonts) {
+    for (const font of validFonts) {
       const match = font.match(timeRxp)
-      if (!match) return this._handleLineParse()
-      text = font.replace(timeRxp, '').replace(/\s+/g, ' ')
+      if (!match) {
+        const text = font.replace(/\s+/g, ' ')
+        if (text) {
+          const dom = document.createElement('span')
+          dom.textContent = text
+          dom.style.display = 'inline-block'
+          dom.style.whiteSpace = 'pre'
+          this.lrcContent.appendChild(dom)
+          if (this.shadowContent) {
+            lrcShadowContent ??= document.createElement('div')
+            const shadowDom = document.createElement('span')
+            shadowDom.textContent = text
+            lrcShadowContent.appendChild(shadowDom)
+          }
+        }
+        continue
+      }
+      const text = font.replace(timeRxp, '').replace(/\s+/g, ' ')
       const startTime = parseInt(match[1])
       const time = parseInt(match[2])
       const animDuration = time / this._rate
@@ -237,6 +253,9 @@ export default class FontPlayer {
       })
     }
 
+    this.maxFontNum = this.fonts.length - 1
+    if (this.fonts.length === 0) return this._handleLineParse()
+
     if (this.shadowContent && lrcShadowContent) {
       lrcShadowContent.style = 'position:absolute;top:0;left:0;right:0;z-index:-1;'
       lrcShadowContent.className = this.shadowClassName
@@ -277,7 +296,7 @@ export default class FontPlayer {
 
   _handlePlayMaxFontNum() {
     let curFont = this.fonts[this.curFontNum]
-    // console.log(curFont.text)
+    if (!curFont) return
     const currentTime = this._currentTime()
     const driftTime = currentTime - curFont.startTime
     if (currentTime > curFont.startTime + curFont.time) {
@@ -285,12 +304,21 @@ export default class FontPlayer {
       this.lineContent.classList.add('played')
       this.isPlay = false
       this.pause()
-    } else {
+    } else if (driftTime >= 0) {
       this._handlePlayFont(curFont, driftTime)
+    } else if (this.curFontNum == 0) {
+      this.curFontNum--
+      if (this.isPlay) {
+        this.waitPlayTimeout.start(() => {
+          if (!this.isPlay) return
+          this._refresh()
+        }, -driftTime / this._rate)
+      }
     }
   }
 
   _handlePlayFont(font, currentTime, toFinishe) {
+    if (!font?.animation) return
     switch (font.animation.playState) {
       case 'finished':
         break
@@ -304,7 +332,7 @@ export default class FontPlayer {
         if (toFinishe) {
           font.animation.cancel()
         } else {
-          font.animation.currentTime = currentTime
+          font.animation.currentTime = Math.max(0, currentTime)
           font.animation.play()
         }
         break
@@ -318,26 +346,21 @@ export default class FontPlayer {
     } else {
       this.lineContent.classList.remove('played')
     }
-    // this.fonts[0].dom.style.backgroundSize = isPlayed ? '100% 100%' : '100% 0'
   }
 
   _handlePauseFont(font) {
-    if (font.animation.playState == 'running') font.animation.pause()
+    if (font?.animation?.playState == 'running') font.animation.pause()
   }
 
   _refresh() {
     this.curFontNum++
-    // console.log('curFontNum time', this.fonts[this.curFontNum].time)
     if (this.curFontNum >= this.maxFontNum) return this._handlePlayMaxFontNum()
     let curFont = this.fonts[this.curFontNum]
-    // console.log(curFont, nextFont, this.curFontNum, this.maxFontNum)
+    if (!curFont) return
     const currentTime = this._currentTime()
-    // console.log(curFont.text)
     const driftTime = currentTime - curFont.startTime
 
-    // console.log(currentTime, driftTime)
-
-    if (driftTime >= 0 || this.curFontNum == 0) {
+    if (driftTime >= 0) {
       let nextFont = this.fonts[this.curFontNum + 1]
       const delay = (nextFont.startTime - curFont.startTime - driftTime) / this._rate
       if (delay > 0) {
@@ -362,19 +385,17 @@ export default class FontPlayer {
         this.waitPlayTimeout.start(() => {
           if (!this.isPlay) return
           this._refresh()
-        }, -driftTime)
+        }, -driftTime / this._rate)
       }
       return
     }
 
     this.curFontNum = this._findcurFontNum(currentTime, this.curFontNum) - 1
     for (let i = 0; i <= this.curFontNum; i++) this._handlePlayFont(this.fonts[i], 0, true)
-    // this.curFontNum--
     this._refresh()
   }
 
   play(curTime = 0) {
-    // console.log('play', curTime)
     if (!this.fonts.length) return
     this.pause()
 
@@ -384,18 +405,24 @@ export default class FontPlayer {
     this._performanceTime = getNow()
     this._startTime = curTime
 
-    this.curFontNum = this._findcurFontNum(curTime)
-
-    for (let i = this.curFontNum; i > -1; i--) {
-      this._handlePlayFont(this.fonts[i], 0, true)
+    if (curTime < this.fonts[0].startTime) {
+      for (const font of this.fonts) {
+        font.animation.cancel()
+        font.dom.style.backgroundSize = '0 100%'
+      }
+      this.curFontNum = -1
+    } else {
+      this.curFontNum = this._findcurFontNum(curTime)
+      for (let i = this.curFontNum; i > -1; i--) {
+        this._handlePlayFont(this.fonts[i], 0, true)
+      }
+      for (let i = this.curFontNum + 1, len = this.fonts.length; i < len; i++) {
+        let font = this.fonts[i]
+        font.animation.cancel()
+        font.dom.style.backgroundSize = '0 100%'
+      }
+      this.curFontNum--
     }
-    for (let i = this.curFontNum, len = this.fonts.length; i < len; i++) {
-      let font = this.fonts[i]
-      font.animation.cancel()
-      font.dom.style.backgroundSize = '0 100%'
-    }
-
-    this.curFontNum--
 
     this._refresh()
   }

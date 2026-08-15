@@ -112,11 +112,11 @@ export const init = () => {
     rate: appSetting['player.playbackRate'],
     effectSettings: {
       enable: appSetting['playDetail.effect.enable'],
-      floatEnabled: appSetting['playDetail.effect.enable'],
+      floatEnabled: false,
       floatAmount: appSetting['playDetail.effect.floatAmount'],
       scaleEnabled: appSetting['playDetail.effect.enable'],
-      scaleAmount: appSetting['playDetail.effect.scaleAmount'],
-      scaleLongSyllableDuration: appSetting['playDetail.effect.scaleLongSyllableDuration'],
+      scaleAmount: appSetting['playDetail.effect.scaleAmount'] > 1 ? appSetting['playDetail.effect.scaleAmount'] : 1.2,
+      scaleLongSyllableDuration: 0,
     } as any,
     // offset: 80,
   })

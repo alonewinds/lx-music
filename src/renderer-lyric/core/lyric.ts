@@ -15,7 +15,7 @@ export const init = () => {
       enable: setting['desktopLyric.effect.enable'],
       floatEnabled: false, // Sync logic: Always disable float for AMLL feel
       floatAmount: setting['desktopLyric.effect.floatAmount'],
-      scaleEnabled: setting['desktopLyric.style.isZoomActiveLrc'], // Local control
+      scaleEnabled: setting['desktopLyric.effect.enable'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'] > 1 ? setting['desktopLyric.effect.scaleAmount'] : 1.2,
       scaleLongSyllableDuration: 0,
     } as any,
@@ -24,13 +24,13 @@ export const init = () => {
     },
     onSetLyric(lines, offset) {
       setLines(markRawList([...lines]))
-      setText(lines[0] ?? '', 0)
+      setText(lines[0]?.text ?? '', 0)
       setOffset(offset)
       setTempOffset(0)
     },
     onUpdateLyric(lines) {
       setLines(markRawList([...lines]))
-      setText(lines[0] ?? '', 0)
+      setText(lines[0]?.text ?? '', 0)
     },
   })
 
@@ -48,7 +48,7 @@ export const init = () => {
       enable: setting['desktopLyric.effect.enable'],
       floatEnabled: setting['desktopLyric.effect.floatEnabled'],
       floatAmount: setting['desktopLyric.effect.floatAmount'],
-      scaleEnabled: setting['desktopLyric.style.isZoomActiveLrc'],
+      scaleEnabled: setting['desktopLyric.effect.enable'],
       scaleAmount: setting['desktopLyric.effect.scaleAmount'],
       scaleLongSyllableDuration: setting['desktopLyric.effect.scaleLongSyllableDuration'],
     })
@@ -73,7 +73,12 @@ const filterEmptyLines = (lrc: string) => {
 }
 
 export const setLyric = () => {
-  if (!musicInfo.id) return
+  if (!lyrics.lyric && !lyrics.lxlyric) {
+    if (!musicInfo.id) {
+      stop()
+      return
+    }
+  }
   const extendedLyrics = []
   if (setting['player.isShowLyricRoma'] && lyrics.rlyric) {
     extendedLyrics.push(filterEmptyLines(lyrics.rlyric))
@@ -83,7 +88,7 @@ export const setLyric = () => {
   }
   if (setting['player.isSwapLyricTranslationAndRoma']) extendedLyrics.reverse()
 
-  const mainLrc = setting['player.isPlayLxlrc'] && lyrics.lxlyric ? lyrics.lxlyric : lyrics.lyric
+  const mainLrc = setting['player.isPlayLxlrc'] && lyrics.lxlyric ? lyrics.lxlyric : (lyrics.lyric || '')
 
   lrc.setLyric(
     filterEmptyLines(mainLrc),
@@ -92,7 +97,7 @@ export const setLyric = () => {
 }
 
 export const play = (time: number) => {
-  if (!lyrics.lyric) return
+  if (!lyrics.lyric && !lyrics.lxlyric) return
   lrc.play(time)
 }
 
@@ -110,12 +115,15 @@ export const setVertical = (isVertical: boolean) => {
 }
 
 export const setEffectSettings = (settings: LX.DesktopLyric.EffectSettings) => {
-  const { floatAmount, scaleAmount, scaleEnabled } = settings
-  // Sync logic with play detail: Disable float, scale controlled by local zoom toggle
+  const enable = settings.enable ?? setting['desktopLyric.effect.enable']
+  const floatAmount = settings.floatAmount ?? setting['desktopLyric.effect.floatAmount']
+  const scaleAmount = settings.scaleAmount ?? setting['desktopLyric.effect.scaleAmount']
+
   lrc.setEffectSettings({
+    enable,
     floatEnabled: false,
     floatAmount,
-    scaleEnabled: !!scaleEnabled,
+    scaleEnabled: enable,
     scaleAmount: scaleAmount > 1 ? scaleAmount : 1.2,
     scaleLongSyllableDuration: 0,
   })

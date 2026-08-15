@@ -136,6 +136,7 @@
   "list_sort_modal_by_field": "Sort Field",
   "list_sort_modal_by_name": "Title",
   "list_sort_modal_by_play_count": "Play Count",
+  "list_sort_modal_by_add_time": "Time Added",
   "list_sort_modal_by_random": "Random",
   "list_sort_modal_by_singer": "Artist",
   "list_sort_modal_by_source": "Music Service",

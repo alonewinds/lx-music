@@ -118,7 +118,7 @@ const getIntv = (musicInfo: LX.Music.MusicInfo) => {
   return intv
 }
 
-export type SortFieldName = 'name' | 'singer' | 'albumName' | 'interval' | 'source' | 'playCount'
+export type SortFieldName = 'name' | 'singer' | 'albumName' | 'interval' | 'source' | 'playCount' | 'addTime'
 export type SortFieldType = 'up' | 'down' | 'random'
 /**
  * 排序歌曲
@@ -173,6 +173,21 @@ export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: So
             })
             break
           }
+          case 'addTime': {
+            const listWithIndex = list.map((item, index) => ({ item, index }))
+            listWithIndex.sort((a, b) => {
+              const timeA = a.item.meta.addTime
+              const timeB = b.item.meta.addTime
+              if (timeA != null && timeB != null) {
+                return timeA === timeB ? a.index - b.index : timeA - timeB
+              }
+              if (timeA != null) return -1
+              if (timeB != null) return 1
+              return a.index - b.index
+            })
+            list.splice(0, list.length, ...listWithIndex.map(e => e.item))
+            break
+          }
         }
       }
       break
@@ -213,6 +228,21 @@ export const sortListMusicInfo = async (list: LX.Music.MusicInfo[], sortType: So
               // console.log(`[Worker] Comparing ${a.id}(${countA}) vs ${b.id}(${countB})`)
               return countB - countA
             })
+            break
+          }
+          case 'addTime': {
+            const listWithIndex = list.map((item, index) => ({ item, index }))
+            listWithIndex.sort((a, b) => {
+              const timeA = a.item.meta.addTime
+              const timeB = b.item.meta.addTime
+              if (timeA != null && timeB != null) {
+                return timeA === timeB ? b.index - a.index : timeB - timeA
+              }
+              if (timeA != null) return -1
+              if (timeB != null) return 1
+              return b.index - a.index
+            })
+            list.splice(0, list.length, ...listWithIndex.map(e => e.item))
             break
           }
         }

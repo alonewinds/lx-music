@@ -817,6 +817,7 @@
   "list__rename": "重命名",
   "list_sort_modal_by_name": "歌曲名",
   "list_sort_modal_by_play_count": "播放次数",
+  "list_sort_modal_by_add_time": "添加时间",
   "list_sort_modal_by_random": "随机乱序",
   "list_sort_modal_by_singer": "艺术家",
   "list_sort_modal_by_source": "歌曲来源平台",

@@ -37,9 +37,15 @@ export const setUpdateTime = (id: string, time: string) => {
 }
 
 export const addListMusics = async (id: string, musicInfos: LX.Music.MusicInfo[], addMusicLocationType?: LX.AddMusicLocationType) => {
+  const now = Date.now()
+  const rawList: LX.Music.MusicInfo[] = toRaw(musicInfos).map((m, index) => {
+    const item = { ...m, meta: { ...m.meta } } as LX.Music.MusicInfo
+    item.meta.addTime ??= now + index
+    return item
+  })
   return addListMusicsAction({
     id,
-    musicInfos: toRaw(musicInfos),
+    musicInfos: rawList,
     addMusicLocationType: addMusicLocationType ?? appSetting['list.addMusicLocationType'],
   })
 }

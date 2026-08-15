@@ -43,6 +43,12 @@
               need="need" value="playCount" :disabled="disabledSortFislds" :label="$t('list_sort_modal_by_play_count')"
             />
           </li>
+          <li :class="$style.listItem">
+            <base-checkbox
+              id="list_sort_modal_field_add_time" v-model="sortField" name="list_sort_modal_field"
+              need="need" value="addTime" :disabled="disabledSortFislds" :label="$t('list_sort_modal_by_add_time')"
+            />
+          </li>
         </ul>
       </section>
       <section>

@@ -1,6 +1,6 @@
 import { getNow, TimeoutTools } from './utils'
 
-const timeFieldExp = /^(?:\[[\d:.]+\])+/g
+const timeFieldExp = /^(?:\[[\d:.]+\])+/
 const timeExp = /\d{1,3}(:\d{1,3}){0,2}(?:\.\d{1,3})/g
 const tagRegMap = {
   title: 'ti',
@@ -140,13 +140,28 @@ export default class LinePlayer {
 
   _refresh() {
     this.curLineNum++
-    // console.log('curLineNum time', this.lines[this.curLineNum].time)
-    if (this.curLineNum >= this.maxLine) return this._handleMaxLine()
-
     let curLine = this.lines[this.curLineNum]
+    if (!curLine) return
 
     const currentTime = this._currentTime()
     const driftTime = currentTime - curLine.time
+
+    if (this.curLineNum >= this.maxLine) {
+      if (driftTime >= 0) {
+        return this._handleMaxLine()
+      } else if (this.curLineNum == 0) {
+        this.curLineNum--
+        const delay = (curLine.time - currentTime) / this._rate
+        if (this.isPlay) {
+          timeoutTools.start(() => {
+            if (!this.isPlay) return
+            this._refresh()
+          }, delay)
+        }
+        this.onPlay(-1, '', currentTime)
+        return
+      }
+    }
 
     if (driftTime >= 0) {
       let nextLine = this.lines[this.curLineNum + 1]
@@ -168,6 +183,7 @@ export default class LinePlayer {
         return
       }
     } else if (this.curLineNum == 0) {
+      this.curLineNum--
       let firstLine = this.lines[0]
       const delay = (firstLine.time - currentTime) / this._rate
       if (this.isPlay) {

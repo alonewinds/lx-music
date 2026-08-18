@@ -8,6 +8,7 @@
 
 <script>
 import { ref, onBeforeUnmount } from '@common/utils/vueTools'
+import { throttle } from '@common/utils/common'
 import { playProgress } from '@renderer/store/player/playProgress'
 
 export default {
@@ -39,6 +40,10 @@ export default {
     const dragging = ref(false)
     const dragProgress = ref(0)
 
+    const handlePreview = throttle(progress => {
+      window.app_event.setProgressPreview(progress)
+    }, 100)
+
     const handleMsDown = event => {
       msEvent.isMsDown = true
       msEvent.msDownX = event.clientX
@@ -48,6 +53,8 @@ export default {
       if (val > 1) val = 1
 
       dragProgress.value = msEvent.msDownProgress = val
+      // 点击瞬间立即向桌面歌词发送预览进度
+      handlePreview(val * playProgress.maxPlayTime)
     }
     const handleMsUp = () => {
       if (msEvent.isMsDown) setProgress(dragProgress.value * playProgress.maxPlayTime)
@@ -62,6 +69,8 @@ export default {
       if (progress > 1) progress = 1
       else if (progress < 0) progress = 0
       dragProgress.value = progress
+      // 拖动过程中持续向桌面歌词发送预览进度（节流），松手后由 setProgress 精确跳转
+      handlePreview(progress * playProgress.maxPlayTime)
     }
 
     document.addEventListener('mousemove', handleMsMove)

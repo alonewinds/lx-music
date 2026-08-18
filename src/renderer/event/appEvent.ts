@@ -43,6 +43,14 @@ export class AppEvent extends Event {
   }
 
   /**
+   * 拖动进度条时的预览进度（仅同步歌词显示，不真实跳转）
+   * @param progress 进度
+   */
+  setProgressPreview(progress: number) {
+    this.emit('setProgressPreview', progress)
+  }
+
+  /**
    * 设置音量大小
    * @param volume 音量大小
    */

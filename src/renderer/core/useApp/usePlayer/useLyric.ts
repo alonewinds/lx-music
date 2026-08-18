@@ -9,9 +9,12 @@ import {
   stop,
   init,
   sendInfo,
+  sendDesktopLyricInfo,
   setPlaybackRate,
 } from '@renderer/core/lyric'
 import { appSetting } from '@renderer/store/setting'
+import { isPlay } from '@renderer/store/player/state'
+import { lyric } from '@renderer/store/player/lyric'
 
 const handleApplyPlaybackRate = debounce(setPlaybackRate, 300)
 
@@ -28,6 +31,19 @@ export default () => {
     play(time * 1000)
   }, 100)
 
+  // 拖动进度条时向桌面歌词发送预览进度（不真实跳转音频），
+  // 让桌面歌词在松手前就平滑跟随，松手后由 setProgress 精确对齐
+  const handleSetProgressPreview = throttle((time: number) => {
+    sendDesktopLyricInfo({
+      action: 'set_status',
+      data: {
+        isPlay: isPlay.value,
+        line: lyric.line,
+        played_time: time * 1000,
+      },
+    })
+  }, 100)
+
   watch(() => appSetting['player.isShowLyricTranslation'], setLyric)
   watch(() => appSetting['player.isShowLyricRoma'], setLyric)
   watch(() => appSetting['player.isSwapLyricTranslationAndRoma'], setLyric)
@@ -41,6 +57,7 @@ export default () => {
   window.app_event.on('lyricUpdated', setLyric)
   window.app_event.on('setPlaybackRate', handleApplyPlaybackRate)
   window.app_event.on('setProgress', handleSetProgress)
+  window.app_event.on('setProgressPreview', handleSetProgressPreview)
 
   onBeforeUnmount(() => {
     window.app_event.off('play', play)
@@ -51,5 +68,6 @@ export default () => {
     window.app_event.off('lyricUpdated', setLyric)
     window.app_event.off('setPlaybackRate', handleApplyPlaybackRate)
     window.app_event.off('setProgress', handleSetProgress)
+    window.app_event.off('setProgressPreview', handleSetProgressPreview)
   })
 }

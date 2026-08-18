@@ -1,5 +1,5 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from '@common/utils/vueTools'
-import { scrollXRTo } from '@common/utils/renderer'
+import { Spring } from '@common/utils/spring'
 import { lyric } from '@lyric/store/lyric'
 import { isPlay, setting } from '@lyric/store/state'
 import { setWindowBounds, setWindowResizeable } from '@lyric/utils/ipc'
@@ -29,29 +29,62 @@ export default (isComputeWidth) => {
   let msDownX = 0
   let msDownScrollX = 0
   let timeout = null
-  let cancelScrollFn
   let dom_lines
   let line_widths
   let isSetedLines = false
   let prevActiveLine = 0
 
+  // AMLL Spring 物理滚动引擎（与播放详情页一致）：无锁、无排队、rAF 驱动
+  const scrollSpring = new Spring(0)
+  scrollSpring.updateParams({ mass: 1, damping: 22, stiffness: 90 })
+  let animationFrameId = null
+  let lastFrameTime = 0
 
-  const handleScrollLrc = (duration = 300) => {
+  const applyScroll = () => {
+    if (!dom_lyric.value) return
+    dom_lyric.value.scrollLeft = scrollSpring.getCurrentPosition()
+  }
+  const onTick = (now) => {
+    const delta = lastFrameTime ? (now - lastFrameTime) / 1000 : 16.7 / 1000
+    lastFrameTime = now
+    scrollSpring.update(delta)
+    applyScroll()
+    if (scrollSpring.arrived()) {
+      animationFrameId = null
+      lastFrameTime = 0
+      return
+    }
+    animationFrameId = requestAnimationFrame(onTick)
+  }
+  const ensureRaf = () => {
+    if (animationFrameId != null) return
+    lastFrameTime = 0
+    animationFrameId = requestAnimationFrame(onTick)
+  }
+  const cancelRaf = () => {
+    if (animationFrameId != null) {
+      cancelAnimationFrame(animationFrameId)
+      animationFrameId = null
+    }
+    lastFrameTime = 0
+  }
+
+  const getScrollTarget = () => {
+    let dom_p = dom_lines?.[lyric.line]
+    if (!dom_p) return 0
+    let offset = 0
+    if (isComputeWidth.value) {
+      let prevLineWidth = line_widths[prevActiveLine] ?? 0
+      offset = prevActiveLine < lyric.line ? ((dom_lines[prevActiveLine]?.clientWidth ?? 0) - prevLineWidth) : 0
+    }
+    return dom_p.offsetLeft + offset - getOffsetTop(dom_lyric.value.clientWidth, dom_p.clientWidth)
+  }
+
+  const handleScrollLrc = () => {
     if (!dom_lines?.length || !dom_lyric.value) return
     if (isStopScroll) return
-    let dom_p = dom_lines[lyric.line]
-
-    if (dom_p) {
-      let offset = 0
-      if (isComputeWidth.value) {
-        let prevLineWidth = line_widths[prevActiveLine] ?? 0
-        offset = prevActiveLine < lyric.line ? ((dom_lines[prevActiveLine]?.clientWidth ?? 0) - prevLineWidth) : 0
-        // console.log(prevActiveLine, dom_lines[prevActiveLine]?.clientHeight ?? 0, prevLineWidth, offset)
-      }
-      cancelScrollFn = scrollXRTo(dom_lyric.value, dom_p ? (dom_p.offsetLeft + offset - getOffsetTop(dom_lyric.value.clientWidth, dom_p.clientWidth)) : 0, duration)
-    } else {
-      cancelScrollFn = scrollXRTo(dom_lyric.value, 0, duration)
-    }
+    scrollSpring.setTargetPosition(getScrollTarget())
+    ensureRaf()
   }
   const clearLyricScrollTimeout = () => {
     if (!timeout) return
@@ -80,7 +113,7 @@ export default (isComputeWidth) => {
       }
       isMsDown.value = true
       msDownX = x
-      msDownScrollX = dom_lyric.value.scrollLeft
+      msDownScrollX = scrollSpring.getCurrentPosition()
     } else {
       winEvent.isMsDown = true
       winEvent.msDownX = x
@@ -109,11 +142,9 @@ export default (isComputeWidth) => {
   const handleMove = (x, y) => {
     if (isMsDown.value) {
       isStopScroll ||= true
-      if (cancelScrollFn) {
-        cancelScrollFn()
-        cancelScrollFn = null
-      }
-      dom_lyric.value.scrollLeft = msDownScrollX + msDownX - x
+      scrollSpring.setPosition(msDownScrollX + msDownX - x)
+      applyScroll()
+      ensureRaf()
       startLyricScrollTimeout()
     } else if (winEvent.isMsDown) {
       // https://github.com/lyswhut/lx-music-desktop/issues/2244
@@ -145,12 +176,10 @@ export default (isComputeWidth) => {
   }
 
   const handleWheel = (event) => {
-    console.log(event.deltaY)
-    if (cancelScrollFn) {
-      cancelScrollFn()
-      cancelScrollFn = null
-    }
-    dom_lyric.value.scrollLeft = dom_lyric.value.scrollLeft - event.deltaY
+    isStopScroll = true
+    scrollSpring.setPosition(scrollSpring.getCurrentPosition() - event.deltaY)
+    applyScroll()
+    ensureRaf()
     startLyricScrollTimeout()
   }
 
@@ -225,10 +254,13 @@ export default (isComputeWidth) => {
       if (lines.length) {
         setLyric(lines)
       } else {
-        cancelScrollFn = scrollXRTo(dom_lyric.value, 0, 300, () => {
+        // 先滚动回起点，再替换歌词内容
+        scrollSpring.setTargetPosition(0)
+        ensureRaf()
+        setTimeout(() => {
           if (lyric.lines !== lines) return
           setLyric(lines)
-        }, 50)
+        }, 350)
       }
     } else {
       setLyric(lines)
@@ -246,15 +278,15 @@ export default (isComputeWidth) => {
     const isJump = oldLine == null || Math.abs(line - oldLine) !== 1
 
     if (isJump) {
-      // 只要是跳切，且跨度大于2行，直接无动画跳转，否则使用极短动画
-      return handleScrollLrc(Math.abs(line - (oldLine ?? 0)) > 2 ? 0 : 100)
+      // 跳切：直接更新弹簧目标，物理动画立即平滑跟随，无锁无排队
+      return handleScrollLrc()
     }
 
     // 正常连续播放逻辑
     if (setting['desktopLyric.isDelayScroll']) {
       delayScrollTimeout = setTimeout(() => {
         delayScrollTimeout = null
-        handleScrollLrc(600)
+        handleScrollLrc()
       }, 600)
     } else {
       handleScrollLrc()
@@ -282,6 +314,7 @@ export default (isComputeWidth) => {
   })
 
   onBeforeUnmount(() => {
+    cancelRaf()
     if (resizeObserver) {
       resizeObserver.disconnect()
       resizeObserver = null

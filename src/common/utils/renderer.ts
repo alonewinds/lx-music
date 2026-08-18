@@ -165,7 +165,7 @@ const handleScrollX = (element: ScrollElement<HTMLElement>, to: number, duration
     if (element.lx_scrollNextParams && currentTime > duration * 0.75) {
       const [_element, to, duration, fn] = element.lx_scrollNextParams
       clean()
-      handleScrollY(_element, to, duration, fn)
+      handleScrollX(_element, to, duration, fn)
       return
     }
 
@@ -182,7 +182,7 @@ const handleScrollX = (element: ScrollElement<HTMLElement>, to: number, duration
       if (element.lx_scrollNextParams) {
         const [_element, to, duration, fn] = element.lx_scrollNextParams
         clean()
-        handleScrollY(_element, to, duration, fn)
+        handleScrollX(_element, to, duration, fn)
       } else {
         clean()
         fn()
@@ -271,7 +271,7 @@ const handleScrollXR = (element: ScrollElement<HTMLElement>, to: number, duratio
     if (element.lx_scrollNextParams && currentTime > duration * 0.75) {
       const [_element, to, duration, fn] = element.lx_scrollNextParams
       clean()
-      handleScrollY(_element, to, duration, fn)
+      handleScrollXR(_element, to, duration, fn)
       return
     }
 
@@ -289,7 +289,7 @@ const handleScrollXR = (element: ScrollElement<HTMLElement>, to: number, duratio
       if (element.lx_scrollNextParams) {
         const [_element, to, duration, fn] = element.lx_scrollNextParams
         clean()
-        handleScrollY(_element, to, duration, fn)
+        handleScrollXR(_element, to, duration, fn)
       } else {
         clean()
         fn()

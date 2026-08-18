@@ -1,5 +1,6 @@
 import { computed, ref } from '@common/utils/vueTools'
 import { setting } from '@lyric/store/state'
+import { onHoverHideMouseLeave } from '@lyric/utils/ipc'
 
 let mouseCheckTools: {
   x: number
@@ -89,6 +90,12 @@ export default () => {
     isMouseEnter.value = false
     mouseCheckTools.stopTimeout()
   }
+
+  // 主进程兜底：窗口为鼠标穿透+事件转发模式时 mouseleave 不可靠，
+  // 主进程轮询到鼠标已移出窗口 bounds 后会发送该事件，强制恢复歌词显示。
+  onHoverHideMouseLeave(() => {
+    handleMouseLeave()
+  })
 
   return {
     isMouseEnter,

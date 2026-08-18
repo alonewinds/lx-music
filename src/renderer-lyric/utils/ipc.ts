@@ -15,6 +15,12 @@ export const onSettingChanged = (listener: LX.IpcRendererEventListenerParams<Par
     rendererOff(WIN_LYRIC_RENDERER_EVENT_NAME.on_config_change, listener)
   }
 }
+export const onHoverHideMouseLeave = (listener: LX.IpcRendererEventListener): RemoveListener => {
+  rendererOn(WIN_LYRIC_RENDERER_EVENT_NAME.hover_hide_mouse_leave, listener)
+  return () => {
+    rendererOff(WIN_LYRIC_RENDERER_EVENT_NAME.hover_hide_mouse_leave, listener)
+  }
+}
 export const setWindowBounds = (bounds: LX.DesktopLyric.NewBounds) => {
   rendererSend<LX.DesktopLyric.NewBounds>(WIN_LYRIC_RENDERER_EVENT_NAME.set_win_bounds, bounds)
 }

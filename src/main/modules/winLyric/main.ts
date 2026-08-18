@@ -1,15 +1,46 @@
 import path from 'node:path'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, screen } from 'electron'
 import { debounce, getPlatform, isLinux, isWin } from '@common/utils'
 import { initWindowSize, minHeight, minWidth } from './utils'
 import { mainSend } from '@common/mainIpc'
 import { encodePath } from '@common/utils/electron'
+import { WIN_LYRIC_RENDERER_EVENT_NAME } from '@common/ipcNames'
 
 // require('./event')
 // require('./rendererEvent')
 
 let browserWindow: Electron.BrowserWindow | null = null
 let isWinBoundsUpdateing = false
+
+// 鼠标移出检测：轮询鼠标屏幕坐标，检测其是否已移出歌词窗口（用于“鼠标移入歌词区域时提高歌词透明度”功能，
+// 该功能下窗口为鼠标穿透+事件转发模式，mouseleave 事件不可靠，需由主进程兜底恢复显示）
+let hoverHideCheckInterval: ReturnType<typeof setInterval> | null = null
+let isHoverHideMouseInWindow = false
+
+const checkHoverHideMouse = () => {
+  if (!browserWindow || browserWindow.isDestroyed()) return
+  const cursorPoint = screen.getCursorScreenPoint()
+  const bounds = browserWindow.getBounds()
+  const isInWindow = cursorPoint.x >= bounds.x && cursorPoint.x <= bounds.x + bounds.width &&
+    cursorPoint.y >= bounds.y && cursorPoint.y <= bounds.y + bounds.height
+  if (isHoverHideMouseInWindow && !isInWindow) {
+    // 鼠标从窗口内移出 → 通知渲染进程恢复显示
+    sendEvent(WIN_LYRIC_RENDERER_EVENT_NAME.hover_hide_mouse_leave)
+  }
+  isHoverHideMouseInWindow = isInWindow
+}
+
+export const startHoverHideMouseCheck = () => {
+  if (hoverHideCheckInterval) return
+  isHoverHideMouseInWindow = false
+  hoverHideCheckInterval = setInterval(checkHoverHideMouse, 200)
+}
+
+export const stopHoverHideMouseCheck = () => {
+  if (!hoverHideCheckInterval) return
+  clearInterval(hoverHideCheckInterval)
+  hoverHideCheckInterval = null
+}
 
 const saveBoundsConfig = debounce((config: Partial<LX.AppSetting>) => {
   global.lx.event_app.update_config(config)
@@ -27,6 +58,7 @@ const winEvent = () => {
   // })
 
   browserWindow.on('closed', () => {
+    stopHoverHideMouseCheck()
     browserWindow = null
   })
 
@@ -76,6 +108,7 @@ const winEvent = () => {
     showWindow()
     if (global.lx.appSetting['desktopLyric.isLock']) {
       browserWindow!.setIgnoreMouseEvents(true, { forward: !isLinux && global.lx.appSetting['desktopLyric.isHoverHide'] })
+      if (global.lx.appSetting['desktopLyric.isHoverHide']) startHoverHideMouseCheck()
     }
     // linux下每次重开时貌似要重新设置置顶
     // if (isLinux && global.lx.appSetting['desktopLyric.isAlwaysOnTop']) {

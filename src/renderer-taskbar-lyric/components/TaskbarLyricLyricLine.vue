@@ -20,6 +20,7 @@ import { useTaskbarLyricOverflowMarquee } from '../composables/useTaskbarLyricOv
 
 const props = defineProps<{
   text: string
+  isPlaying?: boolean
   fontSize?: number
 }>()
 
@@ -30,5 +31,6 @@ const { containerRef, measureRef, shouldScroll, trackStyle } = useTaskbarLyricOv
   distanceVarName: '--taskbar-lyric-line-scroll-distance',
   durationVarName: '--taskbar-lyric-line-scroll-duration',
   watchSources: [toRef(props, 'fontSize')],
+  playing: toRef(props, 'isPlaying'),
 })
 </script>

@@ -6,6 +6,7 @@
         :key="lineKey"
         :chars="chars"
         :start-ms="startMs"
+        :is-playing="isPlaying"
         :font-size="fontSize"
         :style="{ textAlign: align }"
       />
@@ -13,6 +14,7 @@
         v-else
         :key="lineKey"
         :text="text"
+        :is-playing="isPlaying"
         :font-size="fontSize"
         :style="{ textAlign: align }"
       />
@@ -29,6 +31,7 @@ const props = defineProps<{
   text: string
   chars: Array<{ char: string; startMs: number; durationMs: number }> | null
   startMs: number
+  isPlaying?: boolean
   fontSize?: number
   align: 'left' | 'center' | 'right'
 }>()

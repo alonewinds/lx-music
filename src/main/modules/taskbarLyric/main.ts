@@ -387,9 +387,11 @@ export const updatePlayerStatus = (status: Partial<LX.Player.Status>) => {
   if (status.lyricLineText != null) {
     const lyricLineChars = status.lyricLineChars ?? null
     const lyricLineStartMs = status.lyricLineStartMs ?? 0
+    // 注意：lyricLineChars 每次由渲染进程重新解析生成（引用必然不同），
+    // 因此不能做引用比较。暂停后恢复播放会重复触发当前行（文本与 startMs 均不变），
+    // 此时应视为无变化，避免向任务栏歌词窗口推送多余状态导致动画重刷。
     if (
       nextState.lyricLine !== status.lyricLineText ||
-      nextState.lyricLineChars !== lyricLineChars ||
       nextState.lyricLineStartMs !== lyricLineStartMs
     ) {
       nextState.lyricLine = status.lyricLineText

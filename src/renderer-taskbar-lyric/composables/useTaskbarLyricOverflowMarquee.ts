@@ -7,6 +7,7 @@ interface UseTaskbarLyricOverflowMarqueeOptions {
   distanceVarName: string
   durationVarName: string
   watchSources?: Array<WatchSource<unknown>>
+  playing?: Ref<boolean | undefined>
 }
 
 export const useTaskbarLyricOverflowMarquee = ({
@@ -16,6 +17,7 @@ export const useTaskbarLyricOverflowMarquee = ({
   distanceVarName,
   durationVarName,
   watchSources = [],
+  playing,
 }: UseTaskbarLyricOverflowMarqueeOptions) => {
   const containerRef = ref<HTMLElement | null>(null)
   const measureRef = ref<HTMLElement | null>(null)
@@ -38,6 +40,8 @@ export const useTaskbarLyricOverflowMarquee = ({
     return {
       [distanceVarName]: `${distance + gap}px`,
       [durationVarName]: `${duration.toFixed(2)}s`,
+      // 暂停时冻结跑马灯动画，恢复播放后继续
+      animationPlayState: playing?.value === false ? 'paused' : 'running',
     }
   })
 

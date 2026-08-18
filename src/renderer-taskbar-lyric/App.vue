@@ -29,6 +29,7 @@
           :text="displayLyricText"
           :chars="state.lyricLineChars"
           :start-ms="state.lyricLineStartMs"
+          :is-playing="lyricState.isPlaying"
           :font-size="state.lyricFontSize"
           :align="state.lyricAlign"
         />

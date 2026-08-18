@@ -15,6 +15,12 @@ export default () => {
   // const setVisibleDesktopLyric = useCommit('setVisibleDesktopLyric')
   // const setLockDesktopLyric = useCommit('setLockDesktopLyric')
   let collect = false
+  // 记录最近一次触发的歌词行号与其行的开始时刻（墙钟）。
+  // 暂停后恢复播放时 line-player 会重新触发当前行的 onPlay（lyricLinePlay），
+  // 若此时重新生成 lyricLineStartMs，会导致任务栏歌词窗口因 startMs 变化而重挂载，
+  // 触发上滚过渡并重刷逐字动画；同一行重复触发时保持 startMs 不变即可从原进度继续。
+  let lastLyricLineNum: number | null = null
+  let lastLyricLineStartMs = 0
 
   const updateCollectStatus = async() => {
     let status = !!playMusicInfo.musicInfo && await checkListExistMusic(loveList.id, playMusicInfo.musicInfo.id)
@@ -38,6 +44,7 @@ export default () => {
   }
   const handleSetPlayInfo = async() => {
     await updateCollectStatus()
+    lastLyricLineNum = null
     sendPlayerStatus({
       collect,
       name: musicInfo.name,
@@ -50,6 +57,7 @@ export default () => {
     })
   }
   const handleSetLyric = () => {
+    lastLyricLineNum = null
     sendPlayerStatus({
       lyric: musicInfo.lrc ?? '',
       tlyric: musicInfo.tlrc ?? '',
@@ -85,11 +93,17 @@ export default () => {
       }
     }
 
+    // 同一行被重复触发（如暂停后恢复播放会重新定位到当前行）时不刷新行的开始时刻，
+    // 避免任务栏歌词窗口因 startMs 变化而重挂载，触发上滚过渡并重刷逐字动画
+    const isSameLine = line === lastLyricLineNum
+    lastLyricLineNum = line
+    if (!isSameLine) lastLyricLineStartMs = Date.now()
+
     sendPlayerStatus({
       lyricLineText: text,
       lyricLineAllText: curLine ? text + '\n' + curLine : text,
       lyricLineChars,
-      lyricLineStartMs: Date.now(),
+      lyricLineStartMs: lastLyricLineStartMs,
     })
   }
   // const handleSetTaskbarThumbnailClip = (clip) => {

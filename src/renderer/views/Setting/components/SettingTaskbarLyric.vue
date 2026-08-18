@@ -14,7 +14,7 @@ dd
     base-checkbox(
       id="setting_taskbar_lyric_locked"
       :model-value="appSetting['taskbarLyric.locked']"
-      label="锁定任务栏歌词（鼠标穿透）"
+      :label="$t('setting__taskbar_lyric_locked')"
       :disabled="!isWin"
       @update:model-value="updateSetting({ 'taskbarLyric.locked': $event })"
     )
@@ -44,7 +44,7 @@ dd
     )
 
 dd
-  h3#taskbar_lyric_align 对齐方式
+  h3#taskbar_lyric_align {{ $t('setting__desktop_lyric_align') }}
   div
     base-checkbox.gap-left(
       id="setting_taskbar_lyric_align_left"
@@ -52,7 +52,7 @@ dd
       need
       :model-value="appSetting['taskbarLyric.lyricAlign']"
       value="left"
-      label="左对齐"
+      :label="$t('setting__desktop_lyric_align_left')"
       :disabled="!isWin"
       @update:model-value="updateSetting({ 'taskbarLyric.lyricAlign': $event })"
     )
@@ -62,7 +62,7 @@ dd
       need
       :model-value="appSetting['taskbarLyric.lyricAlign']"
       value="center"
-      label="居中"
+      :label="$t('setting__desktop_lyric_align_center')"
       :disabled="!isWin"
       @update:model-value="updateSetting({ 'taskbarLyric.lyricAlign': $event })"
     )
@@ -72,7 +72,7 @@ dd
       need
       :model-value="appSetting['taskbarLyric.lyricAlign']"
       value="right"
-      label="右对齐"
+      :label="$t('setting__desktop_lyric_align_right')"
       :disabled="!isWin"
       @update:model-value="updateSetting({ 'taskbarLyric.lyricAlign': $event })"
     )

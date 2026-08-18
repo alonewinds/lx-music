@@ -607,6 +607,7 @@
   "setting__sync_tip": "使用方式請看常見問題「同步功能」部分",
   "setting__taskbar_lyric": "工作列歌詞設定",
   "setting__taskbar_lyric_enable": "啟用工作列歌詞",
+  "setting__taskbar_lyric_locked": "鎖定工作列歌詞（滑鼠穿透）",
   "setting__taskbar_lyric_experimental": "僅限 Windows 的實驗性功能，會在視覺上貼附工作列，並非真正的系統工作列擴充",
   "setting__taskbar_lyric_show_cover": "顯示封面",
   "setting__taskbar_lyric_show_song_info": "顯示歌曲資訊",

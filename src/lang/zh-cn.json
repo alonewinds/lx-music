@@ -601,6 +601,7 @@
   "setting__sync_tip": "使用方式请看常见问题「同步功能」部分",
   "setting__taskbar_lyric": "任务栏歌词设置",
   "setting__taskbar_lyric_enable": "启用任务栏歌词",
+  "setting__taskbar_lyric_locked": "锁定任务栏歌词（鼠标穿透）",
   "setting__taskbar_lyric_experimental": "仅限 Windows 的实验性功能，视觉上贴附任务栏，并非真正的系统任务栏扩展",
   "setting__taskbar_lyric_show_cover": "显示封面",
   "setting__taskbar_lyric_show_song_info": "显示歌曲信息",

@@ -122,6 +122,7 @@ export const useTaskbarLyricShellStyle = () => {
       '--taskbar-lyric-font-family': lyricState.font || "'Segoe UI', 'Microsoft YaHei', sans-serif",
       '--taskbar-lyric-song-info-font-size': `${clamp(lyricState.songInfoFontSize ?? 11, 9, 18)}px`,
       '--taskbar-lyric-line-font-size': `${clamp(lyricState.lyricFontSize ?? 12, 10, 22)}px`,
+      '--taskbar-lyric-line-font-weight': lyricState.isFontWeight ? '700' : '500',
     }
   })
 

@@ -271,7 +271,7 @@ body {
   color: var(--taskbar-lyric-text);
   font-size: var(--taskbar-lyric-line-font-size, 12px);
   line-height: 1.1;
-  font-weight: 500;
+  font-weight: var(--taskbar-lyric-line-font-weight, 500);
   text-align: center;
   white-space: nowrap;
 }

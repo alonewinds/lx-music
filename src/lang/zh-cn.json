@@ -614,6 +614,7 @@
   "setting__taskbar_lyric_line_color": "歌词",
   "setting__taskbar_lyric_song_info_size": "歌曲字号",
   "setting__taskbar_lyric_line_size": "歌词字号",
+  "setting__taskbar_lyric_font_weight": "加粗字体",
   "setting__taskbar_lyric_color": "颜色",
   "setting__taskbar_lyric_opacity": "不透明度",
   "setting__taskbar_lyric_theme_color": "主题",

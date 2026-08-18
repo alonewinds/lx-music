@@ -120,6 +120,14 @@ dd
       :disabled="!isWin"
       @update:model-value="updateSetting({ 'taskbarLyric.style.font': $event })"
     )
+    .gap-top
+      base-checkbox(
+        id="setting_taskbar_lyric_font_weight"
+        :model-value="appSetting['taskbarLyric.style.isFontWeight']"
+        :label="$t('setting__taskbar_lyric_font_weight')"
+        :disabled="!isWin"
+        @update:model-value="updateSetting({ 'taskbarLyric.style.isFontWeight': $event })"
+      )
 
 dd
   h3#taskbar_lyric_font_color {{ $t('setting__taskbar_lyric_font_color') }}

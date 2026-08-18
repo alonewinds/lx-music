@@ -721,6 +721,11 @@ declare global {
       'taskbarLyric.style.lyricFontSize': number
 
       /**
+       * 是否加粗任务栏歌词字体
+       */
+      'taskbarLyric.style.isFontWeight': boolean
+
+      /**
        * 是否关闭时是否最小化到托盘
        */
       // 'tray.isToTray': boolean

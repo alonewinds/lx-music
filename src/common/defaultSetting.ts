@@ -138,6 +138,7 @@ const defaultSetting: LX.AppSetting = {
   'taskbarLyric.style.font': '',
   'taskbarLyric.style.songInfoFontSize': 11,
   'taskbarLyric.style.lyricFontSize': 12,
+  'taskbarLyric.style.isFontWeight': false,
 
   'list.isClickPlayList': false,
   'list.isShowSource': true,

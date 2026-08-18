@@ -664,6 +664,7 @@
   "setting__taskbar_lyric_line_color": "Lyric",
   "setting__taskbar_lyric_song_info_size": "Song info font size",
   "setting__taskbar_lyric_line_size": "Lyric font size",
+  "setting__taskbar_lyric_font_weight": "Bold font",
   "setting__taskbar_lyric_color": "Color",
   "setting__taskbar_lyric_opacity": "Opacity",
   "setting__taskbar_lyric_theme_color": "Theme",

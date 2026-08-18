@@ -25,6 +25,7 @@ interface TaskbarLyricViewState {
   font: string
   songInfoFontSize: number
   lyricFontSize: number
+  isFontWeight: boolean
   locked: boolean
   lyricAlign: 'left' | 'center' | 'right'
   lyricLineChars: Array<{ char: string; startMs: number; durationMs: number }> | null
@@ -56,6 +57,7 @@ export const state = shallowReactive<TaskbarLyricViewState>({
   font: '',
   songInfoFontSize: 11,
   lyricFontSize: 12,
+  isFontWeight: false,
   locked: false,
   lyricAlign: 'center',
   lyricLineChars: null,

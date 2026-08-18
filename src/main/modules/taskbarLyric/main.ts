@@ -65,6 +65,7 @@ const getStyleState = () => {
     font: global.lx.appSetting['taskbarLyric.style.font'],
     songInfoFontSize: global.lx.appSetting['taskbarLyric.style.songInfoFontSize'],
     lyricFontSize: global.lx.appSetting['taskbarLyric.style.lyricFontSize'],
+    isFontWeight: global.lx.appSetting['taskbarLyric.style.isFontWeight'],
   }
 }
 

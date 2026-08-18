@@ -38,7 +38,7 @@ const handleConfigChange = (keys: Array<keyof LX.AppSetting>) => {
   if (!keys.some(key => key.startsWith('taskbarLyric.'))) return
 
   // 字体变更需要立即同步到已存在的歌词窗口；锁定状态和启用开关均不应阻断样式更新。
-  if (keys.includes('taskbarLyric.style.font')) {
+  if (keys.includes('taskbarLyric.style.font') || keys.includes('taskbarLyric.style.isFontWeight')) {
     refreshWindowStateFromConfig()
     return
   }

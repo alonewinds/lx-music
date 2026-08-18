@@ -29,6 +29,7 @@ declare namespace LX {
       font: LX.AppSetting['taskbarLyric.style.font']
       songInfoFontSize: LX.AppSetting['taskbarLyric.style.songInfoFontSize']
       lyricFontSize: LX.AppSetting['taskbarLyric.style.lyricFontSize']
+      isFontWeight: LX.AppSetting['taskbarLyric.style.isFontWeight']
     }
   }
 }

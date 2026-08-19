@@ -180,6 +180,8 @@ export default function useMusicListViewModel(props, emit) {
 
   const handleListRightClick = (event) => {
     if (!event.target.classList.contains('select')) return
+    // 未选中任何文本时放行，让右键菜单正常弹出（否则歌曲名等 select 区域的右键菜单无法打开）
+    if (!window.getSelection()?.toString().trim()) return
     event.stopImmediatePropagation()
     let classList = listInfo.dom_listContent.value.classList
     classList.add('copying')
